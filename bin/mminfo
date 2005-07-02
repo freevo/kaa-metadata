@@ -1,0 +1,100 @@
+#!/usr/bin/python
+# -*- coding: iso-8859-1 -*-
+# -----------------------------------------------------------------------------
+# mminfo - sample application for kaa.metadata
+# -----------------------------------------------------------------------------
+# $Id$
+#
+# -----------------------------------------------------------------------------
+# kaa-Metadata - Media Metadata for Python
+# Copyright (C) 2003-2005 Thomas Schueppel, Dirk Meyer
+#
+# First Edition: Thomas Schueppel <stain@acm.org>
+# Maintainer:    Dirk Meyer <dmeyer@tzi.de>
+#
+# Please see the file doc/CREDITS for a complete list of authors.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MER-
+# CHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+# Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+#
+# -----------------------------------------------------------------------------
+
+# python imports
+import sys
+import os
+import getopt
+import logging
+
+# kaa.metadata imports
+import kaa.metadata
+
+def usage():
+    print
+    print 'usage: mminfo [options] files'
+    print
+    print 'options:'
+    print '  -d   turn on debug information. For complete debug set -d 2'
+    print
+    print 'A file can be a normal file, a device for VCD/VCD/AudioCD'
+    print
+    print 'Examples:'
+    print '  mminfo foo.avi bar.mpg'
+    print '  mminfo /dev/dvd'
+    print
+    sys.exit(0)
+
+
+print 'kaa media metadata info'
+
+# create and setup the root logger object.
+logger = logging.getLogger()
+
+# set stdout logging
+formatter = logging.Formatter('%(levelname)s %(module)s'+\
+                              '(%(lineno)s): %(message)s')
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+# set log level
+logger.setLevel(logging.WARNING)
+
+logger = logging.getLogger('metadata')
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:], 'd:', [])
+except getopt.GetoptError:
+    usage()
+
+DEBUG_LEVEL = [ logging.WARNING, logging.INFO, logging.DEBUG ]
+
+for o, a in opts:
+    if o == '-d':
+        a = max(0, min(int(a), 2))
+        print 'setting to log level %s' % a
+        logger.setLevel(DEBUG_LEVEL[a])
+
+
+for file in args:
+    medium = kaa.metadata.parse(file)
+    print
+    if len(file) > 70:
+        print "filename : %s[...]%s" % (file[:30], file[len(file)-30:])
+    else:
+        print "filename : %s" % file
+    if medium:
+        print unicode(medium).encode('latin-1', 'replace')
+        print
+    else:
+        print "No Match found"
