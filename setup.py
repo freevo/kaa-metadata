@@ -8,8 +8,12 @@ from distutils.core import setup, Extension
 import popen2
 import os
 
-from src import version
-
+try:
+    from src import version
+    version = version.VERSION
+except ImportError:
+    version = ''
+    
 extensions = [ Extension('src/disc/cdrom', ['src/disc/cdrommodule.c']) ]
 
 # check for libdvdread (bad hack!)
@@ -36,7 +40,7 @@ except AttributeError, e:
 open('__init__.py', 'w').close()
 
 setup (name = "kaa-metadata",
-       version = version.VERSION,
+       version = version,
        description = "Module for retrieving information about media files",
        author = "Thomas Schueppel, Dirk Meyer",
        author_email = "freevo-devel@lists.sourceforge.net",
