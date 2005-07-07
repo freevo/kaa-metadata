@@ -1,18 +1,45 @@
-#!/usr/bin/env python
+# -*- coding: iso-8859-1 -*-
+# -----------------------------------------------------------------------------
+# setup.py - Setup script for kaa.metadata
+# -----------------------------------------------------------------------------
+# $Id$
+#
+# -----------------------------------------------------------------------------
+# kaa-Metadata - Media Metadata for Python
+# Copyright (C) 2003-2005 Thomas Schueppel, Dirk Meyer
+#
+# First Edition: Thomas Schueppel <stain@acm.org>
+# Maintainer:    Dirk Meyer <dmeyer@tzi.de>
+#
+# Please see the file doc/CREDITS for a complete list of authors.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MER-
+# CHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+# Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+#
+# -----------------------------------------------------------------------------
 
-"""Setup script for the kaa.metadata distribution."""
-
-__revision__ = "$Id$"
-
-from distutils.core import setup, Extension
+# python imports
+import sys
 import popen2
 import os
 
 try:
-    from src import version
-    version = version.VERSION
+    # kaa base imports
+    from kaa.base.distribution import Extension, setup
 except ImportError:
-    version = ''
+    print 'kaa.base not installed'
+    sys.exit(1)
     
 extensions = [ Extension('src/disc/cdrom', ['src/disc/cdrommodule.c']) ]
 
@@ -36,35 +63,10 @@ except AttributeError, e:
     # This would better be done by a clean detect of windows. But how?
     extensions = []
 
-# create fake kaa.__init__.py
-open('__init__.py', 'w').close()
-
-setup (name = "kaa-metadata",
-       version = version,
+setup (module      = 'metadata',
+       version     = '0.4.99.1',
        description = "Module for retrieving information about media files",
-       author = "Thomas Schueppel, Dirk Meyer",
-       author_email = "freevo-devel@lists.sourceforge.net",
-       url = "http://freevo.sf.net/kaa",
-
+       author      = "Thomas Schueppel, Dirk Meyer",
        scripts     = [ 'bin/mminfo' ],
-
-       package_dir = {'kaa.metadata.video': 'src/video',
-                      'kaa.metadata.audio': 'src/audio',
-                      'kaa.metadata.audio.eyeD3': 'src/audio/eyeD3',
-                      'kaa.metadata.image': 'src/image',
-                      'kaa.metadata.disc' : 'src/disc',
-                      'kaa.metadata.misc' : 'src/misc',
-                      'kaa.metadata'      : 'src',
-                      'kaa'               : '.'},
-
-       packages = [ 'kaa.metadata', 'kaa.metadata.video', 'kaa.metadata.audio',
-                    'kaa.metadata.audio.eyeD3', 'kaa.metadata.image',
-                    'kaa.metadata.disc', 'kaa.metadata.misc' ],
-
-       py_modules  = [ 'kaa.__init__' ],
        ext_modules = extensions
-
       )
-
-# delete fake kaa.__init__.py
-os.unlink('__init__.py')
