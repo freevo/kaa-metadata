@@ -38,6 +38,7 @@ import logging
 # kaa imports
 from kaa.metadata import mediainfo
 from kaa.metadata import factory
+from kaa.metadata.image import bins
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -63,6 +64,26 @@ class DirInfo(mediainfo.MediaInfo):
                         self.image = self.image[2:]
                     self.keys.append('image')
             f.close()
-        
+
+        # search album.xml (bins)
+        info = os.path.join(directory, 'album.xml')
+        if os.path.isfile(info):
+            info  = bins.get_bins_desc(directory)
+            if info.has_key('desc'):
+                info = info['desc']
+                if info.has_key('sampleimage') and info['sampleimage']:
+                    # album.xml defines a sampleimage, use it as image for the
+                    # directory
+                    image = os.path.join(directory, info['sampleimage'])
+                    if os.path.isfile(image):
+                        self.image = image
+                        self.keys.append('image')
+
+                if info.has_key('title') and info['title']:
+                    # album.xml defines a title
+                    self.title = info['title']
+
+
+
 factory.register('directory', mediainfo.EXTENSION_DIRECTORY,
                  mediainfo.TYPE_MISC, DirInfo)
