@@ -72,6 +72,8 @@ MATROSKA_FRAME_DURATION_ID    = 0x23E383
 MATROSKA_VIDEO_SETTINGS_ID    = 0xE0
 MATROSKA_VID_WIDTH_ID         = 0xB0
 MATROSKA_VID_HEIGHT_ID        = 0xBA
+MATROSKA_DISPLAY_VID_WIDTH_ID = 0x54B0
+MATROSKA_DISPLAY_VID_HEIGHT_ID= 0x54BA
 MATROSKA_AUDIO_SETTINGS_ID    = 0xE1
 MATROSKA_AUDIO_SAMPLERATE_ID  = 0xB5
 MATROSKA_AUDIO_CHANNELS_ID    = 0x9F
@@ -286,6 +288,8 @@ class MkvInfo(mediainfo.AVInfo):
             try:
                 elem = tabelem[MATROSKA_CODEC_ID]
                 vi.codec = elem.get_data()
+                if vi.codec.startswith('V_'):
+                    vi.codec = vi.codec[2:]
             except:
                 vi.codec = 'Unknown'
             try:
@@ -298,7 +302,11 @@ class MkvInfo(mediainfo.AVInfo):
                 vidtab = self.process_one_level(vinfo)
                 vi.width  = vidtab[MATROSKA_VID_WIDTH_ID].get_value()
                 vi.height = vidtab[MATROSKA_VID_HEIGHT_ID].get_value()
-            except:
+                if vidtab.has_key(MATROSKA_DISPLAY_VID_WIDTH_ID) and \
+                   vidtab.has_key(MATROSKA_DISPLAY_VID_HEIGHT_ID):
+                    vi.aspect = float(vidtab[MATROSKA_DISPLAY_VID_WIDTH_ID].get_value()) / \
+                                vidtab[MATROSKA_DISPLAY_VID_HEIGHT_ID].get_value()
+            except Exception, e:
                 log.debug("No other info about video track !!!")
             self.video.append(vi)
 
@@ -315,6 +323,8 @@ class MkvInfo(mediainfo.AVInfo):
             try:
                 elem = tabelem[MATROSKA_CODEC_ID]
                 ai.codec = elem.get_data()
+                if ai.codec.startswith('A_'):
+                    ai.codec = ai.codec[2:]
             except:
                 ai.codec = "Unknown"
             try:
@@ -339,4 +349,4 @@ class MkvInfo(mediainfo.AVInfo):
 
 
 factory.register( 'application/mkv', ('mkv', 'mka',),
-                       mediainfo.TYPE_AV, MkvInfo )
+                  mediainfo.TYPE_AV, MkvInfo )
