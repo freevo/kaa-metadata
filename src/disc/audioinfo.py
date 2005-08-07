@@ -175,4 +175,4 @@ class AudioDiscInfo(discinfo.DiscInfo):
 
 
 factory.register( 'audio/cd', mediainfo.EXTENSION_DEVICE,
-                       mediainfo.TYPE_AUDIO, AudioDiscInfo )
+                  mediainfo.TYPE_AUDIO, AudioDiscInfo )
