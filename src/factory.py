@@ -124,8 +124,10 @@ class _Factory:
             import disc.discinfo
             import disc.vcdinfo
             import disc.audioinfo
-        except ImportError:
-            pass
+        except ImportError, e:
+            # looks like cdrom.so was not created
+            if log.level < 30:
+                log.error(e)
         
         # find the best working DVD module
         try:
