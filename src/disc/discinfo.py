@@ -37,6 +37,7 @@ import array
 import md5
 from struct import *
 import logging
+from fcntl import ioctl
 
 # kaa imports
 from kaa.metadata import mediainfo
@@ -46,11 +47,7 @@ log = logging.getLogger('metadata')
 
 CREATE_MD5_ID = 0
 
-try:
-    from fcntl import ioctl
-    import DiscID
-except:
-    log.warning('WARNING: failed to import ioctl, discinfo won\'t work')
+import DiscID
 
 
 def cdrom_disc_status(device, handle_mix = 0):

@@ -20,13 +20,9 @@
 # all changes we did for kaa.metadata.
 #
 
-try:
-    import cdrom, sys
-except ImportError:
-    # Seems cdrom has either not been compiler or is not supported
-    # on this System
-    pass
-    
+import sys
+import cdrom
+
 
 def cddb_sum(n):
     ret = 0
