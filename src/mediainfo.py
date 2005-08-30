@@ -190,6 +190,23 @@ class MediaInfo:
             pass
 
 
+    def __contains__(self, key):
+        """
+        Test if key exists in the dict
+        """
+        return key in self.__dict__
+
+
+    def get(self, key, default = None):
+        """
+        Returns key in dict, otherwise defaults to 'default' if key doesn't
+        exist.
+        """
+        if key not in self:
+            return default
+        return self[key]
+        
+
     def __getitem__(self,key):
         """
         get the value of 'key'
