@@ -165,6 +165,11 @@ class OgmInfo(mediainfo.AVInfo):
                                       self.tag_map[k][x]),
                 self.tag_map[k].keys())
 
+        # If there are no video streams in this ogg container, it
+        # must be an audio file.  Raise an exception to cause the
+        # factory to fall back to audio.ogginfo.
+        if len(self.video) == 0:
+            raise mediainfo.KaaMetadataParseError
 
     def _parseOGGS(self,file):
         h = file.read(27)
