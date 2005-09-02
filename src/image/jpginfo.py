@@ -117,7 +117,7 @@ class JPGInfo(core.ImageInfo):
             self.setitem( 'artist', exif_info, 'Image Artist', True )
             self.setitem( 'hardware', exif_info, 'Image Model', True )
             self.setitem( 'software', exif_info, 'Image Software', True )
-            self.setitem( 'thumbnail', exif_info, 'JPEGThumbnail', True )
+            self.setitem( 'thumbnail', exif_info, 'JPEGThumbnail', False )
             self.appendtable( 'EXIF', exif_info )
 
         if iptc_info:
