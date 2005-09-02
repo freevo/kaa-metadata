@@ -45,6 +45,8 @@ LOCAL_ENCODING = locale.getpreferredencoding();
 if not LOCAL_ENCODING or LOCAL_ENCODING == "ANSI_X3.4-1968":
     LOCAL_ENCODING = 'latin1';
 
+UNPRINTABLE_KEYS = [ 'thumbnail', 'raw_image']
+
 # type definitions
 TYPE_NONE      = 0
 TYPE_AUDIO     = 1
@@ -64,7 +66,7 @@ AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec',
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec',
              'samplebits', 'width', 'height', 'fps', 'aspect']
 
-MUSICCORE = ['trackno', 'trackof', 'album', 'genre','discs']
+MUSICCORE = ['trackno', 'trackof', 'album', 'genre','discs', 'image', 'raw_image']
 
 AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'genre', 'secondary genre', 'subject', 'writer', 'producer',
@@ -76,10 +78,8 @@ AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'sharpness', 'dimensions', 'lightness', 'dots per inch',
              'palette setting', 'default audio stream', 'logo url',
              'watermark url', 'info url', 'banner image', 'banner url',
-             'infotext', 'delay']
+             'infotext', 'delay', 'image']
 
-
-UNPRINTABLE_KEYS = [ 'thumbnail', ]
 
 EXTENSION_DEVICE    = 'device'
 EXTENSION_DIRECTORY = 'directory'
@@ -120,13 +120,17 @@ class MediaInfo:
     def __unicode__(self):
         keys = copy.copy(self.keys)
 
+        hidden = []
         for k in UNPRINTABLE_KEYS:
             if k in keys:
                 keys.remove(k)
+                hidden.append(k)
 
         result = reduce( lambda a,b: self[b] and b != u'url' and \
                          u'%s\n        %s: %s' % \
                          (a, unicode(b), unicode(self[b])) or a, keys, u'' )
+        for h in hidden:
+            result += u'\n        %s: <unprintable data>' % h
         if log.level < 30:
             try:
                 for i in self._tables.keys():
@@ -161,7 +165,7 @@ class MediaInfo:
         # make sure all strings are unicode
         for key in self.keys:
             value = getattr(self, key)
-            if isinstance(value, str):
+            if isinstance(value, str) and not key in UNPRINTABLE_KEYS:
                 setattr(self, key, unicode(value, LOCAL_ENCODING, 'replace'))
 
 
@@ -178,16 +182,16 @@ class MediaInfo:
         """
         try:
             if self.__dict__.has_key(item):
-                if isinstance(dict[key], str):
-                    self.__dict__[item] = unicode(dict[key])
-                elif convert_to_str:
-                    self.__dict__[item] = unicode(dict[key])
+                if convert_to_str:
+                    if not isinstance(dict[key], unicode):
+                        self.__dict__[item] = unicode(dict[key])
                 else:
                     self.__dict__[item] = dict[key]
             else:
-                _debug("Unknown key: %s" % item)
+                log.error("Unknown key: %s" % item)
         except:
-            pass
+            if log.level < 30:
+                log.exception('setkey')
 
 
     def __contains__(self, key):
