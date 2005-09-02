@@ -50,8 +50,7 @@ log = logging.getLogger('metadata')
 
 # http://www.omniscia.org/~vivake/python/MP3Info.py
 
-MP3_INFO_TABLE = { "APIC": "picture",
-                   "LINK": "link",
+MP3_INFO_TABLE = { "LINK": "link",
                    "TALB": "album",
                    "TCOM": "composer",
                    "TCOP": "copyright",
@@ -141,10 +140,11 @@ class eyeD3Info(mediainfo.MusicInfo):
             log.debug(id3.tag.frames)
             for k, var in MP3_INFO_TABLE.items():
                if id3.tag.frames[k]:
-                  if k == 'APIC':
-                     setattr(self, var, id3.tag.frames[k][0])
-                  else:
-                     setattr(self, var, id3.tag.frames[k][0].text)
+                  setattr(self, var, id3.tag.frames[k][0].text)
+            if id3.tag.frames['APIC']:
+               pic = id3.tag.frames['APIC'][0]
+               if pic.imageData:
+                  setattr(self, 'raw_image', pic.imageData)
             if id3.tag.getYear():
                self.date = id3.tag.getYear()
             tab = {}
