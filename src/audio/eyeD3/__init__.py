@@ -18,7 +18,7 @@
 #
 ################################################################################
 
-eyeD3Version = "0.6.5";
+eyeD3Version = "0.6.8";
 eyeD3Maintainer = "Travis Shirk <travis@pobox.com>";
 
 # Version constants
@@ -39,8 +39,8 @@ LOCAL_ENCODING = locale.getpreferredencoding();
 if not LOCAL_ENCODING or LOCAL_ENCODING == "ANSI_X3.4-1968":
     LOCAL_ENCODING = 'latin1';
 
-import frames;
-import mp3;
-import tag;
-from tag import *;
-import utils;
+# import kaa.metadata.audio.eyeD3.frames;
+# import kaa.metadata.audio.eyeD3.mp3;
+# import kaa.metadata.audio.eyeD3.tag;
+# from kaa.metadata.audio.eyeD3.tag import *;
+# import kaa.metadata.audio.eyeD3.utils;

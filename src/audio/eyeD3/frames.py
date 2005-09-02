@@ -65,6 +65,8 @@ URL_FIDS           = [URL_COMMERCIAL_FID, URL_COPYRIGHT_FID,
 USERURL_FID        = "WXXX";
 PLAYCOUNT_FID      = "PCNT";
 UNIQUE_FILE_ID_FID = "UFID";
+BPM_FID            = "TBPM";
+PUBLISHER_FID      = "TPUB";
 
 obsoleteFrames = {"EQUA": "Equalisation",
                   "IPLS": "Involved people list",
@@ -80,6 +82,9 @@ OBSOLETE_YEAR_FID            = "TYER";
 OBSOLETE_TIME_FID            = "TIME";
 OBSOLETE_ORIG_RELEASE_FID    = "TORY";
 OBSOLETE_RECORDING_DATE_FID  = "TRDA";
+
+DATE_FIDS          = ["TDRL", "TDOR", "TDRC", OBSOLETE_YEAR_FID,
+                      OBSOLETE_DATE_FID];
 
 frameDesc = { "AENC": "Audio encryption",
               "APIC": "Attached picture",
@@ -300,7 +305,10 @@ def id3EncodingToString(encoding):
     elif encoding == UTF_16BE_ENCODING:
         return "utf_16_be";
     else:
-        raise ValueError;
+        if strictID3():
+            raise ValueError;
+        else:
+            return "latin_1";
 
 ################################################################################
 class FrameException(Exception):
@@ -356,6 +364,11 @@ class FrameHeader:
       else:
          self.majorVersion = tagHeader.majorVersion;
          self.minorVersion = tagHeader.minorVersion;
+      # Correctly set size of header
+      if self.minorVersion == 2:
+         self.FRAME_HEADER_SIZE = 6;
+      else:
+         self.FRAME_HEADER_SIZE = 10;
       self.setBitMask();
 
    def setBitMask(self):
@@ -419,13 +432,13 @@ class FrameHeader:
       return data;
 
    def parse2_2(self, f):
-      frameId = f.read(3);
-      frameId = map2_2FrameId(frameId);
+      frameId_22 = f.read(3);
+      frameId = map2_2FrameId(frameId_22);
       if self.isFrameIdValid(frameId):
-         TRACE_MSG("FrameHeader [id]: %s (0x%x%x%x)" % (frameId,
-                                                       ord(frameId[0]),
-                                                       ord(frameId[1]),
-                                                       ord(frameId[2])));
+         TRACE_MSG("FrameHeader [id]: %s (0x%x%x%x)" % (frameId_22,
+                                                        ord(frameId_22[0]),
+                                                        ord(frameId_22[1]),
+                                                        ord(frameId_22[2])));
          self.id = frameId;
          # dataSize corresponds to the size of the data segment after
          # encryption, compression, and unsynchronization.
@@ -549,7 +562,7 @@ class Frame:
        assert(isinstance(frameHeader, FrameHeader));
        self.header = frameHeader;
 
-   def __repr__(self):
+   def __str__(self):
       desc = self.getFrameDesc();
       return '<%s Frame (%s)>' % (desc, self.header.id);
 
@@ -575,10 +588,10 @@ class Frame:
       return data;
 
    def decrypt(self, data):
-      raise FrameException("Ecnyption Not Supported");
+      raise FrameException("Encryption not supported");
 
    def encrypt(self, data):
-      raise FrameException("Ecnyption Not Supported");
+      raise FrameException("Encryption not supported");
 
    def disassembleFrame(self, data):
       # Format flags in the frame header may add extra data to the
@@ -621,7 +634,7 @@ class Frame:
          data = self.decrypt(data);
       if self.header.compressed:
          data = self.decompress(data);
-      return data
+      return data;
 
    def assembleFrame (self, data):
       formatFlagData = "";
@@ -661,6 +674,13 @@ class Frame:
             return obsoleteFrames[self.header.id];
          except KeyError:
             return "UNKOWN FRAME";
+
+   def getTextDelim(self):
+       if self.encoding == UTF_16_ENCODING or \
+          self.encoding == UTF_16BE_ENCODING:
+           return "\x00\x00";
+       else:
+           return "\x00";
 
 ################################################################################
 class TextFrame(Frame):
@@ -703,8 +723,9 @@ class TextFrame(Frame):
               raise;
       TRACE_MSG("TextFrame text: %s" % self.text);
 
-   def __repr__(self):
-      return '<%s (%s): %s>' % (self.getFrameDesc(), self.header.id, self.text);
+   def __unicode__(self):
+      return u'<%s (%s): %s>' % (self.getFrameDesc(), self.header.id,
+                                 self.text);
    
    def render(self):
        if self.header.minorVersion == 4 and self.header.id == "TSIZ":
@@ -879,14 +900,14 @@ class UserTextFrame(TextFrame):
    def render(self):
       data = self.encoding +\
              self.description.encode(id3EncodingToString(self.encoding)) +\
-             "\x00" +\
+             self.getTextDelim() +\
              self.text.encode(id3EncodingToString(self.encoding));
       return self.assembleFrame(data);
 
-   def __repr__(self):
-       return '<%s (%s): {Desc: %s} %s>' % (self.getFrameDesc(),
-                                           self.header.id,
-                                           self.description, self.text);
+   def __unicode__(self):
+       return u'<%s (%s): {Desc: %s} %s>' % (self.getFrameDesc(),
+                                            self.header.id,
+                                            self.description, self.text);
 
 ################################################################################
 class URLFrame(Frame):
@@ -917,7 +938,7 @@ class URLFrame(Frame):
       data = str(self.url);
       return self.assembleFrame(data);
 
-   def __repr__(self):
+   def __str__(self):
       return '<%s (%s): %s>' % (self.getFrameDesc(), self.header.id,
                                 self.url);
 
@@ -963,24 +984,24 @@ class UserURLFrame(URLFrame):
    def render(self):
       data = self.encoding +\
              self.description.encode(id3EncodingToString(self.encoding)) +\
-             "\x00" + self.url;
+             self.getTextDelim() + self.url;
       return self.assembleFrame(data);
 
-   def __repr__(self):
-      return '<%s (%s): %s [Encoding: %s] [Desc: %s]>' %\
+   def __unicode__(self):
+      return u'<%s (%s): %s [Encoding: %s] [Desc: %s]>' %\
              (self.getFrameDesc(), self.header.id,
               self.url, self.encoding, self.description)
 
 ################################################################################
 class CommentFrame(Frame):
-   lang = u"";
+   lang = "";
    description = u"";
    comment = u"";
 
    # Data string format:
    # encoding (one byte) + lang (three byte code) + description + "\x00" +
    # text
-   def __init__(self, frameHeader, data = None, lang = u"",
+   def __init__(self, frameHeader, data = None, lang = "",
                 description = u"", comment = u"", encoding = DEFAULT_ENCODING):
        Frame.__init__(self, frameHeader);
        if data != None:
@@ -1043,12 +1064,12 @@ class CommentFrame(Frame):
           lang = lang + ('\x00' * (3 - len(lang)));
       data = self.encoding + lang +\
              self.description.encode(id3EncodingToString(self.encoding)) +\
-             "\x00" +\
+             self.getTextDelim() +\
              self.comment.encode(id3EncodingToString(self.encoding));
       return self.assembleFrame(data);
 
-   def __repr__(self):
-      return "<%s (%s): %s [Lang: %s] [Desc: %s]>" %\
+   def __unicode__(self):
+      return u"<%s (%s): %s [Lang: %s] [Desc: %s]>" %\
              (self.getFrameDesc(), self.header.id, self.comment,
               self.lang, self.description);
 
@@ -1157,11 +1178,16 @@ class ImageFrame(Frame):
       self.encoding = input.read(1);
       TRACE_MSG("APIC encoding: " + id3EncodingToString(self.encoding));
 
+      # Mime type
       self.mimeType = "";
-      ch = input.read(1);
-      while ch != "\x00":
-         self.mimeType += ch;
-         ch = input.read(1);
+      if self.header.minorVersion != 2:
+          ch = input.read(1);
+          while ch != "\x00":
+              self.mimeType += ch;
+              ch = input.read(1);
+      else:
+          # v2.2 (OBSOLETE) special case
+          self.mimeType = input.read(3);
       TRACE_MSG("APIC mime type: " + self.mimeType);
       if strictID3() and not self.mimeType:
          raise FrameException("APIC frame does not contain a mime type");
@@ -1185,25 +1211,27 @@ class ImageFrame(Frame):
       TRACE_MSG("APIC picture type: " + str(self.pictureType));
 
       self.desciption = u"";
-      buffer = "";
-      ch = input.read(1);
-      while ch != "\x00":
-         buffer += ch;
-         ch = input.read(1);
-      self.description = unicode(buffer, id3EncodingToString(self.encoding));
+
+      # Remaining data is a NULL separated description and image data
+      buffer = input.read();
+      input.close();
+
+      (desc, img) = splitUnicode(buffer, self.encoding);
+      TRACE_MSG("description len: %d" % len(desc));
+      TRACE_MSG("description len: %d" % len(img));
+      self.description = unicode(desc, id3EncodingToString(self.encoding));
       TRACE_MSG("APIC description: " + self.description);
 
       if self.mimeType.find("-->") != -1:
          self.imageData = None;
-         self.imageURL = input.read();
+         self.imageURL = img;
       else:
-         self.imageData = input.read();
+         self.imageData = img;
          self.imageURL = None;
       TRACE_MSG("APIC image data: " + str(len(self.imageData)) + " bytes");
       if strictID3() and not self.imageData and not self.imageURL:
          raise FrameException("APIC frame does not contain any image data");
 
-      input.close();
 
    def writeFile(self, path = "./", name = None):
       if not self.imageData:
@@ -1216,8 +1244,10 @@ class ImageFrame(Frame):
       f.write(self.imageData);
       f.flush();
       f.close();
-   def getDefaultFileName(self):
+   def getDefaultFileName(self, suffix = ""):
       nameStr = self.picTypeToString(self.pictureType);
+      if suffix:
+          nameStr += suffix;
       nameStr = nameStr +  "." + self.mimeType.split("/")[1];
       return nameStr;
 
@@ -1225,7 +1255,7 @@ class ImageFrame(Frame):
       data = self.encoding + self.mimeType + "\x00" +\
              bin2bytes(dec2bin(self.pictureType, 8)) +\
              self.description.encode(id3EncodingToString(self.encoding)) +\
-             "\x00";
+             self.getTextDelim();
       if self.imageURL:
           data += self.imageURL.encode("ascii");
       else:
@@ -1485,7 +1515,7 @@ class FrameSet(list):
 
          self.addFrame(createFrame(frameHeader, data));
 
-         # Each frame contains dataSize + headerSize(10) bytes.
+         # Each frame contains dataSize + headerSize bytes.
          sizeLeft -= (frameHeader.FRAME_HEADER_SIZE + frameHeader.dataSize);
 
       return paddingSize;
@@ -1510,12 +1540,12 @@ class FrameSet(list):
       # No multiples except for TXXX which must have unique descriptions.
       if strictID3() and TEXT_FRAME_RX.match(fid) and self[fid]:
          if not USERTEXT_FRAME_RX.match(fid):
-            raise FrameException("Multiple %s frames now allowed." % fid);
+            raise FrameException("Multiple %s frames not allowed." % fid);
          userTextFrames = self[fid];
          for frm in userTextFrames:
             if frm.description == frame.description:
                raise FrameException("Multiple %s frames with the same\
-                                     description now allowed." % fid);
+                                     description not allowed." % fid);
 
       # Comment frame restrictions.
       # Multiples must have a unique description/language combination.
@@ -1525,38 +1555,38 @@ class FrameSet(list):
             if frm.description == frame.description and\
                frm.lang == frame.lang:
                raise FrameException("Multiple %s frames with the same\
-                                     language and description now allowed." %\
+                                     language and description not allowed." %\
                                      fid);
 
       # URL frame restrictions.
       # No multiples except for TXXX which must have unique descriptions.
       if strictID3() and URL_FRAME_RX.match(fid) and self[fid]:
          if not USERURL_FRAME_RX.match(fid):
-            raise FrameException("Multiple %s frames now allowed." % fid);
+            raise FrameException("Multiple %s frames not allowed." % fid);
          userUrlFrames = self[fid];
          for frm in userUrlFrames:
             if frm.description == frame.description:
                raise FrameException("Multiple %s frames with the same\
-                                     description now allowed." % fid);
+                                     description not allowed." % fid);
 
       # Music CD ID restrictions.
       # No multiples.
       if strictID3() and CDID_FRAME_RX.match(fid) and self[fid]:
-         raise FrameException("Multiple %s frames now allowed." % fid);
+         raise FrameException("Multiple %s frames not allowed." % fid);
 
       # Image (attached picture) frame restrictions.
       # Multiples must have a unique content desciptor.  I'm assuming that
       # the spec means the picture type.....
-      if IMAGE_FRAME_RX.match(fid) and self[fid]:
+      if IMAGE_FRAME_RX.match(fid) and self[fid] and strictID3():
          imageFrames = self[fid];
          for frm in imageFrames:
             if frm.pictureType == frame.pictureType:
-               raise FrameException("Multiple %s frames with the same\
-                                     content descriptor now allowed." % fid);
+               raise FrameException("Multiple %s frames with the same "\
+                                    "content descriptor not allowed." % fid);
 
       # Play count frame (PCNT).  There may be only one
       if PLAYCOUNT_FRAME_RX.match(fid) and self[fid]:
-         raise FrameException("Multiple %s frames now allowed." % fid);
+         raise FrameException("Multiple %s frames not allowed." % fid);
 
       # Unique File identifier frame.  There may be only one with the same
       # owner_id
@@ -1564,7 +1594,7 @@ class FrameSet(list):
           ufid_frames = self[fid];
           for frm in ufid_frames:
               if frm.owner_id == frame.owner_id:
-                  raise FrameException("Multiple %s frames now allowed with "\
+                  raise FrameException("Multiple %s frames not allowed with "\
                                        "the same owner ID (%s)" %\
                                        (fid, frame.owner_id));
 
@@ -1595,7 +1625,10 @@ class FrameSet(list):
           h.id = frameId;
           if not encoding:
               encoding = DEFAULT_ENCODING;
-          self.addFrame(TextFrame(h, encoding = encoding, text = text));
+          if frameId in DATE_FIDS:
+              self.addFrame(DateFrame(h, encoding = encoding, date_str = text));
+          else:
+              self.addFrame(TextFrame(h, encoding = encoding, text = text));
 
    # If a user text frame with the same description exists then
    # the frame text is replaced, otherwise the frame is added.
@@ -1741,9 +1774,7 @@ def splitUnicode(data, encoding):
     elif encoding == UTF_16_ENCODING:
         (d, t) = data.split("\x00\x00\x00", 1);
         d += "\x00";
-        t += "\x00";
         return (d, t);
-
 
 #######################################################################
 # Create and return the appropriate frame.

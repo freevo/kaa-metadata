@@ -79,7 +79,7 @@ def constantToVersions(v):
    raise str("constantToVersions - Invalid ID3 version constant: %s" % hex(v));
 
 ################################################################################
-TRACE = 0
+TRACE = 0;
 prefix = "eyeD3 trace> ";
 def TRACE_MSG(msg):
    if TRACE:

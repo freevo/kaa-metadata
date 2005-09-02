@@ -20,9 +20,10 @@
 import re, os, string, stat, shutil, tempfile, binascii;
 import mimetypes;
 from stat import *;
+import kaa.metadata.audio.eyeD3 as eyeD3;
 from kaa.metadata.audio.eyeD3 import *;
-from kaa.metadata.audio.eyeD3 import utils as eyeD3_utils;
-from kaa.metadata.audio.eyeD3 import mp3 as eyeD3_mp3;
+import utils
+import mp3
 from frames import *;
 from binfuncs import *;
 
@@ -80,7 +81,7 @@ class TagHeader:
 
       # Handle 3-element lists or tuples.
       if isinstance(v, tuple) or isinstance(v, list):
-         self.version = eyeD3_utils.versionsToConstant(v);
+         self.version = utils.versionsToConstant(v);
          (self.majorVersion,
           self.minorVersion,
           self.revVersion) = v;
@@ -88,7 +89,7 @@ class TagHeader:
       elif isinstance(v, int):
          (self.majorVersion,
           self.minorVersion,
-          self.revVersion) = eyeD3_utils.constantToVersions(v);
+          self.revVersion) = utils.constantToVersions(v);
          self.version = v;
       else:
          raise TypeError("Wrong type: %s" % str(type(v)));
@@ -392,7 +393,7 @@ class Tag:
       self.header = TagHeader();
       self.frames = FrameSet(self.header);
       self.iterIndex = None;
-      linkedFile = None;
+      self.linkedFile = None;
 
    # Returns an read-only iterator for all frames.
    def __iter__(self):
@@ -478,7 +479,7 @@ class Tag:
       version = self.getVersion();
       if version == ID3_V2_2:
           raise TagException("Unable to write ID3 v2.2");
-      # If v1.0 is being for explicitly then so be it, if not and there is
+      # If v1.0 is being requested explicitly then so be it, if not and there is
       # a track number then bumping to v1.1 is /probably/ best.
       if self.header.majorVersion == 1 and self.header.minorVersion == 0 and\
          self.getTrackNum()[0] != None and version != ID3_V1_0:
@@ -592,8 +593,7 @@ class Tag:
 
    def getDate(self, fid = None):
        if not fid:
-           for fid in ["TDRL", "TDOR", "TDRC",
-                       OBSOLETE_YEAR_FID, OBSOLETE_DATE_FID]:
+           for fid in DATE_FIDS:
                if self.frames[fid]:
                    return self.frames[fid];
            return None;
@@ -676,7 +676,7 @@ class Tag:
    def strToUnicode(self, s):
        t = type(s);
        if t != unicode and t == str:
-           s = unicode(s, LOCAL_ENCODING);
+           s = unicode(s, eyeD3.LOCAL_ENCODING);
        elif t != unicode and t != str:
            raise TagException("Wrong type passed to strToUnicode: %s" % str(t));
        return s;
@@ -835,8 +835,15 @@ class Tag:
        return self.frames.removeFramesByID(COMMENT_FID);
 
    def addImage(self, type, image_file_path, desc = u""):
-       image_frame = ImageFrame.create(type, image_file_path, desc);
-       self.frames.addFrame(image_frame);
+       if image_file_path:
+           image_frame = ImageFrame.create(type, image_file_path, desc);
+           self.frames.addFrame(image_frame);
+       else:
+           image_frames = self.frames[IMAGE_FID];
+           for i in image_frames:
+               if i.pictureType == type:
+                   self.frames.remove(i);
+                   break;
 
    def getPlayCount(self):
        if self.frames[PLAYCOUNT_FID]:
@@ -877,6 +884,24 @@ class Tag:
                  break;
       else:
          self.frames.setUniqueFileIDFrame(owner_id, id);
+
+   def getBPM(self):
+      bpm = self.frames[BPM_FID];
+      if bpm:
+          return int(bpm[0].text);
+      else:
+          return None;
+
+   def setBPM(self, bpm):
+       self.setTextFrame(BPM_FID, self.strToUnicode(str(bpm)));
+
+   def getPublisher(self):
+      pub = self.frames[PUBLISHER_FID];
+      if pub:
+          return pub[0].text or None;
+
+   def setPublisher(self, p):
+       self.setTextFrame(PUBLISHER_FID, self.strToUnicode(str(p)));
 
    # Test ID3 major version.
    def isV1(self):
@@ -1207,8 +1232,9 @@ class Tag:
          padding = self.frames.parse(fp, self.header);
          TRACE_MSG("Tag contains %d bytes of padding." % padding);
       except FrameException, ex:
-         fp.close();
-         raise TagException(str(ex));
+         if utils.strictID3():
+            fp.close();
+            raise TagException(str(ex));
       except TagException:
          fp.close();
          raise;
@@ -1407,6 +1433,8 @@ class TagFile:
    fileName = str("");
    fileSize = int(0);
    tag      = None;
+   # Number of seconds required to play the audio file.
+   play_time = int(0);
 
    def __init__(self, fileName):
        self.fileName = fileName;
@@ -1423,6 +1451,8 @@ class TagFile:
        base = os.path.basename(self.fileName);
        base_ext = os.path.splitext(base)[1];
        dir = os.path.dirname(self.fileName);
+       if not dir:
+           dir = ".";
        new_name = dir + os.sep + name.encode("iso8859-1") + base_ext;
        try:
            os.rename(self.fileName, new_name);
@@ -1431,19 +1461,29 @@ class TagFile:
            raise TagException("Error renaming '%s' to '%s'" % (self.fileName,
                                                                new_name));
 
+   def getPlayTime(self):
+      return self.play_time;
+
+   def getPlayTimeString(self):
+      total = self.getPlayTime();
+      h = total / 3600;
+      m = (total % 3600) / 60;
+      s = (total % 3600) % 60;
+      if h:
+         timeStr = "%d:%.2d:%.2d" % (h, m, s);
+      else:
+         timeStr = "%d:%.2d" % (m, s);
+      return timeStr;
+
 
 ################################################################################
 class Mp3AudioFile(TagFile):
    header         = mp3.Header();
    xingHeader     = None;
    invalidFileExc = InvalidAudioFormatException("File is not mp3");
-   # Number of seconds required to play the audio file.
-   playTime       = None;
 
    def __init__(self, fileName, tagVersion = ID3_ANY_VERSION):
       TagFile.__init__(self, fileName);
-
-      self.playTime = None;
 
       if not isMp3File(fileName):
          raise self.invalidFileExc;
@@ -1500,7 +1540,7 @@ class Mp3AudioFile(TagFile):
       # Compute track play time.
       tpf = mp3.computeTimePerFrame(header);
       if xingHeader:
-         self.playTime = int(tpf * xingHeader.numFrames);
+         self.play_time = int(tpf * xingHeader.numFrames);
       else:
          length = self.getSize();
          if tag and tag.isV2():
@@ -1511,33 +1551,19 @@ class Mp3AudioFile(TagFile):
                length -= 128;
          elif tag and tag.isV1():
             length -= 128;
-         self.playTime = int((length / header.frameLength) * tpf);    
+         self.play_time = int((length / header.frameLength) * tpf);    
 
       self.header = header;
       self.xingHeader = xingHeader;
       self.tag = tag;
       f.close();
 
-   def getPlayTime(self):
-      return self.playTime;
-
-   def getPlayTimeString(self):
-      total = self.getPlayTime();
-      h = total / 3600;
-      m = (total % 3600) / 60;
-      s = (total % 3600) % 60;
-      if h:
-         timeStr = "%d:%.2d:%.2d" % (h, m, s);
-      else:
-         timeStr = "%d:%.2d" % (m, s);
-      return timeStr;
-
    # Returns a tuple.  The first value is a boolean which if true means the
    # bit rate returned in the second value is variable.
    def getBitRate(self):
       xHead = self.xingHeader;
       if xHead:
-         tpf = eyeD3_mp3.computeTimePerFrame(self.header);
+         tpf = mp3.computeTimePerFrame(self.header);
          br = int((xHead.numBytes * 8) / (tpf * xHead.numFrames * 1000));
          vbr = 1;
       else:
