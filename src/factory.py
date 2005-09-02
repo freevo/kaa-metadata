@@ -242,6 +242,12 @@ class _Factory:
             if r:
                 r.correct_data()
                 r.url = 'file://%s' % os.path.abspath(filename)
+                if 'image' in r.keys:
+                    for base in (filename, os.path.splitext(filename)[0]):
+                        for ext in ('jpg', 'png', 'gif'):
+                            if os.path.isfile(base + '.' + ext):
+                                r['image'] = base + '.' + ext
+                                break
                 return r
         return None
 
