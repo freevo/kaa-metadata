@@ -181,7 +181,7 @@ class eyeD3Info(mediainfo.MusicInfo):
                   try:
                      self.genre = id3info.GENRE_LIST[genre]
                   except:
-                     self.genre = genre
+                     self.genre = str(genre)
             # and some tools store it as trackno/trackof in TRCK
             if not self['trackof'] and self['trackno'] and \
                    self['trackno'].find('/') > 0:
