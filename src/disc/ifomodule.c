@@ -40,7 +40,6 @@ ifo_handle_t *ifofile;
 
 static PyObject *ifoinfo_open(PyObject *self, PyObject *args) {
   tt_srpt_t *tt_srpt;
-  int i, ch, gotopt = -1, dochapters = -1;
   char *dvddevice;
 
   if (!PyArg_ParseTuple(args, "s", &dvddevice))
@@ -74,7 +73,7 @@ static PyObject *ifoinfo_read_title(PyObject *self, PyObject *args) {
 
   tt_srpt_t *tt_srpt;
   ifo_handle_t *vtsfile;
-  int vtsnum, ttnnum, j;
+  int vtsnum, ttnnum;
   long playtime;
 
   if (!PyArg_ParseTuple(args, "i", &i))
@@ -150,6 +149,8 @@ static PyObject * ifoinfo_get_subtitle_tracks(PyObject *self, PyObject *args) {
 
     return Py_BuildValue("(s)", language);
   }
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 
