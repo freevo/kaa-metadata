@@ -152,6 +152,10 @@ class _Factory:
         import audio.eyed3info
         import audio.webradioinfo
         import audio.flacinfo
+
+	import games.gameboyinfo
+	import games.snesinfo
+
         import misc.dirinfo
         
         
