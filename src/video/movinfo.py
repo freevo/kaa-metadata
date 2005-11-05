@@ -59,7 +59,8 @@ class MovInfo(mediainfo.AVInfo):
     def __init__(self,file):
         mediainfo.AVInfo.__init__(self)
         self.context = 'video'
-
+        self.references = []
+        
         self.mime = 'video/quicktime'
         self.type = 'Quicktime Video'
         h = file.read(8)
@@ -87,6 +88,9 @@ class MovInfo(mediainfo.AVInfo):
             self.setitem('copyright', info, 'cpy')
         except:
             pass
+
+        if self.references:
+            self.keys.append('references')
 
 
     def _readatom(self, file):
@@ -293,6 +297,36 @@ class MovInfo(mediainfo.AVInfo):
             file.seek(pos, 0)
 
 
+        elif atomtype == 'rmra':
+            # reference list
+            while self._readatom(file):
+                pass
+
+        elif atomtype == 'rmda':
+            # reference
+            atomdata = file.read(atomsize-8)
+            pos   = 0
+            url = ''
+            quality = 0
+            datarate = 0
+            while pos < atomsize-8:
+                (datasize, datatype) = unpack('>I4s', atomdata[pos:pos+8])
+                if datatype == 'rdrf':
+                    rflags, rtype, rlen = unpack('>I4sI', atomdata[pos+8:pos+20])
+                    if rtype == 'url ':
+                        url = atomdata[pos+20:pos+20+rlen]
+                        if url.find('\0') > 0:
+                            url = url[:url.find('\0')]
+                elif datatype == 'rmqu':
+                    quality = unpack('>I', atomdata[pos+8:pos+12])[0]
+                    
+                elif datatype == 'rmdr':
+                    datarate = unpack('>I', atomdata[pos+12:pos+16])[0]
+
+                pos += datasize
+            if url:
+                self.references.append((url, quality, datarate))
+            
         else:
             if not atomtype in ('wide', 'free'):
                 log.info('unhandled base atom %s' % atomtype)
