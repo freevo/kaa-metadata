@@ -196,10 +196,9 @@ class MpegInfo(mediainfo.AVInfo):
             fps = FRAME_RATE[v&0xf]
         except IndexError:
             fps = None
-        try:
+        if v>>4 < len(ASPECT_RATIO):
             aspect = ASPECT_RATIO[v>>4]
-        except IndexError:
-            log.exception('Index error: %s' % (v>>4))
+        else:
             aspect = None
         return (fps, aspect)
 
