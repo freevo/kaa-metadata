@@ -10,19 +10,9 @@
 # This work is released under the GNU GPL, version 2 or later.
 
 # Release version 1.3
+# CVS ID: $Id$
 
-
-# changes for kaa.metadata:
-#
-# Fixed bug in the cdrommodule that the file was not closed after usage.
-# The result was a drive you can't eject while the program (e.g. Freevo)
-# is running. Added cvs log for DiscID and cdrommodule to keep track of
-# all changes we did for kaa.metadata.
-#
-
-import sys
-import cdrom
-
+import cdrom, sys
 
 def cddb_sum(n):
     ret = 0
@@ -33,8 +23,18 @@ def cddb_sum(n):
 
     return ret
 
+def open(device=None, flags=None):
+    # Allow this function to be called with no arguments,
+    # specifying that we should call cdrom.open() with
+    # no arguments.
+    if device == None:
+        return cdrom.open()
+    elif flags == None:
+        return cdrom.open(device)
+    else:
+        return cdrom.open(device, flags)
+
 def disc_id(device):
-    device = cdrom.open(device)
     (first, last) = cdrom.toc_header(device)
 
     track_frames = []
@@ -50,8 +50,8 @@ def disc_id(device):
 
     total_time = (track_frames[-1] / 75) - (track_frames[0] / 75)
 	       
-    discid = ((long(checksum) % 0xff) << 24 | total_time << 8 | last)
-    cdrom.close(device)
+    discid = ((checksum % 0xff) << 24 | total_time << 8 | last)
+
     return [discid, last] + track_frames[:-1] + [ track_frames[-1] / 75 ]
 
 if __name__ == '__main__':

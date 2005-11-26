@@ -63,11 +63,13 @@ class AudioDiscInfo(discinfo.DiscInfo):
 
     def query(self, device):
 
-        disc_id = DiscID.disc_id(device)
+        cdromfd = DiscID.open(device)
+        disc_id = DiscID.disc_id(cdromfd)
+        
         if kaa.metadata.USE_NETWORK:
             try:
                 (query_stat, query_info) = CDDB.query(disc_id)
-            except:
+            except Exception, e:
                 # Oops no connection
                 query_stat = 404
         else:
@@ -138,8 +140,7 @@ class AudioDiscInfo(discinfo.DiscInfo):
 
 
         # read the tracks to generate the title list
-        device = open(device)
-        (first, last) = cdrom.toc_header(device)
+        (first, last) = cdrom.toc_header(cdromfd)
 
         lmin = 0
         lsec = 0
@@ -147,14 +148,13 @@ class AudioDiscInfo(discinfo.DiscInfo):
         num = 0
         for i in range(first, last + 2):
             if i == last + 1:
-                min, sec, frames = cdrom.leadout(device)
+                min, sec, frames = cdrom.leadout(cdromfd)
             else:
-                min, sec, frames = cdrom.toc_entry(device, i)
+                min, sec, frames = cdrom.toc_entry(cdromfd, i)
             if num:
                 self.tracks[num-1].length = (min-lmin)*60 + (sec-lsec)
             num += 1
             lmin, lsec = min, sec
-        device.close()
 
         # correct bad titles for the tracks, containing also the artist
         for t in self.tracks:
@@ -172,6 +172,7 @@ class AudioDiscInfo(discinfo.DiscInfo):
             for t in self.tracks:
                 t.title = t.title[len(self.title):].lstrip('/ \t-_')
 
+        cdromfd.close()
 
 
 factory.register( 'audio/cd', mediainfo.EXTENSION_DEVICE,

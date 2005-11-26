@@ -167,8 +167,11 @@ def cdrom_disc_id(device, handle_mix=0):
         return 0, None
 
     elif disc_type == 1 or disc_type == 4:
-        disc_id = DiscID.disc_id(device)
-        id = '%08lx_%d' % (disc_id[0], disc_id[1])
+        # audio disc
+        cdrom = DiscID.open(device)
+        id = DiscID.disc_id(cdrom)
+        id = '%08lx_%d' % (id[0], id[1])
+        cdrom.close()
     else:
         f = open(device,'rb')
 
