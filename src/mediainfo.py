@@ -130,7 +130,8 @@ class MediaInfo:
                          u'%s\n        %s: %s' % \
                          (a, unicode(b), unicode(self[b])) or a, keys, u'' )
         for h in hidden:
-            result += u'\n        %s: <unprintable data>' % h
+            if self[h]:
+                result += u'\n        %s: <unprintable data>' % h
         if log.level < 30:
             try:
                 for i in self._tables.keys():
