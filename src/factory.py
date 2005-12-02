@@ -129,13 +129,6 @@ class _Factory:
             if log.level < 30:
                 log.error(e)
         
-        # find the best working DVD module
-        try:
-            import disc.lsdvd
-        except ImportError, e:
-            if log.level < 30:
-                log.error(e)
-        
         try:
             import disc.dvdinfo
         except ImportError, e:

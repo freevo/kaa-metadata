@@ -44,31 +44,47 @@ from discinfo import DiscInfo
 # get logging object
 log = logging.getLogger('metadata')
 
+_video_height = (480, 576, 0, 576)
+_video_width  = (720, 704, 352, 352)
+_video_fps    = (0, 25.00, 0, 29.97);
+_video_format = ('NTSC', 'PAL')
+_video_aspect = ("4/3", "16/9", None, "16/9");
+
+class DVDVideo(mediainfo.VideoInfo):
+    def __init__(self, data):
+        mediainfo.VideoInfo.__init__(self)
+        self.length = data[0]
+        self.fps    = _video_fps[data[1]]
+        self.format = _video_format[data[2]]
+        self.aspect = _video_aspect[data[3]]
+        self.width  = _video_width[data[4]]
+        self.height = _video_height[data[5]]
+
 class DVDAudio(mediainfo.AudioInfo):
-    def __init__(self, title, number):
+    def __init__(self, pos, info):
         mediainfo.AudioInfo.__init__(self)
-        self.number = number
-        self.title  = title
-        self.id, self.language, self.codec, self.channels, self.samplerate = \
-                 ifoparser.audio(title, number)
+        self.id = 128 + pos
+        self.language, self.codec, self.channels, self.samplerate = info
 
 
 class DVDTitle(mediainfo.AVInfo):
-    def __init__(self, number):
+    def __init__(self, info):
         mediainfo.AVInfo.__init__(self)
-        self.number = number
-        self.chapters, self.angles, self.length, audio_num, \
-                       subtitles_num = ifoparser.title(number)
-
+        self.chapters = info[0]
+        self.angles = info[1]
         self.keys.append('chapters')
         self.keys.append('subtitles')
+        self.keys.append('angles')
 
         self.mime = 'video/mpeg'
-        for a in range(1, audio_num+1):
-            self.audio.append(DVDAudio(number, a))
+        self.video.append(DVDVideo(info[2:8]))
+        self.length = self.video[0].length
+        
+        for pos, a in enumerate(info[-2]):
+            self.audio.append(DVDAudio(pos, a))
 
-        for s in range(1, subtitles_num+1):
-            self.subtitles.append(ifoparser.subtitle(number, s)[0])
+        for pos, s in enumerate(info[-1]):
+            self.subtitles.append(s)
 
 
 class DVDInfo(DiscInfo):
@@ -76,8 +92,6 @@ class DVDInfo(DiscInfo):
         DiscInfo.__init__(self)
         self.context = 'video'
         self.offset = 0
-
-        log.info('trying buggy dvd detection')
 
         if isinstance(device, file):
             self.parseDVDiso(device)
@@ -104,24 +118,25 @@ class DVDInfo(DiscInfo):
         self.subtype = 'video'
 
 
+    def _parse(self, device):
+        info = ifoparser.parse(device)
+        print info
+        if not info:
+            raise mediainfo.KaaMetadataParseError()
+        for pos, title in enumerate(info):
+            ti = DVDTitle(title)
+            ti.trackno = pos + 1
+            ti.trackof = len(info)
+            self.appendtrack(ti)
+
+        
     def parseDVDdir(self, dirname):
         if not (os.path.isdir(dirname+'/VIDEO_TS') or \
                 os.path.isdir(dirname+'/video_ts') or \
                 os.path.isdir(dirname+'/Video_ts')):
             raise mediainfo.KaaMetadataParseError()
-
         # OK, try libdvdread
-        title_num = ifoparser.open(dirname)
-        if not title_num:
-            raise mediainfo.KaaMetadataParseError()
-
-        for title in range(1, title_num+1):
-            ti = DVDTitle(title)
-            ti.trackno = title
-            ti.trackof = title_num
-            self.appendtrack(ti)
-
-        ifoparser.close()
+        self._parse(dirname)
         return 1
 
 
@@ -148,18 +163,7 @@ class DVDInfo(DiscInfo):
             raise mediainfo.KaaMetadataParseError()
 
         # OK, try libdvdread
-        title_num = ifoparser.open(device)
-
-        if not title_num:
-            raise mediainfo.KaaMetadataParseError()
-
-        for title in range(1, title_num+1):
-            ti = DVDTitle(title)
-            ti.trackno = title
-            ti.trackof = title_num
-            self.appendtrack(ti)
-
-        ifoparser.close()
+        self._parse(device)
 
 
     def parseDVDiso(self, f):
@@ -179,18 +183,7 @@ class DVDInfo(DiscInfo):
             raise mediainfo.KaaMetadataParseError()
 
         # OK, try libdvdread
-        title_num = ifoparser.open(f.name)
-
-        if not title_num:
-            raise mediainfo.KaaMetadataParseError()
-
-        for title in range(1, title_num+1):
-            ti = DVDTitle(title)
-            ti.trackno = title
-            ti.trackof = title_num
-            self.appendtrack(ti)
-
-        ifoparser.close()
+        self._parse(f.name)
 
 
 if not factory.gettype('video/dvd', mediainfo.EXTENSION_DEVICE):
