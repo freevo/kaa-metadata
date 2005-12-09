@@ -120,7 +120,6 @@ class DVDInfo(DiscInfo):
 
     def _parse(self, device):
         info = ifoparser.parse(device)
-        print info
         if not info:
             raise mediainfo.KaaMetadataParseError()
         for pos, title in enumerate(info):
