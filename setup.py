@@ -58,7 +58,7 @@ try:
     ext_modules = [ cdrom, ifoparser ]
 except AttributeError:
     print 'The DVD parser will be disabled'
-    ext_modules = []
+    ext_modules = [ cdrom ]
     
 setup (module      = 'metadata',
        version     = '0.4.99.1',
