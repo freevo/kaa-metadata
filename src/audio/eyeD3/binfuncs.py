@@ -94,6 +94,7 @@ def bytes2dec(bytes, sz = 8):
 # Convert a decimal value to an array of bits (MSB first), optionally
 # padding the overall size to p bits.
 def dec2bin(n, p = 0):
+   assert(n >= 0)
    retVal = [];
 
    while n > 0:
@@ -127,3 +128,9 @@ def bin2synchsafe(x):
       bits = ([0] * (32 - len(x))) + bits;
 
    return bits;
+
+def bytes2str(bytes):
+    s = ""
+    for b in bytes:
+        s += ("\\x%02x" % ord(b))
+    return s

@@ -91,4 +91,42 @@ def TRACE_MSG(msg):
 STRICT_ID3 = 0;
 def strictID3():
    return STRICT_ID3;
+################################################################################
+
+import os;
+
+class FileHandler:
+    R_CONT = 0;
+    R_HALT = -1;
+
+    # MUST return R_CONT or R_HALT
+    def handleFile(self, f):
+        pass
+
+    # MUST for all files processed return 0 for success and a positive int
+    # for error
+    def handleDone(self):
+        pass
+
+class FileWalker:
+    def __init__(self, handler, root, excludes = []):
+        self._handler = handler;
+        self._root = root;
+        self._excludes = excludes;
+
+    def go(self):
+        for (root, dirs, files) in os.walk(self._root):
+            for f in files:
+                f = os.path.abspath(root + os.sep + f);
+                if not self._isExcluded(f):
+                    if self._handler.handleFile(f) == FileHandler.R_HALT:
+                        return FileHandler.R_HALT;
+        return self._handler.handleDone();
+
+    def _isExcluded(self, path):
+        for ex in self._excludes:
+            match = re.compile(exd).search(path);
+            if match and match.start() == 0:
+                return 1;
+        return 0;
 

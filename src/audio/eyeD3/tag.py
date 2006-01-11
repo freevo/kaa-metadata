@@ -20,12 +20,12 @@
 import re, os, string, stat, shutil, tempfile, binascii;
 import mimetypes;
 from stat import *;
-import kaa.metadata.audio.eyeD3 as eyeD3;
 from kaa.metadata.audio.eyeD3 import *;
-import utils
-import mp3
+import utils;
+import mp3;
 from frames import *;
 from binfuncs import *;
+import math;
 
 ID3_V1_COMMENT_DESC = "ID3 v1 Comment";
 
@@ -169,11 +169,11 @@ class ExtendedTagHeader:
    restrictions = 0;
 
    def isUpdate(self):
-      return self.flags & 0x40;
+       return self.flags & 0x40;
    def hasCRC(self):
-      return self.flags & 0x20;
-   def hasRestrictions(self):
-      return self.flags & 0x10;
+       return self.flags & 0x20;
+   def hasRestrictions(self, minor_version = None):
+       return self.flags & 0x10;
 
    def setSizeRestrictions(self, v):
       assert(v >= 0 and v <= 3);
@@ -247,41 +247,61 @@ class ExtendedTagHeader:
          return "All images are exactly 64x64 pixels, unless required "\
                 "otherwise.";
 
+   def _syncsafeCRC(self):
+       bites = ""
+       bites += chr((self.crc >> 28) & 0x7f);
+       bites += chr((self.crc >> 21) & 0x7f);
+       bites += chr((self.crc >> 14) & 0x7f);
+       bites += chr((self.crc >>  7) & 0x7f);
+       bites += chr((self.crc >>  0) & 0x7f);
+       return bites;
+
+
    def render(self, header, frameData, padding = 0):
       assert(header.majorVersion == 2);
 
       data = "";
+      crc = None;
       if header.minorVersion == 4:
          # Version 2.4
-         crc = None;
          size = 6;
          # Extended flags.
          if self.isUpdate():
-            data = "\x00";
+            data += "\x00";
          if self.hasCRC():
             data += "\x05";
-            self.crc = binascii.crc32(data);
-            data += bin2bytes(dec2bin(self.crc, 40));
+            # XXX: Using the absolute value of the CRC.  The spec is unclear
+            # about the type of this data.
+            self.crc = int(math.fabs(binascii.crc32(frameData +\
+                                                    ("\x00" * padding))));
+            crc_data = self._syncsafeCRC();
+            if len(crc_data) < 5:
+                crc_data = ("\x00" * (5 - len(crc_data))) + crc_data
+            assert(len(crc_data) == 5)
+            data += crc_data
          if self.hasRestrictions():
             data += "\x01";
             assert(len(self.restrictions) == 1);
             data += self.restrictions;
+         TRACE_MSG("Rendered extended header data (%d bytes)" % len(data));
 
          # Extended header size.
          size = bin2bytes(bin2synchsafe(dec2bin(len(data) + 6, 32)))
          assert(len(size) == 4);
 
-         assert(len(self.flags) == 2);
-         data = size + "\x01" + self.flags + data;
+         data = size + "\x01" + bin2bytes(dec2bin(self.flags)) + data;
+         TRACE_MSG("Rendered extended header of size %d" % len(data));
       else:
          # Version 2.3
-         crc = None;
-         size = 6;
+         size = 10;
          # Extended flags.
          f = [0] * 16;
          if self.hasCRC():
             f[0] = 1;
-            self.crc = binascii.crc32(data);
+            # XXX: Using the absolute value of the CRC.  The spec is unclear
+            # about the type of this type.
+            self.crc = int(math.fabs(binascii.crc32(frameData +\
+                                                    ("\x00" * padding))));
             crc = bin2bytes(dec2bin(self.crc));
             assert(len(crc) == 4);
             size += 4;
@@ -302,13 +322,14 @@ class ExtendedTagHeader:
    def parse(self, fp, header):
       assert(header.majorVersion == 2);
 
+      TRACE_MSG("Parsing extended header @ 0x%x" % fp.tell());
       # First 4 bytes is the size of the extended header.
       data = fp.read(4);
       if header.minorVersion == 4:
-         TRACE_MSG("Parsing extended header for v2.4");
          # sync-safe
          sz = bin2dec(bytes2bin(data, 7));
-         TRACE_MSG("Extended header size: %d" % (sz - 4));
+         TRACE_MSG("Extended header size (not including 4 byte size): %d" %\
+                   (sz - 4));
          data = fp.read(sz - 4);
 
          if ord(data[0]) != 1 or (ord(data[1]) & 0x8f):
@@ -340,12 +361,15 @@ class ExtendedTagHeader:
             self.restrictions = ord(data[offset]);
             offset += 1;
       else:
-         TRACE_MSG("Parsing extended header for v2.3");
          # v2.3 is totally different... *sigh*
          sz = bin2dec(bytes2bin(data));
-         TRACE_MSG("Extended header size: %d" % sz);
-         data = fp.read(sz);
+         TRACE_MSG("Extended header size (not including 4 bytes size): %d" %\
+                   sz);
          tmpFlags = fp.read(2);
+         # Read the padding size, but it'll be computed during the parse.
+         ps = fp.read(4);
+         TRACE_MSG("Extended header says there is %d bytes of padding" %\
+                   bin2dec(bytes2bin(ps)));
          # Make this look like a v2.4 mask.
          self.flags = ord(tmpFlags[0]) >> 2;
          if self.hasCRC():
@@ -353,8 +377,6 @@ class ExtendedTagHeader:
             crcData = fp.read(4);
             self.crc = bin2dec(bytes2bin(crcData));
             TRACE_MSG("Extended header CRC: %d" % self.crc);
-         # Read the padding size, but it'll be computed during the parse.
-         fp.read(4);
 
 
 ################################################################################
@@ -393,7 +415,6 @@ class Tag:
       self.header = TagHeader();
       self.frames = FrameSet(self.header);
       self.iterIndex = None;
-      self.linkedFile = None;
 
    # Returns an read-only iterator for all frames.
    def __iter__(self):
@@ -422,12 +443,13 @@ class Tag:
    # Converts all ID3v1 data into ID3v2 frames internally.
    # May throw IOError, or TagException if parsing fails.
    def link(self, f, v = ID3_ANY_VERSION):
+      self.linkedFile = None;
       self.clear();
 
       fileName = "";
       if isinstance(f, file):
          fileName = f.name;
-      elif isinstance(f, str):
+      elif isinstance(f, str) or isinstance(f, unicode):
          fileName = f;
       else:
          raise TagException("Invalid type passed to Tag.link: " + 
@@ -1029,7 +1051,7 @@ class Tag:
 
    # Returns false when an ID3 v1 tag is not present, or contains no data.
    def __loadV1Tag(self, f):
-      if isinstance(f, str):
+      if isinstance(f, str) or isinstance(f, unicode):
          fp = file(f, "rb")
          closeFile = 1;
       else:
@@ -1146,6 +1168,7 @@ class Tag:
       rewriteFile = 0;
       paddingSize = 0;
       headerData = "";
+      extHeaderData = "";
 
       # Extended header
       if self.header.extended:
@@ -1155,15 +1178,17 @@ class Tag:
          rewriteFile = 1;
          paddingSize = 2048;
          TRACE_MSG("Rendering extended header");
-         headerData += self.extendedHeader.render(self.header, frameData,
-                                                  paddingSize);
+         extHeaderData += self.extendedHeader.render(self.header, frameData,
+                                                     paddingSize);
 
-      if rewriteFile or (10 + len(headerData) + len(frameData)) >= currTagSize:
+      if rewriteFile or (10 + len(headerData) + len(extHeaderData) +\
+                         len(frameData)) >= currTagSize:
          TRACE_MSG("File rewrite required");
          rewriteFile = 1;
          paddingSize = 2048;
       else:
-         paddingSize = currTagSize - (len(headerData) + len(frameData));
+         paddingSize = currTagSize - (len(headerData) + len(extHeaderData) +\
+                                      len(frameData));
       frameData += ("\x00" * paddingSize);
 
       # Render the tag header.
@@ -1172,7 +1197,7 @@ class Tag:
       headerData = self.header.render(len(frameData));
 
       # Assemble frame.
-      tagData = headerData + frameData;
+      tagData = headerData + extHeaderData + frameData;
 
       # Write the tag.
       if not rewriteFile:
@@ -1210,7 +1235,7 @@ class Tag:
    # Returns >= 0 to indicate the padding size of the read frame; -1 returned
    # when not tag was found.
    def __loadV2Tag(self, f):
-      if isinstance(f, str):
+      if isinstance(f, str) or isinstance(f, unicode):
          fp = file(f, "rb")
          closeFile = 1;
       else:
@@ -1447,13 +1472,13 @@ class TagFile:
          self.fileSize = os.stat(self.fileName)[ST_SIZE];
       return self.fileSize;
 
-   def rename(self, name):
+   def rename(self, name, fsencoding):
        base = os.path.basename(self.fileName);
        base_ext = os.path.splitext(base)[1];
        dir = os.path.dirname(self.fileName);
        if not dir:
            dir = ".";
-       new_name = dir + os.sep + name.encode("iso8859-1") + base_ext;
+       new_name = dir + os.sep + name.encode(fsencoding) + base_ext;
        try:
            os.rename(self.fileName, new_name);
            self.fileName = new_name;
@@ -1502,7 +1527,6 @@ class Mp3AudioFile(TagFile):
          # XXX: Note that v2.4 allows for appended tags; account for that.
          framePos = tag.header.SIZE + tag.header.tagSize;
 
-      # XXX: This algorithm is slow, if the file is long it could take awhile.
       f.seek(framePos);
       bString = f.read(4);
       if len(bString) < 4:
@@ -1510,14 +1534,30 @@ class Mp3AudioFile(TagFile):
                                            "frame");
       frameHead = bin2dec(bytes2bin(bString));
       header = mp3.Header();
+      it_count = 0;
       # Keep reading until we find a valid mp3 frame header.
       while not header.isValid(frameHead):
+         # Originally, the search was one byte at a time.  Occasionally a tag
+         # was heavily, and incorrectly, padded or a corrupt mp3 would cause
+         # a byte by byte search to take a long time.  This algorithm speeds
+         # up this particular case.
+         if it_count > 9:
+             f.seek(f.tell() + 128); 
+             bString = f.read(4);
+             if len(bString) < 4:
+                raise InvalidAudioFormatException("Unable to find a valid mp3 "\
+                                                  "frame");
+             frameHead = bin2dec(bytes2bin(bString));
+             it_count = 0;
+             continue;
+
          frameHead <<= 8;
          bString = f.read(1);
          if len(bString) != 1:
             raise InvalidAudioFormatException("Unable to find a valid mp3 "\
                                               "frame");
          frameHead |= ord(bString[0]);
+         it_count += 1;
       TRACE_MSG("mp3 header %x found at position: %d (0x%x)" % \
                 (frameHead, f.tell() - 4, f.tell() - 4));
 
@@ -1791,7 +1831,10 @@ class LinkedFile:
    tagSize = 0;  # This includes the padding byte count.
 
    def __init__(self, fileName):
-      self.name = fileName;
+       if isinstance(fileName, str):
+           self.name = unicode(fileName, sys.getfilesystemencoding());
+       else:
+           self.name = fileName;
 
 def tagToUserTune(tag):
     audio_file = None;
@@ -1799,17 +1842,19 @@ def tagToUserTune(tag):
         audio_file = tag;
         tag = audio_file.getTag();
         
-    tune =  "<tune xmlns='http://jabber.org/protocol/tune'>\n";
+    tune =  u"<tune xmlns='http://jabber.org/protocol/tune'>\n";
     if tag.getArtist():
         tune += "  <artist>" + tag.getArtist() + "</artist>\n";
     if tag.getTitle():
         tune += "  <title>" + tag.getTitle() + "</title>\n";
     if tag.getAlbum():
         tune += "  <source>" + tag.getAlbum() + "</source>\n";
-    tune += "  <track>" + "file://" + os.path.abspath(tag.linkedFile.name) +\
+    tune += "  <track>" +\
+            "file://" + unicode(os.path.abspath(tag.linkedFile.name)) +\
             "</track>\n";
     if audio_file:
-        tune += "  <length>" + str(audio_file.getPlayTime()) + "</length>\n";
+        tune += "  <length>" + unicode(audio_file.getPlayTime()) +\
+                "</length>\n";
     tune += "</tune>\n";
     return tune;
 
