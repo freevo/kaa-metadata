@@ -1,6 +1,7 @@
-include src/audio/eyeD3/*.py src/image/*.py src/video/*.py 
-include src/disc/*.py src/disc/*.c src/misc/*.py
-recursive-include src/audio/ *.py
-include setup.py MANIFEST.in bin/mminfo
-include doc/* 
-recursive-include i18n  *
+recursive-include src *.py
+recursive-include src *.c
+recursive-include src *.h
+recursive-include i18n *
+
+include bin/mminfo
+include MANIFEST README COPYING TODO AUTHORS

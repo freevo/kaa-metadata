@@ -1,0 +1,17 @@
+Dynamic loading without importing everything from __init__
+
+Make everything faster :)
+
+Add more types and information. This includes removing using PIL to
+support GIF and other image formats. Either create a gif parser or do
+not support gif at all. The PIL stuff is evil.
+
+Move the XML parser from Python XML to libxml Python bindings. This is
+faster and this is also what other kaa modules use for XML.
+
+Create a REAME
+
+Every file needs a header and inline docs. Also correct the header to
+point to the correct AUTHORS file.
+
+Create doc in the Wiki and dump it into the doc subdir

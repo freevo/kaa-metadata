@@ -1,9 +1,0 @@
-Here a small list of items for 0.5
-
-o Move base objects into the different subdirs
-o Dynamic loading without importing everything from __init__
-o Update dvdinfo.py and the internal C module to get rid of using
-  lsdvd internaly
-o Make everything faster :)
-o Add more types and information
-
