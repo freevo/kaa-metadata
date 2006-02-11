@@ -139,11 +139,4 @@ class JPGInfo(core.ImageInfo):
                 if not key in self.keys:
                     self.keys.append(key)
 
-        # core stuff
-        self.add_imaging_information(file.name)
-        if core.PIL:
-            self.parse_external_files(file.name)
-
-
-factory.register( 'image/jpeg', ('jpg','jpeg'), mediainfo.TYPE_IMAGE,
-                       JPGInfo )
+factory.register( 'image/jpeg', ('jpg','jpeg'), mediainfo.TYPE_IMAGE, JPGInfo )

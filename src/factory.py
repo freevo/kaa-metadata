@@ -112,7 +112,8 @@ class _Factory:
         import image.jpginfo
         import image.pnginfo
         import image.tiffinfo
-        import image.pilinfo
+        import image.bmpinfo
+        import image.gifinfo
         import video.vcdinfo
         import video.realinfo
         import video.ogminfo

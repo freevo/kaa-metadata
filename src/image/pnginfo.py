@@ -76,11 +76,6 @@ class PNGInfo(core.ImageInfo):
                 if not key in self.keys:
                     self.keys.append(key)
 
-        # core stuff
-        self.add_imaging_information(file.name)
-        if core.PIL:
-            self.parse_external_files(file.name)
-
 
     def _readChunk(self,file):
         try:

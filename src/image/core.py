@@ -43,13 +43,6 @@ import bins
 # get logging object
 log = logging.getLogger('metadata')
 
-try:
-    import Image as PIL
-except:
-    log.info('Python Imaging not found')
-    PIL = None
-
-
 # attributes for image files
 ATTRIBUTES = ['description', 'people', 'location', 'event', 'width', 'height',
               'thumbnail','software','hardware', 'dpi']
@@ -101,31 +94,3 @@ class ImageInfo(mediainfo.MediaInfo):
                         self.description = c.textof()
             except:
                 pass
-
-
-    def add_imaging_information(self, filename):
-        """
-        Add informations based on imaging (PIL)
-        """
-        if not PIL:
-            return
-        try:
-            i = PIL.open(filename)
-        except:
-            raise mediainfo.KaaMetadataParseError()
-
-        if not self.mime:
-            self.mime = 'image/%s' % i.format.lower()
-
-        self.type = i.format_description
-
-        if i.info.has_key('dpi'):
-            self['dpi'] = '%sx%s' % i.info['dpi']
-
-        for info in i.info:
-            if not info == 'exif':
-                log.debug('%s: %s' % (info, i.info[info]))
-
-        self.mode = i.mode
-        if not self.height:
-            self.width, self.height = i.size

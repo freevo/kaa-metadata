@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# pilinfo.py - basic image parsing using Imaging (PIL)
+# gifinfo.py - gif file parsing
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -8,7 +8,7 @@
 # kaa-Metadata - Media Metadata for Python
 # Copyright (C) 2003-2005 Thomas Schueppel, Dirk Meyer
 #
-# First Edition: Thomas Schueppel <stain@acm.org>
+# First Edition: Dirk Meyer <dmeyer@tzi.de>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
 # Please see the file doc/CREDITS for a complete list of authors.
@@ -30,27 +30,33 @@
 # -----------------------------------------------------------------------------
 
 # python imports
-import os
+import struct
+import logging
 
 # kaa imports
-from kaa.metadata import factory
 from kaa.metadata import mediainfo
-from core import ImageInfo, PIL
+from kaa.metadata import factory
 
-class PILInfo(ImageInfo):
-    """
-    Simple class getting informations based on PIL
-    """
-    def __init__(self, file):
-        ImageInfo.__init__(self)
-        if not os.path.splitext(file.name)[1].lower() in ('.gif', '.bmp'):
-            raise mediainfo.KaaMetadataParseError()
-        if not PIL:
-            raise mediainfo.KaaMetadataParseError()
-        self.mime  = ''
-        self.type  = ''
-        self.add_imaging_information(file.name)
-        self.parse_external_files(file.name)
+import core
 
-factory.register( 'image/gif', ('gif',), mediainfo.TYPE_IMAGE, PILInfo )
-factory.register( 'image/bmp', ('bmp',), mediainfo.TYPE_IMAGE, PILInfo )
+# get logging object
+log = logging.getLogger('metadata')
+
+# interesting file format info:
+# http://www.danbbs.dk/~dino/whirlgif/gif87.html
+
+class GIFInfo(core.ImageInfo):
+
+    def __init__(self,file):
+        core.ImageInfo.__init__(self)
+        self.mime = 'image/gif'
+
+        (gifType, self.width, self.height) = struct.unpack('<6sHH', file.read(10))
+
+        if not gifType.startswith('GIF'):
+            raise mediainfo.KaaMetadataParseError()
+
+        self.type = gifType.lower()
+
+
+factory.register( 'image/gif', ('gif', ), mediainfo.TYPE_IMAGE, GIFInfo )

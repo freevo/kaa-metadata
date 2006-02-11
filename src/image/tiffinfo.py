@@ -121,12 +121,5 @@ class TIFFInfo(core.ImageInfo):
             self.setitem( 'caption', iptc, 632 )
             self.appendtable('IPTC', iptc)
 
-        # core stuff
-        self.add_imaging_information(file.name)
-        if core.PIL:
-            self.parse_external_files(file.name)
-        return
 
-
-factory.register( 'image/tiff', ('tif','tiff'), mediainfo.TYPE_IMAGE,
-                       TIFFInfo )
+factory.register( 'image/tiff', ('tif','tiff'), mediainfo.TYPE_IMAGE, TIFFInfo )
