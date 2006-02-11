@@ -34,56 +34,73 @@
 # python imports
 import os
 import logging
+import libxml2
 
 # kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
-from kaa.metadata.image import bins
+from kaa.base.strutils import unicode_to_str
+from kaa.metadata.mediainfo import MediaInfo, MEDIACORE, EXTENSION_DIRECTORY, TYPE_MISC
+from kaa.metadata.factory import register
 
 # get logging object
 log = logging.getLogger('metadata')
 
 
-class DirInfo(mediainfo.MediaInfo):
+class DirInfo(MediaInfo):
     """
     Simple parser for reading a .directory file.
     """
     def __init__(self, directory):
-        mediainfo.MediaInfo.__init__(self)
+        MediaInfo.__init__(self)
 
         self.media = 'directory'
+        self.parse_dot_directory(directory)
+        self.parse_bins(directory)
 
-        # search .directory
+
+    def parse_dot_directory(self, directory):
+        """
+        search .directory
+        """
         info = os.path.join(directory, '.directory')
-        if os.path.isfile(info):
-            f = open(info)
-            for l in f.readlines():
-                if l.startswith('Icon='):
-                    self.image = l[5:]
-                    if self.image.startswith('./'):
-                        self.image = self.image[2:]
-                    self.keys.append('image')
-            f.close()
-
-        # search album.xml (bins)
-        info = os.path.join(directory, 'album.xml')
-        if os.path.isfile(info):
-            info  = bins.get_bins_desc(directory)
-            if info.has_key('desc'):
-                info = info['desc']
-                if info.has_key('sampleimage') and info['sampleimage']:
-                    # album.xml defines a sampleimage, use it as image for the
-                    # directory
-                    image = os.path.join(directory, info['sampleimage'])
-                    if os.path.isfile(image):
-                        self.image = image
-                        self.keys.append('image')
-
-                if info.has_key('title') and info['title']:
-                    # album.xml defines a title
-                    self.title = info['title']
+        if not os.path.isfile(info):
+            return
+        f = open(info)
+        for l in f.readlines():
+            if l.startswith('Icon='):
+                self.image = l[5:]
+                if self.image.startswith('./'):
+                    self.image = self.image[2:]
+                self.keys.append('image')
+        f.close()
 
 
+    def parse_bins(self, directory):
+        """
+        search album.xml (bins)
+        """
+        binsxml = os.path.join(directory, 'album.xml')
+        if not os.path.isfile(binsxml):
+            return
 
-factory.register('directory', mediainfo.EXTENSION_DIRECTORY,
-                 mediainfo.TYPE_MISC, DirInfo)
+        for node in libxml2.parseFile(binsxml).children:
+            if not node.name == 'description':
+                continue
+            for child in node.children:
+                if not child.name == 'field':
+                    continue
+                value = unicode(child.getContent(), 'utf-8').strip()
+                key = child.prop('name')
+                if key and value:
+                    if key == 'sampleimage':
+                        image = os.path.join(directory, unicode_to_str(value))
+                        if os.path.isfile(image):
+                            self.image = image
+                            self.keys.append('image')
+                    else:
+                        self[key] = value
+                        if not key in MEDIACORE:
+                            # if it's in desc it must be important
+                            self.keys.append(key)
+
+# register to kaa.metadata core
+register('directory', EXTENSION_DIRECTORY, TYPE_MISC, DirInfo)

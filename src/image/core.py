@@ -33,12 +33,11 @@
 import os
 import gzip
 import logging
-from xml.utils import qp_xml
+import libxml2
 
 # kaa imports
 from kaa.metadata import factory
 from kaa.metadata import mediainfo
-import bins
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -58,39 +57,61 @@ class ImageInfo(mediainfo.MediaInfo):
             setattr(self,k,None)
             self.keys.append(k)
 
+    def correct_data(self):
+        """
+        Add additional information and correct data.
+        FIXME: parse_external_files here is very wrong
+        """
+        if self.url and self.url.startswith('file://'):
+            self.parse_external_files(self.url[7:])
+        mediainfo.MediaInfo.correct_data(self)
+
+
     def parse_external_files(self, filename):
         """
         Parse external files like bins and .comments.
         """
-        if os.path.isfile(filename + '.xml'):
-            try:
-                binsinfo = bins.get_bins_desc(filename)
-                # get needed keys from exif infos
-                for key in ATTRIBUTES + mediainfo.MEDIACORE:
-                    if not self[key] and binsinfo['exif'].has_key(key):
-                        self[key] = binsinfo['exif'][key]
-                # get _all_ infos from description
-                for key in binsinfo['desc']:
-                    self[key] = binsinfo['desc'][key]
+        self.parse_bins(filename)
+        self.parse_dot_comment(filename)
+        
+    def parse_bins(self, filename):
+        """
+        Parse bins xml files
+        """
+        binsxml = filename + '.xml'
+        if not os.path.isfile(binsxml):
+            return
+        for node in libxml2.parseFile(binsxml).children:
+            if not node.name == 'description':
+                continue
+            for child in node.children:
+                if not child.name == 'field':
+                    continue
+                value = unicode(child.getContent(), 'utf-8').strip()
+                key = child.prop('name')
+                if key and value:
+                    self[key] = value
                     if not key in ATTRIBUTES + mediainfo.MEDIACORE:
                         # if it's in desc it must be important
                         self.keys.append(key)
-            except Exception, e:
-                log.exception('problem reading the image information')
-                pass
 
+
+    def parse_dot_comment(self, filename):
+        """
+        Parse info in .comments.
+        """
         comment_file = os.path.join(os.path.dirname(filename), '.comments',
                                     os.path.basename(filename) + '.xml')
-        if os.path.isfile(comment_file):
-            try:
-                f = gzip.open(comment_file)
-                p = qp_xml.Parser()
-                tree = p.parse(f)
-                f.close()
-                for c in tree.children:
-                    if c.name == 'Place':
-                        self.location = c.textof()
-                    if c.name == 'Note':
-                        self.description = c.textof()
-            except:
-                pass
+        if not os.path.isfile(comment_file):
+            return
+        for node in libxml2.parseFile(comment_file).children:
+            if not node.name == 'Comment':
+                continue
+            for child in node.children:
+                value = unicode(child.getContent(), 'utf-8')
+                if not value or value == '0':
+                    continue
+                if child.name == 'Place':
+                    self.location = value
+                if child.name == 'Note':
+                    self.description = value

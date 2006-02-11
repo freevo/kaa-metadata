@@ -32,6 +32,7 @@
 # python imports
 import os
 import logging
+import libxml2
 
 # kaa imports
 from kaa.metadata import factory
@@ -56,22 +57,20 @@ class XMLInfo(mediainfo.MediaInfo):
         self.mime  = 'text/xml'
         self.type  = ''
 
-        try:
-            parser = qp_xml.Parser()
-            tree = parser.parse(file)
-        except:
-            raise mediainfo.KaaMetadataParseError()
+        libxml2.SAXParseFile(self, file.name, 10)
 
-        if tree.name in XML_TAG_INFO:
-            self.type = XML_TAG_INFO[tree.name]
+
+    def startElement(self, tag, attrs):
+        """
+        Callback for <tag>
+        """
+        if self.type:
+            return
+
+        if tag in XML_TAG_INFO:
+            self.type = XML_TAG_INFO[tag]
         else:
             self.type = 'XML file'
 
 
-try:
-    # XML support
-    from xml.utils import qp_xml
-    factory.register( 'text/xml', ('xml', 'fxd'), mediainfo.TYPE_MISC,
-                           XMLInfo )
-except:
-    log.warning('Python XML not found')
+factory.register( 'text/xml', ('xml', 'fxd'), mediainfo.TYPE_MISC, XMLInfo )
