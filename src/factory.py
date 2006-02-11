@@ -238,8 +238,8 @@ class _Factory:
             r = self.create_from_file(f)
             f.close()
             if r:
-                r.correct_data()
                 r.url = 'file://%s' % os.path.abspath(filename)
+                r.correct_data()
                 if 'image' in r.keys:
                     for base in (filename, os.path.splitext(filename)[0]):
                         for ext in ('jpg', 'png', 'gif'):
