@@ -14,7 +14,7 @@
 # First Edition: Thomas Schueppel <stain@acm.org>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -66,7 +66,8 @@ AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec',
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec',
              'samplebits', 'width', 'height', 'fps', 'aspect']
 
-MUSICCORE = ['trackno', 'trackof', 'album', 'genre','discs', 'image', 'raw_image']
+MUSICCORE = ['trackno', 'trackof', 'album', 'genre','discs', 'image',
+             'raw_image']
 
 AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'genre', 'secondary genre', 'subject', 'writer', 'producer',
@@ -116,7 +117,7 @@ class MediaInfo:
         self.media = media[:media.find('.')]
         self.keys.append('media')
 
-        
+
     def __unicode__(self):
         keys = copy.copy(self.keys)
 
@@ -210,7 +211,7 @@ class MediaInfo:
         if key not in self:
             return default
         return self[key]
-        
+
 
     def __getitem__(self,key):
         """

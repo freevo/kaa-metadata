@@ -6,8 +6,10 @@ Add more types and information.
 
 Create a REAME
 
-Every file needs a header and inline docs. Also correct the header to
-point to the correct AUTHORS file.
+Update inline docs
+
+Move external submodules like eyeD3 and the discID code to an extra
+dir lib to serperate our code from external modules we just copy.
 
 Create doc in the Wiki and dump it into the doc subdir
 

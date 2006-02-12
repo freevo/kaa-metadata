@@ -13,7 +13,7 @@
 # First Edition: Dirk Meyer <dmeyer@tzi.de>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ class DVDTitle(mediainfo.AVInfo):
         self.mime = 'video/mpeg'
         self.video.append(DVDVideo(info[2:8]))
         self.length = self.video[0].length
-        
+
         for pos, a in enumerate(info[-2]):
             self.audio.append(DVDAudio(pos, a))
 
@@ -128,7 +128,7 @@ class DVDInfo(DiscInfo):
             ti.trackof = len(info)
             self.appendtrack(ti)
 
-        
+
     def parseDVDdir(self, dirname):
         if not (os.path.isdir(dirname+'/VIDEO_TS') or \
                 os.path.isdir(dirname+'/video_ts') or \
@@ -185,12 +185,10 @@ class DVDInfo(DiscInfo):
         self._parse(f.name)
 
 
-if not factory.gettype('video/dvd', mediainfo.EXTENSION_DEVICE):
-    factory.register( 'video/dvd', mediainfo.EXTENSION_DEVICE,
-                      mediainfo.TYPE_AV, DVDInfo )
+factory.register( 'video/dvd', mediainfo.EXTENSION_DEVICE,
+                  mediainfo.TYPE_AV, DVDInfo )
 
-if not factory.gettype('video/dvd', mediainfo.EXTENSION_DIRECTORY):
-    factory.register('video/dvd', mediainfo.EXTENSION_DIRECTORY,
-                     mediainfo.TYPE_AV, DVDInfo)
+factory.register('video/dvd', mediainfo.EXTENSION_DIRECTORY,
+                 mediainfo.TYPE_AV, DVDInfo)
 
 factory.register('video/dvd', ['iso'], mediainfo.TYPE_AV, DVDInfo)

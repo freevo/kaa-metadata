@@ -11,7 +11,7 @@
 # First Edition: Thomas Schueppel <stain@acm.org>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ class MovInfo(mediainfo.AVInfo):
         mediainfo.AVInfo.__init__(self)
         self.context = 'video'
         self.references = []
-        
+
         self.mime = 'video/quicktime'
         self.type = 'Quicktime Video'
         h = file.read(8)
@@ -319,14 +319,14 @@ class MovInfo(mediainfo.AVInfo):
                             url = url[:url.find('\0')]
                 elif datatype == 'rmqu':
                     quality = unpack('>I', atomdata[pos+8:pos+12])[0]
-                    
+
                 elif datatype == 'rmdr':
                     datarate = unpack('>I', atomdata[pos+12:pos+16])[0]
 
                 pos += datasize
             if url:
                 self.references.append((url, quality, datarate))
-            
+
         else:
             if not atomtype in ('wide', 'free'):
                 log.info('unhandled base atom %s' % atomtype)
@@ -340,6 +340,5 @@ class MovInfo(mediainfo.AVInfo):
         return atomsize
 
 
-factory.register( 'video/quicktime', ('mov', 'qt'),
-                       mediainfo.TYPE_AV, MovInfo )
+factory.register( 'video/quicktime', ('mov', 'qt'), mediainfo.TYPE_AV, MovInfo)
 

@@ -11,7 +11,7 @@
 # First Edition: Aubin Paul <aubin@outlyer.org>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # Based on a sample implementation posted to daap-dev mailing list by
 # Bob Ippolito <bob@redivi.com>
@@ -103,6 +103,4 @@ class Mpeg4(mediainfo.MusicInfo):
         return struct.unpack('>I', self.read(4, file))[0]
 
 
-factory.register( 'application/m4a', ('m4a',), mediainfo.TYPE_MUSIC,
-                       Mpeg4 )
-
+factory.register( 'application/m4a', ('m4a',), mediainfo.TYPE_MUSIC, Mpeg4)

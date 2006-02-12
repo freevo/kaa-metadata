@@ -2,6 +2,7 @@
 # -----------------------------------------------------------------------------
 # snesinfo.py - Gameboy Advance ROM parsing
 # -----------------------------------------------------------------------------
+# $Id$
 #
 # -----------------------------------------------------------------------------
 # kaa-Metadata - Media Metadata for Python
@@ -10,7 +11,7 @@
 # First Edition: Richard Mottershead <richard.mottershead@v21net.co.uk>
 # Maintainer:    Richard Mottershead <richard.mottershead@v21net.co.uk>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +46,8 @@ log = logging.getLogger('metadata')
 # interesting file format info:
 # http://www.classicgaming.com/epr/super/sneskart.html#embededcartridge
 
-# Used to detect the internal rome information, as described in 'SNESKART.DOC v1.3'
+# Used to detect the internal rome information, as described in
+# 'SNESKART.DOC v1.3'
 snesromFileOffset = [33216, 32704, 65472, 65984]
 
 #most of the code is imported from the old snesitem.py.
@@ -103,6 +105,7 @@ class SNESInfo(mediainfo.MediaInfo):
                 else:
                     raise mediainfo.KaaMetadataParseError()
         self.title = romName
-	
 
-factory.register( 'games/snes', ('smc', 'sfc', 'fig', ), mediainfo.TYPE_MISC, SNESInfo )
+
+factory.register( 'games/snes', ('smc', 'sfc', 'fig', ),
+                  mediainfo.TYPE_MISC, SNESInfo )

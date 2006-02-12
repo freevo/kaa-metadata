@@ -11,7 +11,7 @@
 # First Edition: Thomas Schueppel <stain@acm.org>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -134,7 +134,7 @@ class eyeD3Info(mediainfo.MusicInfo):
                if not re.compile(r'0*\xFF\xFA\xB0\x04$').search(s):
                   # that's it, it is no mp3 at all
                   raise mediainfo.KaaMetadataParseError()
-                  
+
       try:
          if id3 and id3.tag:
             log.debug(id3.tag.frames)

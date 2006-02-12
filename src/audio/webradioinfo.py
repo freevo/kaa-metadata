@@ -11,7 +11,7 @@
 # First Edition: Thomas Schueppel <stain@acm.org>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ class WebRadioInfo(mediainfo.MusicInfo):
             raise mediainfo.KaaMetadataParseError()
 
         # Open an URL Connection
-        fi = urllib.urlopen(url)        
+        fi = urllib.urlopen(url)
 
         # grab the statusline
         self.statusline = fi.readline()
@@ -64,7 +64,7 @@ class WebRadioInfo(mediainfo.MusicInfo):
         except ValueError:
             # assume it is okay since so many servers are badly configured
             statuslist = ["ICY", "200"]
-                    
+
         if statuslist[1] != "200":
             if fi:
                 fi.close()
@@ -75,7 +75,7 @@ class WebRadioInfo(mediainfo.MusicInfo):
         # grab any headers for a max of 10 lines
         linecnt = 0
         tab = {}
-        lines = fi.readlines(512)        
+        lines = fi.readlines(512)
         for linecnt in range(0,11):
             icyline = lines[linecnt]
             icyline = icyline.rstrip('\r\n')
@@ -84,20 +84,19 @@ class WebRadioInfo(mediainfo.MusicInfo):
             cidx = icyline.find(':')
             if cidx != -1:
                 # break on short line (ie. really should be a blank line)
-                # strip leading and trailing whitespace                
+                # strip leading and trailing whitespace
                 tab[icyline[:cidx].strip()] = icyline[cidx+2:].strip()
         if fi:
             fi.close()
         self.appendtable('ICY', tab)
         self.tag_map = { ('ICY', 'en') : ICY_tags }
-        # Copy Metadata from tables into the main set of attributes        
+        # Copy Metadata from tables into the main set of attributes
         for k in self.tag_map.keys():
             map(lambda x:self.setitem(x,self.gettable(k[0],k[1]),
                                       self.tag_map[k][x]),
                 self.tag_map[k].keys())
-        self.bitrate = string.atoi(self.bitrate)*1000        
+        self.bitrate = string.atoi(self.bitrate)*1000
 
 
 factory.register( 'text/plain', mediainfo.EXTENSION_STREAM,
-                       mediainfo.TYPE_MUSIC, WebRadioInfo )
-
+                  mediainfo.TYPE_MUSIC, WebRadioInfo )

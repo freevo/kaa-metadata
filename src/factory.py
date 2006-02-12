@@ -11,7 +11,7 @@
 # First Edition: Thomas Schueppel <stain@acm.org>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,15 +65,15 @@ def register(mimetype, extensions, type, c):
     """
     Register a parser to the factory.
     """
-    return Factory().register(mimetype,extensions,type,c)    
+    return Factory().register(mimetype,extensions,type,c)
 
 
 def gettype(mimetype, extensions):
     """
     Return parser for mimetype / extensions
     """
-    return Factory().get(mimetype,extensions)    
-    
+    return Factory().get(mimetype,extensions)
+
 
 def parse(filename):
     """
@@ -119,7 +119,7 @@ class _Factory:
         import video.ogminfo
         import video.mkvinfo
         import misc.xmlinfo
-        
+
         # import some disc modules (may fail)
         try:
             import disc.discinfo
@@ -129,20 +129,20 @@ class _Factory:
             # looks like cdrom.so was not created
             if log.level < 30:
                 log.error(e)
-        
+
         try:
             import disc.dvdinfo
         except ImportError, e:
             if log.level < 30:
                 log.error(e)
-        
+
         # use fallback disc module
         try:
             import disc.datainfo
         except ImportError, e:
             if log.level < 30:
                 log.error(e)
-        
+
         import audio.eyed3info
         import audio.webradioinfo
         import audio.flacinfo
@@ -151,8 +151,8 @@ class _Factory:
 	import games.snesinfo
 
         import misc.dirinfo
-        
-        
+
+
     def create_from_file(self, file):
         """
         create based on the file stream 'file

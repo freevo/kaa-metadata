@@ -11,7 +11,7 @@
 # First Edition: Thomas Schueppel <stain@acm.org>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -117,4 +117,4 @@ class FlacInfo(mediainfo.MusicInfo):
 
 
 factory.register( 'application/flac', ('flac',), mediainfo.TYPE_MUSIC,
-                       FlacInfo )
+                  FlacInfo )

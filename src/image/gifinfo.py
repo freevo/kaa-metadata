@@ -11,7 +11,7 @@
 # First Edition: Dirk Meyer <dmeyer@tzi.de>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -51,7 +51,8 @@ class GIFInfo(core.ImageInfo):
         core.ImageInfo.__init__(self)
         self.mime = 'image/gif'
 
-        (gifType, self.width, self.height) = struct.unpack('<6sHH', file.read(10))
+        (gifType, self.width, self.height) = \
+                  struct.unpack('<6sHH', file.read(10))
 
         if not gifType.startswith('GIF'):
             raise mediainfo.KaaMetadataParseError()

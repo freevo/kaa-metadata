@@ -11,7 +11,7 @@
 # First Edition: Dirk Meyer <dmeyer@tzi.de>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ class VCDInfo(DiscInfo):
         self.context = 'video'
         self.offset = 0
         self.mime = 'video/vcd'
-        self.type = 'CD'        
+        self.type = 'CD'
         self.subtype = 'video'
         # parse disc
         self.parseDisc(device)
@@ -51,7 +51,7 @@ class VCDInfo(DiscInfo):
         type = None
         if DiscInfo.isDisc(self, device) != 2:
             raise mediainfo.KaaMetadataParseError()
-        
+
         # brute force reading of the device to find out if it is a VCD
         f = open(device,'rb')
         f.seek(32768, 0)
@@ -97,6 +97,6 @@ class VCDInfo(DiscInfo):
             lmin, lsec = min, sec
         device.close()
 
-    
+
 factory.register( 'video/vcd', mediainfo.EXTENSION_DEVICE,
-                       mediainfo.TYPE_AV, VCDInfo )
+                  mediainfo.TYPE_AV, VCDInfo )

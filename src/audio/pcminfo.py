@@ -11,7 +11,7 @@
 # First Edition: Thomas Schueppel <stain@acm.org>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ class PCMInfo(mediainfo.AudioInfo):
            # doesn't look right
            raise mediainfo.KaaMetadataParseError()
        self.mime = "audio/%s" % self.type
-       
+
     def _what(self,f):
         """Recognize sound headers"""
         h = f.read(512)
@@ -60,4 +60,4 @@ class PCMInfo(mediainfo.AudioInfo):
 
 
 factory.register( 'application/pcm', ('wav','aif','voc','au'),
-                       mediainfo.TYPE_AUDIO, PCMInfo )
+                  mediainfo.TYPE_AUDIO, PCMInfo )
