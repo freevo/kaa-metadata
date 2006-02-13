@@ -34,10 +34,11 @@
 # python imports
 import os
 import logging
-import libxml2
 
 # kaa imports
+from kaa.base import decorator
 from kaa.base.strutils import unicode_to_str
+from kaa.base import libxml2
 from kaa.metadata.mediainfo import MediaInfo, MEDIACORE, \
      EXTENSION_DIRECTORY, TYPE_MISC
 from kaa.metadata.factory import register
@@ -54,8 +55,14 @@ class DirInfo(MediaInfo):
         MediaInfo.__init__(self)
 
         self.media = 'directory'
-        self.parse_dot_directory(directory)
-        self.parse_bins(directory)
+        try:
+            self.parse_dot_directory(directory)
+        except:
+            log.exception('parse_dot_directory')
+        try:
+            self.parse_bins(directory)
+        except:
+            log.exception('parse_bins')
 
 
     def parse_dot_directory(self, directory):
@@ -83,25 +90,22 @@ class DirInfo(MediaInfo):
         if not os.path.isfile(binsxml):
             return
 
-        for node in libxml2.parseFile(binsxml).children:
-            if not node.name == 'description':
+        xml = libxml2.Document(binsxml, 'album')
+        for child in xml.get_child('description').children:
+            key = str(child.getattr('name'))
+            if not key or not child.content:
                 continue
-            for child in node.children:
-                if not child.name == 'field':
+            if key == 'sampleimage':
+                image = os.path.join(directory, unicode_to_str(child.content))
+                if not os.path.isfile(image):
                     continue
-                value = unicode(child.getContent(), 'utf-8').strip()
-                key = child.prop('name')
-                if key and value:
-                    if key == 'sampleimage':
-                        image = os.path.join(directory, unicode_to_str(value))
-                        if os.path.isfile(image):
-                            self.image = image
-                            self.keys.append('image')
-                    else:
-                        self[key] = value
-                        if not key in MEDIACORE:
-                            # if it's in desc it must be important
-                            self.keys.append(key)
+                self.image = image
+                self.keys.append('image')
+                continue
+            self[key] = child.content
+            if not key in MEDIACORE:
+                # if it's in desc it must be important
+                self.keys.append(key)
 
 # register to kaa.metadata core
 register('directory', EXTENSION_DIRECTORY, TYPE_MISC, DirInfo)

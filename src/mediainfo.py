@@ -4,9 +4,6 @@
 # -----------------------------------------------------------------------------
 # $Id$
 #
-# TODO: move some code from mediainfo to media/core.py
-# See image/core.py was example.
-#
 # -----------------------------------------------------------------------------
 # kaa-Metadata - Media Metadata for Python
 # Copyright (C) 2003-2005 Thomas Schueppel, Dirk Meyer
@@ -36,14 +33,12 @@
 import os
 import logging
 import copy
-import locale
 
 # kaa imports
-import table
+from kaa.base.strutils import str_to_unicode
 
-LOCAL_ENCODING = locale.getpreferredencoding();
-if not LOCAL_ENCODING or LOCAL_ENCODING == "ANSI_X3.4-1968":
-    LOCAL_ENCODING = 'latin1';
+# kaa metadata imports
+import table
 
 UNPRINTABLE_KEYS = [ 'thumbnail', 'raw_image']
 
@@ -168,7 +163,7 @@ class MediaInfo:
         for key in self.keys:
             value = getattr(self, key)
             if isinstance(value, str) and not key in UNPRINTABLE_KEYS:
-                setattr(self, key, unicode(value, LOCAL_ENCODING, 'replace'))
+                setattr(self, key, str_to_unicode(value))
 
 
     def gettable(self, name, language='en'):

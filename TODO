@@ -14,3 +14,6 @@ dir lib to serperate our code from external modules we just copy.
 Create doc in the Wiki and dump it into the doc subdir
 
 Add list of external files kaa.vfs should know about
+
+Move some code from mediainfo to media/core.py See image/core.py was
+example.

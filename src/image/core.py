@@ -33,11 +33,11 @@
 import os
 import gzip
 import logging
-import libxml2
 
 # kaa imports
 from kaa.metadata import factory
 from kaa.metadata import mediainfo
+from kaa.base import libxml2
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -71,8 +71,15 @@ class ImageInfo(mediainfo.MediaInfo):
         """
         Parse external files like bins and .comments.
         """
-        self.parse_bins(filename)
-        self.parse_dot_comment(filename)
+        try:
+            self.parse_bins(filename)
+        except:
+            log.exception('parse_bins')
+        try:
+            self.parse_dot_comment(filename)
+        except:
+            log.exception('parse_dot_comment')
+
 
     def parse_bins(self, filename):
         """
@@ -81,19 +88,15 @@ class ImageInfo(mediainfo.MediaInfo):
         binsxml = filename + '.xml'
         if not os.path.isfile(binsxml):
             return
-        for node in libxml2.parseFile(binsxml).children:
-            if not node.name == 'description':
+        xml = libxml2.Document(binsxml, 'image')
+        for child in xml.get_child('description').children:
+            key = str(child.getattr('name'))
+            if not key or not child.content:
                 continue
-            for child in node.children:
-                if not child.name == 'field':
-                    continue
-                value = unicode(child.getContent(), 'utf-8').strip()
-                key = child.prop('name')
-                if key and value:
-                    self[key] = value
-                    if not key in ATTRIBUTES + mediainfo.MEDIACORE:
-                        # if it's in desc it must be important
-                        self.keys.append(key)
+            self[key] = child.content
+            if not key in ATTRIBUTES + mediainfo.MEDIACORE:
+                # if it's in desc it must be important
+                self.keys.append(key)
 
 
     def parse_dot_comment(self, filename):
@@ -104,14 +107,9 @@ class ImageInfo(mediainfo.MediaInfo):
                                     os.path.basename(filename) + '.xml')
         if not os.path.isfile(comment_file):
             return
-        for node in libxml2.parseFile(comment_file).children:
-            if not node.name == 'Comment':
-                continue
-            for child in node.children:
-                value = unicode(child.getContent(), 'utf-8')
-                if not value or value == '0':
-                    continue
-                if child.name == 'Place':
-                    self.location = value
-                if child.name == 'Note':
-                    self.description = value
+        xml = libxml2.Document(comment_file, 'Comment')
+        for child in xml.children:
+            if child.name == 'Place':
+                self.location = child.content
+            if child.name == 'Note':
+                self.description = child.content
