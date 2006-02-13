@@ -36,7 +36,6 @@ import os
 import logging
 
 # kaa imports
-from kaa.base import decorator
 from kaa.base.strutils import unicode_to_str
 from kaa.base import libxml2
 from kaa.metadata.mediainfo import MediaInfo, MEDIACORE, \
