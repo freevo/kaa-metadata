@@ -34,6 +34,7 @@ __all__ = [ 'Factory', 'register', 'gettype', 'parse' ]
 # python imports
 import stat
 import os
+import sys
 import urlparse
 import traceback
 import urllib
@@ -166,6 +167,8 @@ class _Factory:
                 return self.extmap[e[1:]][3](file)
             except mediainfo.KaaMetadataParseError:
                 pass
+            except (KeyboardInterrupt, SystemExit):
+                sys.exit(0)
             except:
                 log.exception('parse error')
 
@@ -176,6 +179,8 @@ class _Factory:
             file.seek(0,0)
             try:
                 return e[3](file)
+            except (KeyboardInterrupt, SystemExit):
+                sys.exit(0)
             except:
                 pass
         return None
@@ -209,6 +214,8 @@ class _Factory:
                     return e[3](url)
                 except mediainfo.KaaMetadataParseError:
                     pass
+                except (KeyboardInterrupt, SystemExit):
+                    sys.exit(0)
         else:
             (scheme, location, path, query, fragment) = split
             uhandle = urllib.urlopen(url)
@@ -219,6 +226,8 @@ class _Factory:
                     return self.mimemap[mime][3](file)
                 except mediainfo.KaaMetadataParseError:
                     pass
+                except (KeyboardInterrupt, SystemExit):
+                    sys.exit(0)
             # XXX Todo: Try other types
         pass
 
@@ -235,6 +244,8 @@ class _Factory:
             except IOError:
                 log.error('IOError reading %s' % filename)
                 return None
+            except (KeyboardInterrupt, SystemExit):
+                sys.exit(0)
             r = self.create_from_file(f)
             f.close()
             if r:
@@ -263,6 +274,8 @@ class _Factory:
                 return t
             except mediainfo.KaaMetadataParseError:
                 pass
+            except (KeyboardInterrupt, SystemExit):
+                sys.exit(0)
         return None
 
 
@@ -276,6 +289,8 @@ class _Factory:
                 return e[3](dirname)
             except mediainfo.KaaMetadataParseError:
                 pass
+            except (KeyboardInterrupt, SystemExit):
+                sys.exit(0)
         return None
 
 
@@ -299,6 +314,8 @@ class _Factory:
             if os.path.isdir(name):
                 return self.create_from_directory(name)
             return self.create_from_filename(name)
+        except (KeyboardInterrupt, SystemExit):
+            sys.exit(0)
         except:
             log.exception('kaa.metadata.create error')
             log.warning('Please report this bug to the Freevo mailing list')
