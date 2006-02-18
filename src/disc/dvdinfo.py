@@ -65,6 +65,9 @@ class DVDAudio(mediainfo.AudioInfo):
         mediainfo.AudioInfo.__init__(self)
         self.id = 128 + pos
         self.language, self.codec, self.channels, self.samplerate = info
+        if self.codec == 'dts':
+            # dts uses the same counter as ac3 but is always +8
+            self.id += 8
 
 
 class DVDTitle(mediainfo.AVInfo):
