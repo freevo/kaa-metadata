@@ -161,9 +161,13 @@ class MediaInfo:
         """
         # make sure all strings are unicode
         for key in self.keys:
+            if key in UNPRINTABLE_KEYS:
+                continue
             value = getattr(self, key)
-            if isinstance(value, str) and not key in UNPRINTABLE_KEYS:
+            if isinstance(value, str):
                 setattr(self, key, str_to_unicode(value))
+            if isinstance(value, unicode):
+                setattr(self, key, value.strip().rstrip().replace('\0', ''))
 
 
     def gettable(self, name, language='en'):
@@ -213,8 +217,6 @@ class MediaInfo:
         get the value of 'key'
         """
         if self.__dict__.has_key(key):
-            if isinstance(self.__dict__[key], str):
-                return self.__dict__[key].strip().rstrip().replace('\0', '')
             return self.__dict__[key]
         elif hasattr(self, key):
             return getattr(self, key)
