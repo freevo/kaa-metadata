@@ -863,15 +863,46 @@ class EXIF_header:
             else:
                 values=[]
                 signed=(field_type in [6, 8, 9, 10])
-                for j in range(count):
-                    if field_type in (5, 10):
-                        # a ratio
-                        value_j=Ratio(self.s2n(offset,   4, signed),
-                                      self.s2n(offset+4, 4, signed))
+                if count > 100 and not field_type in (5, 10):
+                    # BEGIN SPEEDUP
+                    #
+                    # The normal code seeks and reads for each field, see below.
+                    # For a large 'count', this slows down everything. I had files
+                    # with count > 3000 and using this extra code reduces the
+                    # complete scanning time from 0.55 to 0.15 seconds.
+                    #
+                    # This changes are not yet in the original EXIF.py, there are
+                    # only in kaa.metadata for now. If it works like it should,
+                    # please send this to the original author. This code still
+                    # seeks too much in the file, only reading a very short number
+                    # of bytes.
+                    #
+                    self.file.seek(self.offset+offset)
+                    buffer = self.file.read(typelen * count)
+                    if self.endian == 'I':
+                        s2n=s2n_intel
                     else:
-                        value_j=self.s2n(offset, typelen, signed)
-                    values.append(value_j)
-                    offset=offset+typelen
+                        s2n=s2n_motorola
+                    msb=1L << (8*typelen-1)
+                    for j in range(count):
+                        value_j = s2n(buffer[count*typelen:(count+1)*typelen])
+                        # Sign extension ?
+                        if signed:
+                            if value_j & msb:
+                                value_j=value_j-(msb << 1)
+                        values.append(value_j)
+                    offset=offset+typelen*count
+                    # END SPEEDUP
+                else:
+                    for j in range(count):
+                        if field_type in (5, 10):
+                            # a ratio
+                            value_j=Ratio(self.s2n(offset,   4, signed),
+                                          self.s2n(offset+4, 4, signed))
+                        else:
+                            value_j=self.s2n(offset, typelen, signed)
+                        values.append(value_j)
+                        offset=offset+typelen
             # now "values" is either a string or an array
             if count == 1 and field_type != 2:
                 printable=str(values[0])
