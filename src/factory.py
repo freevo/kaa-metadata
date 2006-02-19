@@ -46,8 +46,11 @@ import mediainfo
 # get logging object
 log = logging.getLogger('metadata')
 
-
+# factory object
 _factory = None
+
+# some timing debug
+TIME_DEBUG = False
 
 def Factory():
     """
@@ -76,12 +79,25 @@ def gettype(mimetype, extensions):
     return Factory().get(mimetype,extensions)
 
 
-def parse(filename):
-    """
-    parse a file
-    """
-    return Factory().create(filename)
+if TIME_DEBUG:
+    import time
 
+    def parse(filename):
+        """
+        parse a file
+        """
+        t1 = time.time()
+        result = Factory().create(filename)
+        t2 = time.time()
+        log.info('%s took %s seconds' % (filename, (t2-t1)))
+        return result
+else:
+    def parse(filename):
+        """
+        parse a file
+        """
+        return Factory().create(filename)
+        
 
 class _Factory:
     """
