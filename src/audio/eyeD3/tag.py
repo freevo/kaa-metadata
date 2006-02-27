@@ -698,7 +698,7 @@ class Tag:
    def strToUnicode(self, s):
        t = type(s);
        if t != unicode and t == str:
-           s = unicode(s, eyeD3.LOCAL_ENCODING);
+           s = unicode(s, LOCAL_ENCODING);
        elif t != unicode and t != str:
            raise TagException("Wrong type passed to strToUnicode: %s" % str(t));
        return s;
