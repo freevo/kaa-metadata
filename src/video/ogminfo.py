@@ -155,6 +155,12 @@ class OgmInfo(mediainfo.AVInfo):
             if not stream.length:
                 stream.length = self.length
 
+        # If there are no video streams in this ogg container, it
+        # must be an audio file.  Raise an exception to cause the
+        # factory to fall back to audio.ogginfo.
+        if len(self.video) == 0:
+            raise mediainfo.KaaMetadataParseError
+
         # Copy Metadata from tables into the main set of attributes
         for header in self.all_header:
             self.appendtable('VORBISCOMMENT', header)
@@ -165,11 +171,6 @@ class OgmInfo(mediainfo.AVInfo):
                                       self.tag_map[k][x]),
                 self.tag_map[k].keys())
 
-        # If there are no video streams in this ogg container, it
-        # must be an audio file.  Raise an exception to cause the
-        # factory to fall back to audio.ogginfo.
-        if len(self.video) == 0:
-            raise mediainfo.KaaMetadataParseError
 
     def _parseOGGS(self,file):
         h = file.read(27)
