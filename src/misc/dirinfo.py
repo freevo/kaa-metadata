@@ -36,8 +36,8 @@ import os
 import logging
 
 # kaa imports
-from kaa.base.strutils import unicode_to_str
-from kaa.base import libxml2
+from kaa.strutils import unicode_to_str
+from kaa import libxml2
 from kaa.metadata.mediainfo import MediaInfo, MEDIACORE, \
      EXTENSION_DIRECTORY, TYPE_MISC
 from kaa.metadata.factory import register

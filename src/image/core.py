@@ -37,7 +37,7 @@ import logging
 # kaa imports
 from kaa.metadata import factory
 from kaa.metadata import mediainfo
-from kaa.base import libxml2
+from kaa import libxml2
 
 # get logging object
 log = logging.getLogger('metadata')

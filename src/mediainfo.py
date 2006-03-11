@@ -35,7 +35,7 @@ import logging
 import copy
 
 # kaa imports
-from kaa.base.strutils import str_to_unicode
+from kaa.strutils import str_to_unicode
 
 # kaa metadata imports
 import table
