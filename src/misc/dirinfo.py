@@ -37,7 +37,7 @@ import logging
 
 # kaa imports
 from kaa.strutils import unicode_to_str
-from kaa import libxml2
+from kaa import xml
 from kaa.metadata.mediainfo import MediaInfo, MEDIACORE, \
      EXTENSION_DIRECTORY, TYPE_MISC
 from kaa.metadata.factory import register
@@ -89,7 +89,7 @@ class DirInfo(MediaInfo):
         if not os.path.isfile(binsxml):
             return
 
-        xml = libxml2.Document(binsxml, 'album')
+        xml = xml.Document(binsxml, 'album')
         for child in xml.get_child('description').children:
             key = str(child.getattr('name'))
             if not key or not child.content:

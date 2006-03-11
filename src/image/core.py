@@ -37,7 +37,7 @@ import logging
 # kaa imports
 from kaa.metadata import factory
 from kaa.metadata import mediainfo
-from kaa import libxml2
+from kaa import xml
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -88,7 +88,7 @@ class ImageInfo(mediainfo.MediaInfo):
         binsxml = filename + '.xml'
         if not os.path.isfile(binsxml):
             return
-        xml = libxml2.Document(binsxml, 'image')
+        xml = xml.Document(binsxml, 'image')
         for child in xml.get_child('description').children:
             key = str(child.getattr('name'))
             if not key or not child.content:
@@ -107,7 +107,7 @@ class ImageInfo(mediainfo.MediaInfo):
                                     os.path.basename(filename) + '.xml')
         if not os.path.isfile(comment_file):
             return
-        xml = libxml2.Document(comment_file, 'Comment')
+        xml = xml.Document(comment_file, 'Comment')
         for child in xml.children:
             if child.name == 'Place':
                 self.location = child.content
