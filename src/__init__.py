@@ -36,16 +36,6 @@ except ImportError:
     print 'libxml2 python bindings not installed'
     raise ImportError('libxml2 python bindings not installed')
 
-# logging support
-import logging
-
-# get logging object
-logger = logging.getLogger('metadata')
-
-if not logger.level:
-    # level not set for kaa.metadata, set it to WARNING
-    logger.setLevel(logging.WARNING)
-
 # import factory code for kaa.metadata access
 from factory import *
 
