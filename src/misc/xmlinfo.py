@@ -32,7 +32,7 @@
 # python imports
 import os
 import logging
-import xml
+import libxml2
 
 # kaa imports
 from kaa.metadata import factory
@@ -57,7 +57,7 @@ class XMLInfo(mediainfo.MediaInfo):
         self.mime  = 'text/xml'
         self.type  = ''
 
-        xml.SAXParseFile(self, file.name, 10)
+        libxml2.SAXParseFile(self, file.name, 10)
 
 
     def startElement(self, tag, attrs):
