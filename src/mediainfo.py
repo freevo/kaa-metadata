@@ -190,6 +190,8 @@ class MediaInfo:
                     self.__dict__[item] = dict[key]
             else:
                 log.error("Unknown key: %s" % item)
+        except KeyError:
+            pass
         except:
             if log.level < 30:
                 log.exception('setkey')
