@@ -167,7 +167,7 @@ class MediaInfo:
             if isinstance(value, str):
                 setattr(self, key, str_to_unicode(value))
             if isinstance(value, unicode):
-                setattr(self, key, value.strip().rstrip().replace('\0', ''))
+                setattr(self, key, value.strip().rstrip().replace(u'\0', u''))
 
 
     def gettable(self, name, language='en'):
@@ -185,7 +185,7 @@ class MediaInfo:
             if self.__dict__.has_key(item):
                 if convert_to_str:
                     if not isinstance(dict[key], unicode):
-                        self.__dict__[item] = str_to_unicode(dict[key])
+                        self.__dict__[item] = str_to_unicode(str(dict[key]))
                 else:
                     self.__dict__[item] = dict[key]
             else:
