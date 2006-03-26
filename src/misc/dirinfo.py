@@ -89,8 +89,8 @@ class DirInfo(MediaInfo):
         if not os.path.isfile(binsxml):
             return
 
-        xml = xml.Document(binsxml, 'album')
-        for child in xml.get_child('description').children:
+        doc = xml.Document(binsxml, 'album')
+        for child in doc.get_child('description').children:
             key = str(child.getattr('name'))
             if not key or not child.content:
                 continue

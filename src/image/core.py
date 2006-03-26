@@ -88,8 +88,8 @@ class ImageInfo(mediainfo.MediaInfo):
         binsxml = filename + '.xml'
         if not os.path.isfile(binsxml):
             return
-        xml = xml.Document(binsxml, 'image')
-        for child in xml.get_child('description').children:
+        doc = xml.Document(binsxml, 'image')
+        for child in doc.get_child('description').children:
             key = str(child.getattr('name'))
             if not key or not child.content:
                 continue
@@ -107,8 +107,8 @@ class ImageInfo(mediainfo.MediaInfo):
                                     os.path.basename(filename) + '.xml')
         if not os.path.isfile(comment_file):
             return
-        xml = xml.Document(comment_file, 'Comment')
-        for child in xml.children:
+        doc = xml.Document(comment_file, 'Comment')
+        for child in doc.children:
             if child.name == 'Place':
                 self.location = child.content
             if child.name == 'Note':

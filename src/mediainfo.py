@@ -185,7 +185,7 @@ class MediaInfo:
             if self.__dict__.has_key(item):
                 if convert_to_str:
                     if not isinstance(dict[key], unicode):
-                        self.__dict__[item] = unicode(dict[key])
+                        self.__dict__[item] = str_to_unicode(dict[key])
                 else:
                     self.__dict__[item] = dict[key]
             else:
