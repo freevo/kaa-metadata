@@ -172,7 +172,7 @@ class eyeD3Info(mediainfo.MusicInfo):
                tcon = id3.tag.frames['TCON'][0].text
                try:
                   genre = int(tcon)
-               except:
+               except ValueError:
                   try:
                       genre = int(tcon[1:tcon.find(')')])
                   except ValueError:
@@ -180,7 +180,7 @@ class eyeD3Info(mediainfo.MusicInfo):
                if genre is not None:
                   try:
                      self.genre = id3info.GENRE_LIST[genre]
-                  except:
+                  except KeyError:
                      self.genre = str(genre)
             # and some tools store it as trackno/trackof in TRCK
             if not self['trackof'] and self['trackno'] and \
@@ -189,6 +189,8 @@ class eyeD3Info(mediainfo.MusicInfo):
                self['trackno'] = self['trackno'][:self['trackno'].find('/')]
          if id3:
             self.length = id3.getPlayTime()
+      except (KeyboardInterrupt, SystemExit):
+         sys.exit(0)
       except:
          if log.level < 30:
             log.exception('parse error')
