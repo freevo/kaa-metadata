@@ -426,7 +426,7 @@ class MpegInfo(mediainfo.AVInfo):
         offset = 0
 
         # seek until the 0 byte stop
-        while buffer[offset] == '\0':
+        while offset < len(buffer)-100 and buffer[offset] == '\0':
             offset += 1
         offset -= 2
 
