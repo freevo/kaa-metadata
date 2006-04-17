@@ -4,6 +4,10 @@
 # -----------------------------------------------------------------------------
 # $Id$
 #
+# See http://www.thozie.de/dnn/AVIMaster.aspx?PageContentID=4
+# and http://download.microsoft.com/download/e/0/6/e06db390-1e2a-4978-\
+#     82bb-311810d8a28d/ASF_Specification.doc
+#
 # -----------------------------------------------------------------------------
 # kaa-Metadata - Media Metadata for Python
 # Copyright (C) 2003-2005 Thomas Schueppel, Dirk Meyer
@@ -262,6 +266,9 @@ class AsfInfo(mediainfo.AVInfo):
                     flags = struct.unpack('>QIIH4x', s[56:78])
             strno = flags & 63
             encrypted = flags >> 15
+            if encrypted and not 'encrypted' in self.keys:
+                self.encrypted = True
+                self.keys.append('encrypted')
             if streamtype == GUIDS['ASF_Video_Media']:
                 vi = mediainfo.VideoInfo()
                 vi.width, vi.height, depth, \
@@ -340,6 +347,7 @@ class AsfInfo(mediainfo.AVInfo):
                 idlen = struct.unpack('<B', s[pos:pos+1])[0]
                 idstring = s[pos+1:pos+1+idlen]
                 log.debug("Language: %d/%d: %s" % (i+1, count, idstring))
+                idstring = unicode(idstring, 'utf-16').replace('\0', '')
                 lang.append(idstring)
                 pos += 1+idlen
             if len(lang) == 1:
@@ -359,6 +367,11 @@ class AsfInfo(mediainfo.AVInfo):
             # TODO: Find the stream in self.audio and self.video and
             #       set it there instead of here
 
+        elif guid == GUIDS['ASF_Content_Encryption_Object'] or \
+             guid == GUIDS['ASF_Extended_Content_Encryption_Object']:
+            self.encrypted = True
+            if not 'encrypted' in self.keys:
+                self.keys.append('encrypted')
         else:
             # Just print the type:
             for h in GUIDS.keys():
