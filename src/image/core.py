@@ -73,12 +73,16 @@ class ImageInfo(mediainfo.MediaInfo):
         """
         try:
             self.parse_bins(filename)
+        except (KeyboardInterrupt, SystemExit):
+            sys.exit(0)
         except:
-            log.exception('parse_bins')
+            pass
         try:
             self.parse_dot_comment(filename)
+        except (KeyboardInterrupt, SystemExit):
+            sys.exit(0)
         except:
-            log.exception('parse_dot_comment')
+            pass
 
 
     def parse_bins(self, filename):
