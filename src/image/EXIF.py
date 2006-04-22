@@ -909,21 +909,25 @@ class EXIF_header:
             else:
                 printable=str(values)
             # compute printable version of values
-            if tag_entry:
-                if len(tag_entry) != 1:
-                    # optional 2nd tag element is present
-                    if callable(tag_entry[1]):
-                        # call mapping function
-                        printable=tag_entry[1](values)
-                    else:
-                        printable=''
-                        for i in values:
-                            # use lookup table for this tag
-                            printable+=tag_entry[1].get(i, repr(i))
-            self.tags[ifd_name+' '+tag_name]=IFD_Tag(printable, tag,
-                                                     field_type,
-                                                     values, field_offset,
-                                                     count*typelen)
+            try:
+                if tag_entry:
+                    if len(tag_entry) != 1:
+                        # optional 2nd tag element is present
+                        if callable(tag_entry[1]):
+                            # call mapping function
+                            printable=tag_entry[1](values)
+                        else:
+                            printable=''
+                            for i in values:
+                                # use lookup table for this tag
+                                printable+=tag_entry[1].get(i, repr(i))
+                self.tags[ifd_name+' '+tag_name]=IFD_Tag(printable, tag,
+                                                         field_type,
+                                                         values, field_offset,
+                                                         count*typelen)
+            except:
+                # kaa.metadata addition: in some images this crashes
+                pass
             if self.debug:
                 print ' debug:   %s: %s' % (tag_name,
                                             repr(self.tags[ifd_name+' '+tag_name]))
