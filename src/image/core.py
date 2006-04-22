@@ -31,6 +31,7 @@
 
 # python imports
 import os
+import sys
 import gzip
 import logging
 

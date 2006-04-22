@@ -32,6 +32,7 @@
 # python imports
 import os
 import re
+import sys
 import logging
 import struct
 
