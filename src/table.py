@@ -45,6 +45,8 @@ class Table:
         self.i18ndir = os.path.join(LOCALEDIR, name.lower())
         try:
             self.read_translations()
+        except (KeyboardInterrupt, SystemExit):
+            sys.exit(0)
         except:
             pass
 

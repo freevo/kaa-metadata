@@ -192,6 +192,8 @@ class MediaInfo:
                 log.error("Unknown key: %s" % item)
         except KeyError:
             pass
+        except (KeyboardInterrupt, SystemExit):
+            sys.exit(0)
         except:
             if log.level < 30:
                 log.exception('setkey')
@@ -245,6 +247,8 @@ class MediaInfo:
         """
         try:
             del self.__dict__[key]
+        except (KeyboardInterrupt, SystemExit):
+            sys.exit(0)
         except:
             pass
         if hasattr(self, key):
@@ -283,6 +287,8 @@ class MusicInfo(AudioInfo):
                 # XXX Why is this needed anyway?
                 if int(self['trackno']) < 10:
                     self['trackno'] = '0%s' % int(self['trackno'])
+            except (KeyboardInterrupt, SystemExit):
+                sys.exit(0)
             except:
                 pass
 

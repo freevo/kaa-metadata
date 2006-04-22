@@ -291,7 +291,7 @@ class OgmInfo(mediainfo.AVInfo):
                 # XXX length, bitrate are very wrong
                 try:
                     vi.codec = fourcc.RIFFCODEC[type]
-                except:
+                except (KeyError, IndexError):
                     vi.codec = 'Unknown (%s)' % type
                 vi.fps = 10000000 / timeunit
                 self.video.append(vi)
@@ -323,7 +323,7 @@ class OgmInfo(mediainfo.AVInfo):
         len = struct.unpack( '<I', header[:4] )[0]
         try:
             return (len+4,unicode(header[4:4+len], 'utf-8'))
-        except:
+        except (KeyError, IndexError, UnicodeDecodeError):
             return (len+4,None)
 
 

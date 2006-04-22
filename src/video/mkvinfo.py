@@ -234,7 +234,7 @@ class MkvInfo(mediainfo.AVInfo):
                 # Rescale it to the second
                 tc = seginfotab[MATROSKA_TIMECODESCALE_ID].get_value()
                 scalecode = float(tc / (1000*1000))
-            except:
+            except (ZeroDivisionError, KeyError, IndexError):
                 scalecode = 1000
             try:
                 md = seginfotab[MATROSKA_DURATION_ID].get_data()
@@ -242,13 +242,13 @@ class MkvInfo(mediainfo.AVInfo):
                 duration = float(duration / scalecode)
                 # Express the time in minutes
                 self.length = int(duration/60)
-            except:
+            except (ZeroDivisionError, KeyError, IndexError):
                 pass
             try:
                 log.debug ("Searching for id : %X" % MATROSKA_TRACKS_ID)
                 entity = segtab[MATROSKA_TRACKS_ID]
                 self.process_tracks(entity)
-            except:
+            except (ZeroDivisionError, KeyError, IndexError):
                 log.debug("TRACKS ID not found !!" )
         else:
             log.debug("SEGMENT ID not found %08X" % segment.get_id() )
@@ -290,12 +290,12 @@ class MkvInfo(mediainfo.AVInfo):
                 vi.codec = elem.get_data()
                 if vi.codec.startswith('V_'):
                     vi.codec = vi.codec[2:]
-            except:
+            except (ZeroDivisionError, KeyError, IndexError):
                 vi.codec = 'Unknown'
             try:
                 elem = tabelem[MATROSKA_FRAME_DURATION_ID]
                 vi.fps = 1 / (pow(10, -9) * (elem.get_value()))
-            except:
+            except (ZeroDivisionError, KeyError, IndexError):
                 vi.fps = 0
             try:
                 vinfo = tabelem[MATROSKA_VIDEO_SETTINGS_ID]
@@ -317,7 +317,7 @@ class MkvInfo(mediainfo.AVInfo):
                 elem = tabelem[MATROSKA_TRACK_LANGUAGE_ID]
                 ai.language = elem.get_data()
                 ai['language'] = elem.get_data()
-            except:
+            except (KeyError, IndexError):
                 ai.language = 'en'
                 ai['language'] = 'en'
             try:
@@ -325,7 +325,7 @@ class MkvInfo(mediainfo.AVInfo):
                 ai.codec = elem.get_data()
                 if ai.codec.startswith('A_'):
                     ai.codec = ai.codec[2:]
-            except:
+            except (KeyError, IndexError):
                 ai.codec = "Unknown"
             try:
                 ainfo = tabelem[MATROSKA_AUDIO_SETTINGS_ID]
@@ -333,7 +333,7 @@ class MkvInfo(mediainfo.AVInfo):
                 as = audtab[MATROSKA_AUDIO_SAMPLERATE_ID].get_value()
                 ai.samplerate  = unpack('!f', as)[0]
                 ai.channels = audtab[MATROSKA_AUDIO_CHANNELS_ID].get_value()
-            except:
+            except (KeyError, IndexError):
                 log.debug("No other info about audio track !!!")
             self.audio.append(ai)
 
@@ -342,11 +342,9 @@ class MkvInfo(mediainfo.AVInfo):
                 elem = tabelem[MATROSKA_TRACK_LANGUAGE_ID]
                 language = elem.get_data()
                 log.debug ("Subtitle language found : %s" % elem.get_data() )
-            except:
+            except (KeyError, IndexError):
                 language = "en" # By default
             self.subtitles.append(language)
 
 
-
-factory.register( 'application/mkv', ('mkv', 'mka',),
-                  mediainfo.TYPE_AV, MkvInfo )
+factory.register( 'application/mkv', ('mkv', 'mka',), mediainfo.TYPE_AV, MkvInfo )

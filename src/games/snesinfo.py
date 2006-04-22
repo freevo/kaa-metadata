@@ -81,6 +81,8 @@ class SNESInfo(mediainfo.MediaInfo):
             romHeader = file.read(32)
             try:
                 (romName,romHL,romMem,romROM,romSRAM,romCountry,romLic,romVer,romICHK,romCHK) = unpack('21scccccccHH', romHeader)
+            except (KeyboardInterrupt, SystemExit):
+                sys.exit(0)
             except:
                 raise mediainfo.KaaMetadataParseError()
             log.debug('ROM NAME: %s' % romName)
@@ -95,6 +97,8 @@ class SNESInfo(mediainfo.MediaInfo):
                     romHeader = file.read(32)
                 try:
                     (romName,romHL,romMem,romROM,romSRAM,romCountry,romLic,romVer,romICHK,romCHK) = unpack('21scccccccHH', romHeader)
+                except (KeyboardInterrupt, SystemExit):
+                    sys.exit(0)
                 except:
                     raise mediainfo.KaaMetadataParseError()
 

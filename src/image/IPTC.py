@@ -43,7 +43,7 @@ def flatten(list):
             elif len(val) == 1: list[i] = val[0]
             else: list[i] = tuple(val)
         return list
-    except:
+    except (ValueError, AttributeError, IndexError, KeyError):
         return []
 
 
@@ -83,7 +83,7 @@ def parseiptc(app):
        while 1:
            try:
                intro = ord(data[offset])
-           except IndexError:
+           except (ValueError, KeyError, IndexError):
                return ''
            if intro != 0x1c:
                return iptc

@@ -54,14 +54,13 @@ class DirInfo(MediaInfo):
         MediaInfo.__init__(self)
 
         self.media = 'directory'
-        try:
-            self.parse_dot_directory(directory)
-        except:
-            log.exception('parse_dot_directory')
-        try:
-            self.parse_bins(directory)
-        except:
-            log.exception('parse_bins')
+        for func in (self.parse_dot_directory, self.parse_bins):
+            try:
+                func(directory)
+            except (KeyboardInterrupt, SystemExit):
+                sys.exit(0)
+            except:
+                log.exception('%s', func)
 
 
     def parse_dot_directory(self, directory):

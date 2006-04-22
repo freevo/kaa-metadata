@@ -71,18 +71,13 @@ class ImageInfo(mediainfo.MediaInfo):
         """
         Parse external files like bins and .comments.
         """
-        try:
-            self.parse_bins(filename)
-        except (KeyboardInterrupt, SystemExit):
-            sys.exit(0)
-        except:
-            pass
-        try:
-            self.parse_dot_comment(filename)
-        except (KeyboardInterrupt, SystemExit):
-            sys.exit(0)
-        except:
-            pass
+        for func in (self.parse_bins, self.parse_dot_comment):
+            try:
+                func(filename)
+            except (KeyboardInterrupt, SystemExit):
+                sys.exit(0)
+            except:
+                pass
 
 
     def parse_bins(self, filename):

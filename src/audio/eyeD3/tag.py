@@ -1352,7 +1352,7 @@ class Genre:
          id = genres[name];
          # Get titled case.
          name = genres[id];
-      except:
+      except (IndexError, KeyError):
           if utils.strictID3():
               raise GenreException("Invalid genre name: " + name);
           id = None;
@@ -1381,7 +1381,7 @@ class Genre:
                                     "does not match " + name);
             self.id = id;
             self.name = name;
-         except:
+         except (KeyError, IndexError):
             raise GenreException("eyeD3.genres[" + str(id) + "] " +\
                                  "does not match " + name);
       

@@ -80,7 +80,7 @@ class PNGInfo(core.ImageInfo):
     def _readChunk(self,file):
         try:
             (length, type) = struct.unpack('>I4s', file.read(8))
-        except:
+        except (OSError, IOError):
             return 0
         if ( type == 'tEXt' ):
           log.debug('latin-1 Text found.')

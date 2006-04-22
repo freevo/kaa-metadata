@@ -61,8 +61,7 @@ def query(track_info, server_url=default_server,
         # kaa.metadata unicode fix
         try:
             title = unicode(header[3], encoding)
-        except:
-            print e
+        except UnicodeDecodeError:
             title = unicode(header[3], errors='replace')
 	result = { 'category': header[1], 'disc_id': header[2], 'title': title }
 
@@ -83,7 +82,7 @@ def query(track_info, server_url=default_server,
 
             try:
                 title = unicode(match[2], encoding)
-            except:
+            except UnicodeDecodeError:
                 title = unicode(match[2], errors='replace')
             # kaa.metadata unicode fix
 	    result.append({ 'category': unicode(match[0]), 'disc_id': match[1], 'title':
@@ -136,7 +135,7 @@ def read(category, disc_id, server_url=default_server,
                 if isinstance(value, str):
                     try:
                         reply[key] = unicode(reply[key], encoding)
-                    except:
+                    except UnicodeDecodeError:
                         reply[key] = unicode(reply[key], errors='replace')
 	    return [ header[0], reply ]
 	else:				# access denied. :(

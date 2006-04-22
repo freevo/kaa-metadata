@@ -79,11 +79,11 @@ def cdrom_disc_status(device, handle_mix = 0):
                 buf = pack('BBHP', CD_MSF_FORMAT, 0, length, address)
                 s = ioctl(fd, CDIOREADTOCENTRYS, buf)
                 s = CDS_DISC_OK
-            except:
+            except (OSError, IOError):
                 s = CDS_NO_DISC
         else:
             s = ioctl(fd, CDROM_DRIVE_STATUS, CDSL_CURRENT)
-    except:
+    except (OSError, IOError):
         log.error('ERROR: no permission to read %s' % device)
         log.error('Media detection not possible, set drive to \'empty\'')
 
@@ -92,7 +92,7 @@ def cdrom_disc_status(device, handle_mix = 0):
         # linux and don't have ioctl
         try:
             os.close(fd)
-        except:
+        except (OSError, IOError):
             pass
         return 0
 
@@ -100,7 +100,7 @@ def cdrom_disc_status(device, handle_mix = 0):
         # no disc, error, whatever
         try:
             os.close(fd)
-        except:
+        except (OSError, IOError):
             pass
         return 0
 
@@ -159,7 +159,7 @@ def cdrom_disc_id(device, handle_mix=0):
     try:
         if id_cache[device][0] + 0.9 > time.time():
             return id_cache[device][1:]
-    except:
+    except (KeyError, IndexError):
         pass
 
     disc_type = cdrom_disc_status(device, handle_mix=handle_mix)

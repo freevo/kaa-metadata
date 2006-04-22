@@ -172,7 +172,7 @@ class RiffInfo(mediainfo.AVInfo):
                   retval['rcFrame'], ) = v
                 self.delay = float(retval['dwStart']) / \
                              (float(retval['dwRate']) / retval['dwScale'])
-            except:
+            except (KeyError, IndexError, ValueError, ZeroDivisionError):
                 pass
 
         return retval
@@ -200,7 +200,7 @@ class RiffInfo(mediainfo.AVInfo):
             # ai.language = strh['wLanguage']
             try:
                 ai.codec = fourcc.RIFFWAVE[retval['wFormatTag']]
-            except:
+            except (KeyError, IndexError):
                 ai.codec = "Unknown"
             self.audio.append(ai)
         elif fccType == 'vids':
@@ -220,7 +220,7 @@ class RiffInfo(mediainfo.AVInfo):
             vi = mediainfo.VideoInfo()
             try:
                 vi.codec = fourcc.RIFFCODEC[t[16:20]]
-            except:
+            except (KeyError, IndexError):
                 vi.codec = "Unknown"
             vi.width = retval['biWidth']
             vi.height = retval['biHeight']

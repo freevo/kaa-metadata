@@ -925,7 +925,7 @@ class EXIF_header:
                                                          field_type,
                                                          values, field_offset,
                                                          count*typelen)
-            except:
+            except (AttributeError, ValueError):
                 # kaa.metadata addition: in some images this crashes
                 pass
             if self.debug:

@@ -1203,7 +1203,7 @@ class ImageFrame(Frame):
           # character literal instead of it's byte value.
           try:
               pt = int(chr(pt));
-          except:
+          except (ValueError):
               pt = self.OTHER;
           if pt < self.MIN_TYPE or pt > self.MAX_TYPE:
               self.pictureType = self.OTHER;
@@ -1740,7 +1740,7 @@ class FrameSet(list):
       try:
          del self.frames[key];
          return 1;
-      except:
+      except (KeyError, IndexError, NameError):
          return 0;
 
    # Accepts both int (indexed access) and string keys (a valid frame Id).

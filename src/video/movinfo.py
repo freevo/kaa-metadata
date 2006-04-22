@@ -81,13 +81,11 @@ class MovInfo(mediainfo.AVInfo):
             size = unpack('>Q', file.read(8))
         while self._readatom(file):
             pass
-        try:
-            info = self.gettable('QTUDTA', 'en')
-            self.setitem('title', info, 'nam')
-            self.setitem('artist', info, 'aut')
-            self.setitem('copyright', info, 'cpy')
-        except:
-            pass
+
+        info = self.gettable('QTUDTA', 'en')
+        self.setitem('title', info, 'nam')
+        self.setitem('artist', info, 'aut')
+        self.setitem('copyright', info, 'cpy')
 
         if self.references:
             self.keys.append('references')

@@ -113,11 +113,15 @@ class eyeD3Info(mediainfo.MusicInfo):
          except eyeD3_tag.InvalidAudioFormatException:
             # File is not an MP3
             raise mediainfo.KaaMetadataParseError()
+         except (KeyboardInterrupt, SystemExit):
+            sys.exit(0)
          except:
             # The MP3 tag decoder crashed, assume the file is still
             # MP3 and try to play it anyway
             if log.level < 30:
                log.exception('mp3 tag parsing %s failed!' % file.name)
+      except (KeyboardInterrupt, SystemExit):
+         sys.exit(0)
       except:
          # The MP3 tag decoder crashed, assume the file is still
          # MP3 and try to play it anyway
