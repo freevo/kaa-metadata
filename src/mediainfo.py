@@ -33,6 +33,7 @@
 import os
 import logging
 import copy
+import sys
 
 # kaa imports
 from kaa.strutils import str_to_unicode

@@ -32,6 +32,7 @@
 # python imports
 import struct
 import logging
+import sys
 
 # kaa imports
 from kaa.metadata import mediainfo

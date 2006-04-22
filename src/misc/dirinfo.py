@@ -34,6 +34,7 @@
 # python imports
 import os
 import logging
+import sys
 
 # kaa imports
 from kaa.strutils import unicode_to_str

@@ -32,6 +32,7 @@
 # python imports
 from gettext import GNUTranslations
 import os
+import sys
 
 LOCALEDIR = 'i18n'
 
