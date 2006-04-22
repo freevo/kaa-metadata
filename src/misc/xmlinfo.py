@@ -49,14 +49,21 @@ XML_TAG_INFO = {
 class XMLInfo(mediainfo.MediaInfo):
 
     def __init__(self,file):
-        if not os.path.splitext(file.name)[1].lower() in ('.xml', '.fxd'):
+        ext = os.path.splitext(file.name)[1].lower()
+        if not ext in ('.xml', '.fxd', '.html', '.htm'):
             raise mediainfo.KaaMetadataParseError()
 
         mediainfo.MediaInfo.__init__(self)
 
         self.mime  = 'text/xml'
         self.type  = ''
-
+        
+        if ext in ('.html', '.htm'):
+            # just believe that it is a html file
+            self.mime  = 'text/html'
+            self.type  = 'HTML Document'
+            return
+        
         libxml2.SAXParseFile(self, file.name, 10)
 
 
@@ -73,4 +80,5 @@ class XMLInfo(mediainfo.MediaInfo):
             self.type = 'XML file'
 
 
-factory.register( 'text/xml', ('xml', 'fxd'), mediainfo.TYPE_MISC, XMLInfo )
+factory.register( 'text/xml', ('xml', 'fxd', 'html', 'htm'),
+                  mediainfo.TYPE_MISC, XMLInfo )
