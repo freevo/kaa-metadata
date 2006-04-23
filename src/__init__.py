@@ -38,6 +38,7 @@ except ImportError:
 
 # import factory code for kaa.metadata access
 from factory import *
+from disc.discinfo import cdrom_disc_id as getid
 
 # use network functions
 USE_NETWORK     = 1
