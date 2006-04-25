@@ -49,6 +49,7 @@ log = logging.getLogger('metadata')
 # interesting file format info:
 # http://www.libpng.org/pub/png/png-sitemap.html#programming
 # http://pmt.sourceforge.net/pngmeta/
+# http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
 
 PNGSIGNATURE = "\211PNG\r\n\032\n"
 
@@ -82,38 +83,46 @@ class PNGInfo(core.ImageInfo):
             (length, type) = struct.unpack('>I4s', file.read(8))
         except (OSError, IOError):
             return 0
-        if ( type == 'tEXt' ):
-          log.debug('latin-1 Text found.')
-          (data, crc) = struct.unpack('>%isI' % length,file.read(length+4))
-          (key, value) = data.split('\0')
-          self.meta[key] = value
 
-        elif ( type == 'zTXt' ):
-          log.debug('Compressed Text found.')
-          (data,crc) = struct.unpack('>%isI' % length,file.read(length+4))
-          split = data.split('\0')
-          key = split[0]
-          value = "".join(split[1:])
-          compression = ord(value[0])
-          value = value[1:]
-          if compression == 0:
-              decompressed = zlib.decompress(value)
-              log.debug("%s (Compressed %i) -> %s" % \
-                        (key,compression,decompressed))
-          else:
-              log.debug("%s has unknown Compression %c" % (key,compression))
-          self.meta[key] = value
+        if type == 'IEND':
+            return 0
 
-        elif ( type == 'iTXt' ):
-          log.debug('International Text found.')
-          (data,crc) = struct.unpack('>%isI' % length,file.read(length+4))
-          (key, value) = data.split('\0')
-          self.meta[key] = value
+        elif type == 'IHDR':
+            data = file.read(length+4)
+            self.width, self.height, self.depth = struct.unpack(">IIb", data[:9])
+
+        elif type == 'tEXt':
+            log.debug('latin-1 Text found.')
+            (data, crc) = struct.unpack('>%isI' % length,file.read(length+4))
+            (key, value) = data.split('\0')
+            self.meta[key] = value
+
+        elif type == 'zTXt':
+            log.debug('Compressed Text found.')
+            (data,crc) = struct.unpack('>%isI' % length,file.read(length+4))
+            split = data.split('\0')
+            key = split[0]
+            value = "".join(split[1:])
+            compression = ord(value[0])
+            value = value[1:]
+            if compression == 0:
+                decompressed = zlib.decompress(value)
+                log.debug("%s (Compressed %i) -> %s" % \
+                          (key,compression,decompressed))
+            else:
+                log.debug("%s has unknown Compression %c" % (key,compression))
+            self.meta[key] = value
+
+        elif type == 'iTXt':
+            log.debug('International Text found.')
+            (data,crc) = struct.unpack('>%isI' % length,file.read(length+4))
+            (key, value) = data.split('\0')
+            self.meta[key] = value
 
         else:
-          file.seek(length+4,1)
-          log.debug("%s of length %d ignored." % (type, length))
-        return 1
+            file.seek(length+4,1)
+            log.debug("%s of length %d ignored." % (type, length))
 
+        return 1
 
 factory.register( 'image/png', ('png',), mediainfo.TYPE_IMAGE, PNGInfo )
