@@ -63,17 +63,12 @@ class XMLInfo(mediainfo.MediaInfo):
             self.mime  = 'text/html'
             self.type  = 'HTML Document'
             return
-        
-        libxml2.SAXParseFile(self, file.name, 10)
 
-
-    def startElement(self, tag, attrs):
-        """
-        Callback for <tag>
-        """
-        if self.type:
-            return
-
+        ctxt = libxml2.createFileParserCtxt(file.name)
+        # Silence parse errors
+        ctxt.setErrorHandler(lambda *args: None, None)
+        ctxt.parseDocument()
+        tag = ctxt.doc().children.name
         if tag in XML_TAG_INFO:
             self.type = XML_TAG_INFO[tag]
         else:
