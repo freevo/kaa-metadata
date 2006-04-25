@@ -811,7 +811,10 @@ class EXIF_header:
     def list_IFDs(self):
         i=self.first_IFD()
         a=[]
-        while i:
+        # This works around an infinite loop bug with malformed EXIF headers.
+        # See http://bugs.php.net/bug.php?id=34704 for more info.  This fix
+        # is a bit hasty and I'm not sure it's correct but it seems to work.
+        while i and len(a) < 10:
             a.append(i)
             i=self.next_IFD(i)
         return a
