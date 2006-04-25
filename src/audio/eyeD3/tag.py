@@ -1831,10 +1831,7 @@ class LinkedFile:
    tagSize = 0;  # This includes the padding byte count.
 
    def __init__(self, fileName):
-       if isinstance(fileName, str):
-           self.name = unicode(fileName, sys.getfilesystemencoding());
-       else:
-           self.name = fileName;
+       self.name = fileName
 
 def tagToUserTune(tag):
     audio_file = None;
