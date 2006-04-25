@@ -106,6 +106,8 @@ class JPGInfo(core.ImageInfo):
                 if data.count('\n') == 1:
                     key, value = data.split('\n')
                     self.meta[key] = value
+            elif segtype == 0xfe:
+                self.comment = file.read(seglen-2)
             else:
                 file.seek(seglen-2,1)
             app = file.read(4)
