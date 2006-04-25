@@ -68,11 +68,13 @@ class XMLInfo(mediainfo.MediaInfo):
         # Silence parse errors
         ctxt.setErrorHandler(lambda *args: None, None)
         ctxt.parseDocument()
-        tag = ctxt.doc().children.name
+        doc = ctxt.doc()
+        tag = doc.children.name
         if tag in XML_TAG_INFO:
             self.type = XML_TAG_INFO[tag]
         else:
             self.type = 'XML file'
+        doc.freeDoc()
 
 
 factory.register( 'text/xml', ('xml', 'fxd', 'html', 'htm'),
