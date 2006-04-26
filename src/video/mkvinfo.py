@@ -99,14 +99,14 @@ class EbmlEntity:
     def build_entity(self, inbuf):
         self.compute_id(inbuf)
 
-        if ( self.id_len == 0):
+        if self.id_len == 0:
             log.debug("EBML entity not found, bad file format")
             raise mediainfo.KaaMetadataParseError()
 
         self.entity_len = self.compute_len(inbuf[self.id_len:])
         # Obviously, the segment can be very long (ie the whole file, so we
         # truncate it at the read buffer size
-        if (self.entity_len == -1):
+        if self.entity_len == -1:
             self.entity_data = inbuf[self.id_len+self.len_size:]
             self.entity_len = len(self.entity_data) # Set the remaining size
         else:
@@ -129,52 +129,50 @@ class EbmlEntity:
     def compute_id(self, inbuf):
         first = ord(inbuf[0])
         self.id_len = 0
-        if (first & 0x80):
+        if first & 0x80:
             self.id_len = 1
             self.entity_id = first
-        elif (first & 0x40):
+        elif first & 0x40:
             self.id_len = 2
             self.entity_id = ord(inbuf[0])<<8 | ord(inbuf[1])
-        elif (first & 0x20):
+        elif first & 0x20:
             self.id_len = 3
             self.entity_id = (ord(inbuf[0])<<16) | (ord(inbuf[1])<<8) | \
                              (ord(inbuf[2]))
-        elif (first & 0x10):
+        elif first & 0x10:
             self.id_len = 4
             self.entity_id = (ord(inbuf[0])<<24) | (ord(inbuf[1])<<16) | \
                              (ord(inbuf[2])<<8) | (ord(inbuf[3]))
         self.entity_str = inbuf[0:self.id_len]
-        return
 
     def compute_len(self, inbuf):
         # Here we just handle the size up to 4 bytes
         # The size above will be truncated by the read buffer itself
         first = ord(inbuf[0])
-        if (first & 0x80):
+        if first & 0x80:
             self.len_size = 1
             return first - 0x80
-        if (first & 0x40):
+        if first & 0x40:
             self.len_size = 2
             (c1,c2) = unpack('BB',inbuf[:2])
             return ((c1-0x40)<<8) | (c2)
-        if (first & 0x20):
+        if first & 0x20:
             self.len_size = 3
             (c1, c2, c3) = unpack('BBB',inbuf[:3])
             return ((c1-0x20)<<16) | (c2<<8) | (c3)
-        if (first & 0x10):
+        if first & 0x10:
             self.len_size = 4
-            (len) = unpack('!I',inbuf[:4])
-            return len
-        if (first & 0x08):
+            return unpack('!I',inbuf[:4])
+        if first & 0x08:
             self.len_size = 5
             return -1
-        if (first & 0x04):
+        if first & 0x04:
             self.len_size = 6
             return -1
-        if (first & 0x02):
+        if first & 0x02:
             self.len_size = 7
             return -1
-        if (first & 0x01):
+        if first & 0x01:
             self.len_size = 8
             return -1
 
@@ -198,7 +196,7 @@ class EbmlEntity:
         return self.entity_len
 
     def get_total_len(self):
-        return self.entity_len+self.id_len+self.len_size
+        return self.entity_len + self.id_len+self.len_size
 
 
 class MkvInfo(mediainfo.AVInfo):
@@ -216,7 +214,7 @@ class MkvInfo(mediainfo.AVInfo):
 
         # Check the Matroska header
         header = EbmlEntity(buffer)
-        if ( header.get_id() != MATROSKA_HEADER_ID ):
+        if header.get_id() != MATROSKA_HEADER_ID:
             raise mediainfo.KaaMetadataParseError()
 
         log.debug("HEADER ID found %08X" % header.get_id() )
@@ -224,8 +222,8 @@ class MkvInfo(mediainfo.AVInfo):
         self.type = 'Matroska'
         # Now get the segment
         segment = EbmlEntity(buffer[header.get_total_len():])
-        if ( segment.get_id() == MATROSKA_SEGMENT_ID):
-            log.debug("SEGMENT ID found %08X" % segment.get_id() )
+        if segment.get_id() == MATROSKA_SEGMENT_ID:
+            log.debug("SEGMENT ID found %08X" % segment.get_id())
             segtab = self.process_one_level(segment)
             l = segtab[MATROSKA_SEGMENT_INFO_ID]
             seginfotab = self.process_one_level(l)
@@ -245,13 +243,13 @@ class MkvInfo(mediainfo.AVInfo):
             except (ZeroDivisionError, KeyError, IndexError):
                 pass
             try:
-                log.debug ("Searching for id : %X" % MATROSKA_TRACKS_ID)
+                log.debug("Searching for id : %X" % MATROSKA_TRACKS_ID)
                 entity = segtab[MATROSKA_TRACKS_ID]
                 self.process_tracks(entity)
             except (ZeroDivisionError, KeyError, IndexError):
                 log.debug("TRACKS ID not found !!" )
         else:
-            log.debug("SEGMENT ID not found %08X" % segment.get_id() )
+            log.debug("SEGMENT ID not found %08X" % segment.get_id())
 
 
     def process_tracks(self, tracks):
@@ -282,8 +280,8 @@ class MkvInfo(mediainfo.AVInfo):
         type = tabelem[MATROSKA_TRACK_TYPE_ID]
         mytype = type.get_value()
         log.debug ("Track type found with UID %d" % mytype)
-        if (mytype == MATROSKA_VIDEO_TRACK ):
-            log.debug("VIDEO TRACK found !!" )
+        if mytype == MATROSKA_VIDEO_TRACK:
+            log.debug("VIDEO TRACK found !!")
             vi = mediainfo.VideoInfo()
             try:
                 elem = tabelem[MATROSKA_CODEC_ID]
@@ -310,8 +308,8 @@ class MkvInfo(mediainfo.AVInfo):
                 log.debug("No other info about video track !!!")
             self.video.append(vi)
 
-        elif (mytype == MATROSKA_AUDIO_TRACK ):
-            log.debug("AUDIO TRACK found !!" )
+        elif mytype == MATROSKA_AUDIO_TRACK:
+            log.debug("AUDIO TRACK found !!")
             ai = mediainfo.AudioInfo()
             try:
                 elem = tabelem[MATROSKA_TRACK_LANGUAGE_ID]
@@ -329,15 +327,15 @@ class MkvInfo(mediainfo.AVInfo):
                 ai.codec = "Unknown"
             try:
                 ainfo = tabelem[MATROSKA_AUDIO_SETTINGS_ID]
-                audtab = self.process_one_level(vinfo)
+                audtab = self.process_one_level(ainfo)
                 as = audtab[MATROSKA_AUDIO_SAMPLERATE_ID].get_value()
-                ai.samplerate  = unpack('!f', as)[0]
+                ai.samplerate  = unpack('!f', pack("!I", as))[0]
                 ai.channels = audtab[MATROSKA_AUDIO_CHANNELS_ID].get_value()
             except (KeyError, IndexError):
                 log.debug("No other info about audio track !!!")
             self.audio.append(ai)
 
-        elif (mytype == MATROSKA_SUBTITLES_TRACK):
+        elif mytype == MATROSKA_SUBTITLES_TRACK:
             try:
                 elem = tabelem[MATROSKA_TRACK_LANGUAGE_ID]
                 language = elem.get_data()
