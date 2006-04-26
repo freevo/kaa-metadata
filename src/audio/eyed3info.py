@@ -143,6 +143,21 @@ class eyeD3Info(mediainfo.MusicInfo):
       try:
          if id3 and id3.tag:
             log.debug(id3.tag.frames)
+
+            # Grip unicode bug workaround: Grip stores text data as UTF-8
+            # and flags it as latin-1.  This workaround tries to decode
+            # these strings as utf-8 instead.
+            # http://sourceforge.net/tracker/index.php?func=detail&aid=1196919&group_id=3714&atid=103714
+            for frame in id3.tag.frames['COMM']:
+                if "created by grip" not in frame.comment.lower():
+                    continue
+                for frame in id3.tag.frames:
+                    if hasattr(frame, "text") and isinstance(frame.text, unicode):
+                        try:
+                            frame.text = frame.text.encode('latin-1').decode('utf-8')
+                        except:
+                            pass
+
             for k, var in MP3_INFO_TABLE.items():
                if id3.tag.frames[k]:
                   setattr(self, var, id3.tag.frames[k][0].text)
