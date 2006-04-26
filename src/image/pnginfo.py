@@ -37,6 +37,7 @@ import logging
 # kaa imports
 from kaa.metadata import mediainfo
 from kaa.metadata import factory
+from kaa.strutils import str_to_unicode
 
 # image imports
 import IPTC
@@ -84,6 +85,8 @@ class PNGInfo(core.ImageInfo):
         except (OSError, IOError):
             return 0
 
+        key = None
+
         if type == 'IEND':
             return 0
 
@@ -95,7 +98,7 @@ class PNGInfo(core.ImageInfo):
             log.debug('latin-1 Text found.')
             (data, crc) = struct.unpack('>%isI' % length,file.read(length+4))
             (key, value) = data.split('\0')
-            self.meta[key] = value
+            self.meta[key] = str_to_unicode(value)
 
         elif type == 'zTXt':
             log.debug('Compressed Text found.')
@@ -111,18 +114,20 @@ class PNGInfo(core.ImageInfo):
                           (key,compression,decompressed))
             else:
                 log.debug("%s has unknown Compression %c" % (key,compression))
-            self.meta[key] = value
+            self.meta[key] = str_to_unicode(value)
 
         elif type == 'iTXt':
             log.debug('International Text found.')
             (data,crc) = struct.unpack('>%isI' % length,file.read(length+4))
             (key, value) = data.split('\0')
-            self.meta[key] = value
+            self.meta[key] = str_to_unicode(value)
 
         else:
             file.seek(length+4,1)
             log.debug("%s of length %d ignored." % (type, length))
 
+        if key is not None and key.lower() == "comment":
+            self.comment = self.meta[key]
         return 1
 
 factory.register( 'image/png', ('png',), mediainfo.TYPE_IMAGE, PNGInfo )
