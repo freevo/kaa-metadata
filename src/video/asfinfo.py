@@ -274,6 +274,7 @@ class AsfInfo(mediainfo.AVInfo):
                 vi.width, vi.height, depth, \
                           codec, = struct.unpack('<4xII2xH4s', s[89:89+20])
                 vi.codec = fourcc.RIFFCODEC[codec]
+                vi.format = codec
                 vi.id = strno
                 self.video.append(vi)
             elif streamtype == GUIDS['ASF_Audio_Media']:
@@ -282,6 +283,7 @@ class AsfInfo(mediainfo.AVInfo):
                        ai.samplebits, = struct.unpack('<HHIIHH', s[78:78+16])
                 ai.bitrate = 8*bitrate  # XXX Is this right?
                 ai.codec = fourcc.RIFFWAVE[twocc]
+                ai.format = twocc
                 ai.id = strno
                 self.audio.append(ai)
             pass

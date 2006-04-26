@@ -56,10 +56,10 @@ TYPE_MISC      = 10
 MEDIACORE = ['title', 'caption', 'comment', 'artist', 'size', 'type',
              'subtype', 'date', 'keywords', 'country', 'language', 'url']
 
-AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec',
+AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
              'samplebits', 'bitrate', 'language']
 
-VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec',
+VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
              'samplebits', 'width', 'height', 'fps', 'aspect']
 
 MUSICCORE = ['trackno', 'trackof', 'album', 'genre','discs', 'image',

@@ -202,6 +202,7 @@ class RiffInfo(mediainfo.AVInfo):
                 ai.codec = fourcc.RIFFWAVE[retval['wFormatTag']]
             except (KeyError, IndexError):
                 ai.codec = "Unknown"
+            ai.format = retval['wFormatTag']
             self.audio.append(ai)
         elif fccType == 'vids':
             v = struct.unpack('<IIIHH',t[0:16])
@@ -227,6 +228,7 @@ class RiffInfo(mediainfo.AVInfo):
             vi.bitrate = strh['dwRate']
             vi.fps = round(float(strh['dwRate'] * 100) / strh['dwScale']) / 100
             vi.length = strh['dwLength'] / vi.fps
+            vi.format = retval['fourcc']
             self.video.append(vi)
         return retval
 
