@@ -155,7 +155,7 @@ class eyeD3Info(mediainfo.MusicInfo):
                     if hasattr(frame, "text") and isinstance(frame.text, unicode):
                         try:
                             frame.text = frame.text.encode('latin-1').decode('utf-8')
-                        except:
+                        except UnicodeError:
                             pass
 
             for k, var in MP3_INFO_TABLE.items():
