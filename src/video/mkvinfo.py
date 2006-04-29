@@ -6,9 +6,9 @@
 #
 # -----------------------------------------------------------------------------
 # kaa-Metadata - Media Metadata for Python
-# Copyright (C) 2003-2005 Thomas Schueppel, Dirk Meyer
+# Copyright (C) 2003-2005 Thomas Schueppel, Dirk Meyer, Jason Tackaberry
 #
-# Maintainer:    Dirk Meyer <dmeyer@tzi.de>
+# Maintainer:    Jason Tackaberry <tack@urandom.ca>
 #
 # Please see the file AUTHORS for a complete list of authors.
 #
@@ -47,38 +47,58 @@ from kaa.metadata import factory
 log = logging.getLogger('metadata')
 
 # Main IDs for the Matroska streams
-MATROSKA_VIDEO_TRACK     = 0x01
-MATROSKA_AUDIO_TRACK     = 0x02
-MATROSKA_SUBTITLES_TRACK = 0x11
+MATROSKA_VIDEO_TRACK              = 0x01
+MATROSKA_AUDIO_TRACK              = 0x02
+MATROSKA_SUBTITLES_TRACK          = 0x11
 
-MATROSKA_HEADER_ID  = 0x1A45DFA3
-MATROSKA_TRACKS_ID  = 0x1654AE6B
-MATROSKA_SEGMENT_ID = 0x18538067
-MATROSKA_SEGMENT_INFO_ID      = 0x1549A966
-MATROSKA_CLUSTER_ID           = 0x1F43B675
-MATROSKA_VOID_ID              = 0xEC
-MATROSKA_CRC_ID               = 0xBF
-MATROSKA_TIMECODESCALE_ID     = 0x2AD7B1
-MATROSKA_DURATION_ID          = 0x4489
-MATROSKA_CRC32_ID             = 0xBF
-MATROSKA_TRACK_TYPE_ID        = 0x83
-MATROSKA_TRACK_LANGUAGE_ID    = 0x22B59C
-MATROSKA_TIMECODESCALE_ID     = 0x4489
-MATROSKA_MUXING_APP_ID        = 0x4D80
-MATROSKA_WRITING_APP_ID       = 0x5741
-MATROSKA_CODEC_ID             = 0x86
-MATROSKA_CODEC_NAME_ID        = 0x258688
-MATROSKA_FRAME_DURATION_ID    = 0x23E383
-MATROSKA_VIDEO_SETTINGS_ID    = 0xE0
-MATROSKA_VID_WIDTH_ID         = 0xB0
-MATROSKA_VID_HEIGHT_ID        = 0xBA
-MATROSKA_DISPLAY_VID_WIDTH_ID = 0x54B0
-MATROSKA_DISPLAY_VID_HEIGHT_ID= 0x54BA
-MATROSKA_AUDIO_SETTINGS_ID    = 0xE1
-MATROSKA_AUDIO_SAMPLERATE_ID  = 0xB5
-MATROSKA_AUDIO_CHANNELS_ID    = 0x9F
-MATROSKA_TRACK_UID_ID         = 0x73C5
-MATROSKA_TRACK_NUMBER_ID      = 0xD7
+MATROSKA_HEADER_ID                = 0x1A45DFA3
+MATROSKA_TRACKS_ID                = 0x1654AE6B
+MATROSKA_SEGMENT_ID               = 0x18538067
+MATROSKA_SEGMENT_INFO_ID          = 0x1549A966
+MATROSKA_CLUSTER_ID               = 0x1F43B675
+MATROSKA_VOID_ID                  = 0xEC
+MATROSKA_CRC_ID                   = 0xBF
+MATROSKA_TIMECODESCALE_ID         = 0x2AD7B1
+MATROSKA_DURATION_ID              = 0x4489
+MATROSKA_CRC32_ID                 = 0xBF
+MATROSKA_TRACK_TYPE_ID            = 0x83
+MATROSKA_TRACK_LANGUAGE_ID        = 0x22B59C
+MATROSKA_TIMECODESCALE_ID         = 0x2AD7B1
+MATROSKA_MUXING_APP_ID            = 0x4D80
+MATROSKA_WRITING_APP_ID           = 0x5741
+MATROSKA_CODEC_ID                 = 0x86
+MATROSKA_CODEC_PRIVATE_ID         = 0x63A2
+MATROSKA_FRAME_DURATION_ID        = 0x23E383
+MATROSKA_VIDEO_SETTINGS_ID        = 0xE0
+MATROSKA_VID_WIDTH_ID             = 0xB0
+MATROSKA_VID_HEIGHT_ID            = 0xBA
+MATROSKA_DISPLAY_VID_WIDTH_ID     = 0x54B0
+MATROSKA_DISPLAY_VID_HEIGHT_ID    = 0x54BA
+MATROSKA_AUDIO_SETTINGS_ID        = 0xE1
+MATROSKA_AUDIO_SAMPLERATE_ID      = 0xB5
+MATROSKA_AUDIO_CHANNELS_ID        = 0x9F
+MATROSKA_TRACK_UID_ID             = 0x73C5
+MATROSKA_TRACK_NUMBER_ID          = 0xD7
+MATROSKA_TITLE_ID                 = 0x7BA9
+MATROSKA_DATE_UTC_ID              = 0x4461
+MATROSKA_NAME_ID                  = 0x536E
+
+MATROSKA_CHAPTERS_ID              = 0x1043A770
+MATROSKA_EDITION_ENTRY_ID         = 0x45B9
+MATROSKA_CHAPTER_ATOM_ID          = 0xB6
+MATROSKA_CHAPTER_TIME_START_ID    = 0x91
+MATROSKA_CHAPTER_TIME_END_ID      = 0x92
+MATROSKA_CHAPTER_FLAG_ENABLED_ID  = 0x4598
+MATROSKA_CHAPTER_DISPLAY_ID       = 0x80
+MATROSKA_CHAPTER_LANGUAGE_ID      = 0x437C
+MATROSKA_CHAPTER_STRING_ID        = 0x85
+
+MATROSKA_ATTACHMENTS_ID           = 0x1941A469
+MATROSKA_ATTACHED_FILE_ID         = 0x61A7
+MATROSKA_FILE_DESC_ID             = 0x467E
+MATROSKA_FILE_NAME_ID             = 0x466E
+MATROSKA_FILE_MIME_TYPE_ID        = 0x4660
+MATROSKA_FILE_DATA_ID             = 0x465C
 
 class EbmlEntity:
     """
@@ -116,15 +136,9 @@ class EbmlEntity:
 
         # if the size is 1, 2 3 or 4 it could be a numeric value, so do the job
         self.value = 0
-        if self.entity_len == 1:
-            self.value = ord(self.entity_data[0])
-        if self.entity_len == 2:
-            self.value = unpack('!H', self.entity_data)[0]
-        if self.entity_len == 3:
-            self.value = ord(self.entity_data[0])<<16 | \
-                         ord(self.entity_data[1])<<8 | ord(self.entity_data[2])
-        if self.entity_len == 4:
-            self.value = unpack('!I', self.entity_data)[0]
+        if self.entity_len <= 8:
+            for pos, shift in zip(range(self.entity_len), range((self.entity_len-1)*8, -1, -8)):
+                self.value |= ord(self.entity_data[pos]) << shift
 
     def compute_id(self, inbuf):
         first = ord(inbuf[0])
@@ -162,7 +176,8 @@ class EbmlEntity:
             return ((c1-0x20)<<16) | (c2<<8) | (c3)
         if first & 0x10:
             self.len_size = 4
-            return unpack('!I',inbuf[:4])
+            (c1, c2, c3, c4) = unpack('BBBB',inbuf[:4])
+            return ((c1-0x10)<<24) | (c2<<16) | (c3<<8) | c4
         if first & 0x08:
             self.len_size = 5
             return -1
@@ -180,8 +195,7 @@ class EbmlEntity:
         return self.crc_len
 
     def get_value(self):
-        value = self.value
-        return value
+        return self.value
 
     def get_data(self):
         return self.entity_data
@@ -230,24 +244,36 @@ class MkvInfo(mediainfo.AVInfo):
             try:
                 # Express scalecode in ms instead of ns
                 # Rescale it to the second
-                tc = seginfotab[MATROSKA_TIMECODESCALE_ID].get_value()
-                scalecode = float(tc / (1000*1000))
+                scalecode = seginfotab[MATROSKA_TIMECODESCALE_ID].get_value() / 1000.0
             except (ZeroDivisionError, KeyError, IndexError):
-                scalecode = 1000
+                scalecode = 1000.0
+
             try:
                 md = seginfotab[MATROSKA_DURATION_ID].get_data()
-                duration = float(unpack('!f', md)[0])
-                duration = float(duration / scalecode)
-                # Express the time in minutes
-                self.length = int(duration/60)
+                duration = unpack('!f', md)[0]
+                self.length = duration / scalecode
             except (ZeroDivisionError, KeyError, IndexError):
                 pass
+
+            if MATROSKA_TITLE_ID in seginfotab:
+                self.title = seginfotab[MATROSKA_TITLE_ID].get_data()
+
+            if MATROSKA_DATE_UTC_ID in seginfotab:
+                self.date =  unpack('!q', seginfotab[MATROSKA_DATE_UTC_ID].get_data())[0] / 10.0**9
+
             try:
                 log.debug("Searching for id : %X" % MATROSKA_TRACKS_ID)
                 entity = segtab[MATROSKA_TRACKS_ID]
                 self.process_tracks(entity)
             except (ZeroDivisionError, KeyError, IndexError):
                 log.debug("TRACKS ID not found !!" )
+
+            if MATROSKA_CHAPTERS_ID in segtab:
+                self.process_chapters(segtab[MATROSKA_CHAPTERS_ID])
+
+            if MATROSKA_ATTACHMENTS_ID in segtab:
+                self.process_attachments(segtab[MATROSKA_ATTACHMENTS_ID])
+
         else:
             log.debug("SEGMENT ID not found %08X" % segment.get_id())
 
@@ -280,69 +306,157 @@ class MkvInfo(mediainfo.AVInfo):
         type = tabelem[MATROSKA_TRACK_TYPE_ID]
         mytype = type.get_value()
         log.debug ("Track type found with UID %d" % mytype)
+        track = None
+
         if mytype == MATROSKA_VIDEO_TRACK:
             log.debug("VIDEO TRACK found !!")
-            vi = mediainfo.VideoInfo()
+            track = mediainfo.VideoInfo()
             try:
                 elem = tabelem[MATROSKA_CODEC_ID]
-                vi.codec = elem.get_data()
-                if vi.codec.startswith('V_'):
-                    vi.codec = vi.codec[2:]
+                track.codec = elem.get_data()
+                if track.codec.startswith('V_'):
+                    track.codec = track.codec[2:]
             except (ZeroDivisionError, KeyError, IndexError):
-                vi.codec = 'Unknown'
+                track.codec = 'Unknown'
+
+            if MATROSKA_CODEC_PRIVATE_ID in tabelem:
+                if tabelem[MATROSKA_CODEC_PRIVATE_ID].get_len() == 40:
+                    # Assuming it's a alBITMAPINFOHEADER, grab fourcc
+                    track.format = tabelem[MATROSKA_CODEC_PRIVATE_ID].get_data()[16:20]
+
             try:
                 elem = tabelem[MATROSKA_FRAME_DURATION_ID]
-                vi.fps = 1 / (pow(10, -9) * (elem.get_value()))
+                track.fps = 1 / (pow(10, -9) * (elem.get_value()))
             except (ZeroDivisionError, KeyError, IndexError):
-                vi.fps = 0
+                track.fps = 0
+
             try:
                 vinfo = tabelem[MATROSKA_VIDEO_SETTINGS_ID]
                 vidtab = self.process_one_level(vinfo)
-                vi.width  = vidtab[MATROSKA_VID_WIDTH_ID].get_value()
-                vi.height = vidtab[MATROSKA_VID_HEIGHT_ID].get_value()
+                track.width  = vidtab[MATROSKA_VID_WIDTH_ID].get_value()
+                track.height = vidtab[MATROSKA_VID_HEIGHT_ID].get_value()
                 if vidtab.has_key(MATROSKA_DISPLAY_VID_WIDTH_ID) and \
                    vidtab.has_key(MATROSKA_DISPLAY_VID_HEIGHT_ID):
-                    vi.aspect = float(vidtab[MATROSKA_DISPLAY_VID_WIDTH_ID].get_value()) / \
+                    track.aspect = float(vidtab[MATROSKA_DISPLAY_VID_WIDTH_ID].get_value()) / \
                                 vidtab[MATROSKA_DISPLAY_VID_HEIGHT_ID].get_value()
             except Exception, e:
                 log.debug("No other info about video track !!!")
-            self.video.append(vi)
+            self.video.append(track)
 
         elif mytype == MATROSKA_AUDIO_TRACK:
             log.debug("AUDIO TRACK found !!")
-            ai = mediainfo.AudioInfo()
-            try:
-                elem = tabelem[MATROSKA_TRACK_LANGUAGE_ID]
-                ai.language = elem.get_data()
-                ai['language'] = elem.get_data()
-            except (KeyError, IndexError):
-                ai.language = 'en'
-                ai['language'] = 'en'
+            track = mediainfo.AudioInfo()
+
             try:
                 elem = tabelem[MATROSKA_CODEC_ID]
-                ai.codec = elem.get_data()
-                if ai.codec.startswith('A_'):
-                    ai.codec = ai.codec[2:]
+                track.codec = elem.get_data()
+                if track.codec.startswith('A_'):
+                    track.codec = track.codec[2:]
             except (KeyError, IndexError):
-                ai.codec = "Unknown"
+                track.codec = "Unknown"
+
             try:
                 ainfo = tabelem[MATROSKA_AUDIO_SETTINGS_ID]
                 audtab = self.process_one_level(ainfo)
-                as = audtab[MATROSKA_AUDIO_SAMPLERATE_ID].get_value()
-                ai.samplerate  = unpack('!f', pack("!I", as))[0]
-                ai.channels = audtab[MATROSKA_AUDIO_CHANNELS_ID].get_value()
+                track.samplerate  = unpack('!f', audtab[MATROSKA_AUDIO_SAMPLERATE_ID].get_data())[0]
+                track.channels = audtab[MATROSKA_AUDIO_CHANNELS_ID].get_value()
             except (KeyError, IndexError):
                 log.debug("No other info about audio track !!!")
-            self.audio.append(ai)
+
+            self.audio.append(track)
 
         elif mytype == MATROSKA_SUBTITLES_TRACK:
-            try:
-                elem = tabelem[MATROSKA_TRACK_LANGUAGE_ID]
-                language = elem.get_data()
-                log.debug ("Subtitle language found : %s" % elem.get_data() )
-            except (KeyError, IndexError):
-                language = "en" # By default
-            self.subtitles.append(language)
+            track = mediainfo.SubtitleInfo()
+            self.subtitles.append(track)
 
+        if not track:
+            return
+
+        if MATROSKA_TRACK_LANGUAGE_ID in tabelem:
+            track.language = tabelem[MATROSKA_TRACK_LANGUAGE_ID].get_data()
+            log.debug("Track language found: %s" % track.language)
+        else:
+            track.language = "und"
+
+        if MATROSKA_NAME_ID in tabelem:
+            track.title = tabelem[MATROSKA_NAME_ID].get_data()
+
+        if MATROSKA_TRACK_NUMBER_ID in tabelem:
+            track.trackno = tabelem[MATROSKA_TRACK_NUMBER_ID].get_value()
+
+
+    def process_chapters(self, chapters):
+        tabelem = self.process_one_level(chapters)
+        if MATROSKA_EDITION_ENTRY_ID not in tabelem:
+            return
+
+        entry = tabelem[MATROSKA_EDITION_ENTRY_ID]
+        buf = entry.get_data()
+        indice = 0
+        while indice < entry.get_len():
+            elem = EbmlEntity(buf[indice:])
+            if elem.get_id() == MATROSKA_CHAPTER_ATOM_ID:
+                self.process_chapter_atom(elem)
+            indice += elem.get_total_len() + elem.get_crc_len()
+ 
+        
+    def process_chapter_atom(self, atom):
+        tabelem = self.process_one_level(atom)
+        chap = mediainfo.ChapterInfo()
+
+        if MATROSKA_CHAPTER_TIME_START_ID in tabelem:
+            # Scale timecode to seconds (float)
+            chap.pos = tabelem[MATROSKA_CHAPTER_TIME_START_ID].get_value() / 1000000 / 1000.0
+
+        if MATROSKA_CHAPTER_FLAG_ENABLED_ID in tabelem:
+            chap.enabled = tabelem[MATROSKA_CHAPTER_FLAG_ENABLED_ID].get_value()
+
+        if MATROSKA_CHAPTER_DISPLAY_ID in tabelem:
+            # Matroska supports multiple (chapter name, language) pairs for
+            # each chapter, so chapter names can be internationalized.  This
+            # logic will only take the last one in the list.
+            tabelem = self.process_one_level(tabelem[MATROSKA_CHAPTER_DISPLAY_ID])
+            if MATROSKA_CHAPTER_STRING_ID in tabelem:
+                chap.name = tabelem[MATROSKA_CHAPTER_STRING_ID].get_data()
+
+        log.debug('Chapter "%s" found' % str(chap.name))
+        self.chapters.append(chap)
+
+
+    def process_attachments(self, attachments):
+        buf = attachments.get_data()
+        indice = 0
+        while indice < attachments.get_len():
+            elem = EbmlEntity(buf[indice:])
+            if elem.get_id() == MATROSKA_ATTACHED_FILE_ID:
+                self.process_attachment(elem)
+            indice += elem.get_total_len() + elem.get_crc_len()
+
+
+    def process_attachment(self, attachment):
+        tabelem = self.process_one_level(attachment)
+        name = desc = mimetype = ""
+
+        if MATROSKA_FILE_NAME_ID in tabelem:
+            name = tabelem[MATROSKA_FILE_NAME_ID].get_data()
+        if MATROSKA_FILE_DESC_ID in tabelem:
+            desc = tabelem[MATROSKA_DESC_NAME_ID].get_data()
+        if MATROSKA_FILE_MIME_TYPE_ID in tabelem:
+            mimetype = tabelem[MATROSKA_FILE_MIME_TYPE_ID].get_data()
+        if MATROSKA_FILE_DATA_ID in tabelem:
+            data = tabelem[MATROSKA_FILE_DATA_ID].get_data()
+        else:
+            data = None
+
+        # Right now we only support attachments that could be cover images.
+        # Make a guess to see if this attachment is a cover image.
+        if mimetype.startswith("image/") and "cover" in (name+desc).lower() and data:
+            try:
+                import kaa.imlib2
+                self.cover = kaa.imlib2.open_from_memory(data)
+            except:
+                pass
+
+        log.debug('Attachment "%s" found' % name)
 
 factory.register( 'application/mkv', ('mkv', 'mka',), mediainfo.TYPE_AV, MkvInfo )

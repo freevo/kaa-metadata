@@ -53,14 +53,14 @@ TYPE_MUSIC     = 6
 TYPE_HYPERTEXT = 8
 TYPE_MISC      = 10
 
-MEDIACORE = ['title', 'caption', 'comment', 'artist', 'size', 'type',
+MEDIACORE = ['title', 'caption', 'comment', 'artist', 'size', 'type', 'cover',
              'subtype', 'date', 'keywords', 'country', 'language', 'url']
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
-             'samplebits', 'bitrate', 'language']
+             'samplebits', 'bitrate', 'language', 'title', 'trackno']
 
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
-             'samplebits', 'width', 'height', 'fps', 'aspect']
+             'samplebits', 'width', 'height', 'fps', 'aspect', 'title', 'trackno']
 
 MUSICCORE = ['trackno', 'trackof', 'album', 'genre','discs', 'image',
              'raw_image']
@@ -309,10 +309,21 @@ class ChapterInfo(MediaInfo):
     """
     Chapter in a Multiplexed Container.
     """
-    def __init__(self, name, pos=0):
-        self.keys = ['name', 'pos']
+    def __init__(self, name="", pos=0):
+        self.keys = ['name', 'pos', 'enabled']
         setattr(self,'name', name)
         setattr(self,'pos', pos)
+        setattr(self,'enabled', True)
+
+
+class SubtitleInfo(MediaInfo):
+    """
+    Subtitle Tracks in a Multiplexed Container.
+    """
+    def __init__(self):
+        self.keys = ['language', 'trackno', 'title']
+        for k in self.keys:
+            setattr(self, k, None)
 
 
 class AVInfo(MediaInfo):
@@ -352,11 +363,12 @@ class AVInfo(MediaInfo):
                (os.path.isfile(base+'.sub') or os.path.isfile(base+'.rar')):
             file = open(base+'.idx')
             if file.readline().find('VobSub index file') > 0:
-                line = file.readline()
-                while (line):
+                for line in file.readlines():
                     if line.find('id') == 0:
-                        self.subtitles.append(line[4:6])
-                    line = file.readline()
+                        sub = SubtitleInfo()
+                        sub.language = line[4:6]
+                        sub.trackno = base + '.idx'  # Maybe not?
+                        self.subtitles.append(sub)
             file.close()
 
 
@@ -374,12 +386,15 @@ class AVInfo(MediaInfo):
             if len(self.subtitles):
                 result += reduce( lambda a,b: a + u'  \n   Subtitle Stream:' +\
                                   unicode(b), self.subtitles, u'' )
+
         if not isinstance(self.chapters, int) and len(self.chapters) > 0:
             result += u'\n Chapter list:'
             for i in range(len(self.chapters)):
-                result += u'\n   %2s: "%s" %s' % \
+                pos = self.chapters[i]['pos']
+                result += u'\n   %2s: "%s" %02d:%02d:%02d.%03d' % \
                           (i+1, unicode(self.chapters[i]['name']),
-                           self.chapters[i]['pos'])
+                           int(pos)/60/60, int(pos/60) % 60, 
+                           int(pos)%60, (pos-int(pos))*1000)
         return result
 
 
