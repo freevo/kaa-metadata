@@ -197,6 +197,13 @@ class EbmlEntity:
     def get_value(self):
         return self.value
 
+    def get_float_value(self):
+        if len(self.entity_data) == 4:
+            return unpack('!f', self.entity_data)[0]
+        elif len(self.entity_data) == 8:
+            return unpack('!d', self.entity_data)[0]
+        return 0.0
+
     def get_data(self):
         return self.entity_data
 
@@ -220,6 +227,7 @@ class MkvInfo(mediainfo.AVInfo):
     def __init__(self, file):
         mediainfo.AVInfo.__init__(self)
         self.samplerate = 1
+        self.media = 'audio'
 
         buffer = file.read(80000)
         if len(buffer) == 0:
@@ -244,14 +252,13 @@ class MkvInfo(mediainfo.AVInfo):
             try:
                 # Express scalecode in ms instead of ns
                 # Rescale it to the second
-                scalecode = seginfotab[MATROSKA_TIMECODESCALE_ID].get_value() / 1000.0
+                scalecode = seginfotab[MATROSKA_TIMECODESCALE_ID].get_value()
             except (ZeroDivisionError, KeyError, IndexError):
-                scalecode = 1000.0
+                scalecode = 1000000.0
 
             try:
-                md = seginfotab[MATROSKA_DURATION_ID].get_data()
-                duration = unpack('!f', md)[0]
-                self.length = duration / scalecode
+                duration = seginfotab[MATROSKA_DURATION_ID].get_float_value()
+                self.length = duration * scalecode / 1000000000.0
             except (ZeroDivisionError, KeyError, IndexError):
                 pass
 
@@ -260,6 +267,8 @@ class MkvInfo(mediainfo.AVInfo):
 
             if MATROSKA_DATE_UTC_ID in seginfotab:
                 self.date =  unpack('!q', seginfotab[MATROSKA_DATE_UTC_ID].get_data())[0] / 10.0**9
+                # Date is offset 2001-01-01 00:00:00 (timestamp 978307200.0)
+                self.date += 978307200.0
 
             try:
                 log.debug("Searching for id : %X" % MATROSKA_TRACKS_ID)
@@ -341,6 +350,7 @@ class MkvInfo(mediainfo.AVInfo):
                                 vidtab[MATROSKA_DISPLAY_VID_HEIGHT_ID].get_value()
             except Exception, e:
                 log.debug("No other info about video track !!!")
+            self.media = 'video'
             self.video.append(track)
 
         elif mytype == MATROSKA_AUDIO_TRACK:
@@ -358,7 +368,7 @@ class MkvInfo(mediainfo.AVInfo):
             try:
                 ainfo = tabelem[MATROSKA_AUDIO_SETTINGS_ID]
                 audtab = self.process_one_level(ainfo)
-                track.samplerate  = unpack('!f', audtab[MATROSKA_AUDIO_SAMPLERATE_ID].get_data())[0]
+                track.samplerate  = audtab[MATROSKA_AUDIO_SAMPLERATE_ID].get_float_value()
                 track.channels = audtab[MATROSKA_AUDIO_CHANNELS_ID].get_value()
             except (KeyError, IndexError):
                 log.debug("No other info about audio track !!!")
