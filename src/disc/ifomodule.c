@@ -41,6 +41,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <inttypes.h>
+#include <stdint.h>
 
 #include <dvdread/dvd_reader.h>
 #include <dvdread/ifo_types.h>
