@@ -41,7 +41,7 @@ from kaa.strutils import str_to_unicode
 # kaa metadata imports
 import table
 
-UNPRINTABLE_KEYS = [ 'thumbnail', 'raw_image']
+UNPRINTABLE_KEYS = [ 'thumbnail']
 
 # type definitions
 TYPE_NONE      = 0
@@ -57,13 +57,13 @@ MEDIACORE = ['title', 'caption', 'comment', 'artist', 'size', 'type', 'cover',
              'subtype', 'date', 'keywords', 'country', 'language', 'url']
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
-             'samplebits', 'bitrate', 'language', 'title', 'trackno']
+             'samplebits', 'bitrate', 'language', 'title' ]
 
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
              'samplebits', 'width', 'height', 'fps', 'aspect', 'title', 'trackno']
 
 MUSICCORE = ['trackno', 'trackof', 'album', 'genre','discs', 'image',
-             'raw_image']
+             'thumbnail']
 
 AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'genre', 'secondary genre', 'subject', 'writer', 'producer',

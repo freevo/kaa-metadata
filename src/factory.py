@@ -119,9 +119,9 @@ class _Factory:
         """
         import mediainfo
         import audio.ogginfo
-        import audio.pcminfo
         import audio.m4ainfo
         import audio.ac3info
+        import audio.pcminfo
         import video.riffinfo
         import video.mpeginfo
         import video.asfinfo
