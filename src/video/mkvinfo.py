@@ -302,6 +302,8 @@ class MkvInfo(mediainfo.AVInfo):
         indice = 0
         tabelem = {}
         while indice < item.get_len():
+            if len(buf[indice:]) == 0:
+                break
             elem = EbmlEntity(buf[indice:])
             tabelem[elem.get_id()] = elem
             indice += elem.get_total_len() + elem.get_crc_len()
@@ -450,7 +452,7 @@ class MkvInfo(mediainfo.AVInfo):
         if MATROSKA_FILE_NAME_ID in tabelem:
             name = tabelem[MATROSKA_FILE_NAME_ID].get_data()
         if MATROSKA_FILE_DESC_ID in tabelem:
-            desc = tabelem[MATROSKA_DESC_NAME_ID].get_data()
+            desc = tabelem[MATROSKA_FILE_DESC_ID].get_data()
         if MATROSKA_FILE_MIME_TYPE_ID in tabelem:
             mimetype = tabelem[MATROSKA_FILE_MIME_TYPE_ID].get_data()
         if MATROSKA_FILE_DATA_ID in tabelem:
