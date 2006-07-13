@@ -82,21 +82,21 @@ def gettype(mimetype, extensions):
 if TIME_DEBUG:
     import time
 
-    def parse(filename):
+    def parse(filename, force=True):
         """
         parse a file
         """
         t1 = time.time()
-        result = Factory().create(filename)
+        result = Factory().create(filename, force)
         t2 = time.time()
         log.info('%s took %s seconds' % (filename, (t2-t1)))
         return result
 else:
-    def parse(filename):
+    def parse(filename, force=True):
         """
         parse a file
         """
-        return Factory().create(filename)
+        return Factory().create(filename, force)
         
 
 class _Factory:
@@ -170,7 +170,7 @@ class _Factory:
         import misc.dirinfo
 
 
-    def create_from_file(self, file):
+    def create_from_file(self, file, force=True):
         """
         create based on the file stream 'file
         """
@@ -188,6 +188,10 @@ class _Factory:
             except:
                 log.exception('parse error')
 
+        if not force:
+            log.info('No Type found by Extension. Give up')
+            return None
+        
         log.info('No Type found by Extension. Trying all')
 
         for e in self.types:
@@ -202,7 +206,7 @@ class _Factory:
         return None
 
 
-    def create_from_url(self,url):
+    def create_from_url(self, url, force=True):
         """
         Create information for urls. This includes file:// and cd://
         """
@@ -211,10 +215,10 @@ class _Factory:
 
         if scheme == 'file':
             (scheme, location, path, query, fragment) = split
-            return self.create_from_filename(location+path)
+            return self.create_from_filename(location+path, force)
 
         elif scheme == 'cdda':
-            r = self.create_from_filename(split[4])
+            r = self.create_from_filename(split[4], force)
             if r:
                 r.url = url
             return r
@@ -248,7 +252,7 @@ class _Factory:
         pass
 
 
-    def create_from_filename(self, filename):
+    def create_from_filename(self, filename, force=True):
         """
         Create information for the given filename
         """
@@ -262,7 +266,7 @@ class _Factory:
                 return None
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(0)
-            r = self.create_from_file(f)
+            r = self.create_from_file(f, force)
             f.close()
             if r:
                 r.url = 'file://%s' % os.path.abspath(filename)
@@ -310,7 +314,7 @@ class _Factory:
         return None
 
 
-    def create(self, name):
+    def create(self, name, force=True):
         """
         Global 'create' function. This function calls the different
         'create_from_'-functions.
@@ -329,7 +333,7 @@ class _Factory:
                 pass
             if os.path.isdir(name):
                 return self.create_from_directory(name)
-            return self.create_from_filename(name)
+            return self.create_from_filename(name, force)
         except (KeyboardInterrupt, SystemExit):
             sys.exit(0)
         except:
