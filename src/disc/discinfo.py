@@ -70,6 +70,7 @@ def cdrom_disc_status(device, handle_mix = 0):
         CDIOREADTOCENTRYS = 0xc0086305L
         CD_MSF_FORMAT = 2
 
+    fd = None
     try:
         fd = os.open(device, os.O_RDONLY | os.O_NONBLOCK)
         if os.uname()[0] == 'FreeBSD':
@@ -91,7 +92,8 @@ def cdrom_disc_status(device, handle_mix = 0):
         # open fails and there is no fd, maye we aren't running
         # linux and don't have ioctl
         try:
-            os.close(fd)
+            if fd:
+                os.close(fd)
         except (OSError, IOError):
             pass
         return 0
