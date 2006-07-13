@@ -68,7 +68,15 @@ class XMLInfo(mediainfo.MediaInfo):
         # Silence parse errors
         ctxt.setErrorHandler(lambda *args: None, None)
         ctxt.parseDocument()
-        doc = ctxt.doc()
+
+        try:
+            doc = ctxt.doc()
+        except libxml2.parserError:
+            raise mediainfo.KaaMetadataParseError()
+
+        if not doc or not doc.children or not doc.children.name:
+            raise mediainfo.KaaMetadataParseError()
+
         tag = doc.children.name
         if tag in XML_TAG_INFO:
             self.type = XML_TAG_INFO[tag]
