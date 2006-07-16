@@ -122,6 +122,7 @@ class _Factory:
         import audio.m4ainfo
         import audio.ac3info
         import audio.pcminfo
+        import audio.adtsinfo
         import video.riffinfo
         import video.mpeginfo
         import video.asfinfo
