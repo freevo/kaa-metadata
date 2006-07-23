@@ -54,13 +54,16 @@ MEDIACORE = ['title', 'caption', 'comment', 'artist', 'size', 'type',
              'subtype', 'date', 'keywords', 'country', 'language', 'url']
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
-             'samplebits', 'bitrate', 'language' ]
+             'samplebits', 'bitrate' ]
 
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
-             'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno']
+             'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno' ]
 
-MUSICCORE = ['trackno', 'trackof', 'album', 'genre','discs', 'image',
-             'thumbnail']
+MUSICCORE = ['trackno', 'trackof', 'album', 'genre','discs', 'thumbnail' ]
+
+# AVCORE is such a funny list. Who created it? I don't see any parser
+# that could ever fill out stuff like 'production designer'. Making this
+# list smaller would make kaa.metadata faster.
 
 AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'genre', 'secondary genre', 'subject', 'writer', 'producer',
@@ -72,7 +75,7 @@ AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'sharpness', 'dimensions', 'lightness', 'dots per inch',
              'palette setting', 'default audio stream', 'logo url',
              'watermark url', 'info url', 'banner image', 'banner url',
-             'infotext', 'delay', 'image']
+             'infotext', 'delay', 'image' ]
 
 
 EXTENSION_DEVICE    = 'device'
