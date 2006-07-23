@@ -38,9 +38,9 @@ from kaa.metadata import mediainfo
 from kaa.metadata import factory
 
 # image imports
-import IPTC
 import EXIF
 import core
+from iptcinfo import IPTCInfo, c_datasets as IPTCkeys
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -64,12 +64,10 @@ SOF = { 0xC0 : "Baseline",
         0xCF : "Differential lossless, arithmetic coding",
 }
 
-
 class JPGInfo(core.ImageInfo):
 
     def __init__(self,file):
         core.ImageInfo.__init__(self)
-        iptc_info = None
         self.mime = 'image/jpeg'
         self.type = 'jpeg image'
 
@@ -85,7 +83,8 @@ class JPGInfo(core.ImageInfo):
         file.seek(2)
         app = file.read(4)
         self.meta = {}
-
+        iptc_info = None
+        
         while (len(app) == 4):
             (ff,segtype,seglen) = struct.unpack(">BBH", app)
             if ff != 0xff: break
@@ -97,8 +96,7 @@ class JPGInfo(core.ImageInfo):
                 (precision,self.height,self.width,\
                  num_comp) = struct.unpack('>BHHB', data[:6])
             elif segtype == 0xed:
-                app = file.read(seglen-2)
-                iptc_info = IPTC.flatten(IPTC.parseiptc(app))
+                iptc_info = IPTCInfo(file.name)
                 break
             elif segtype == 0xe7:
                 # information created by libs like epeg
@@ -123,13 +121,20 @@ class JPGInfo(core.ImageInfo):
             self.appendtable( 'EXIF', exif_info )
 
         if iptc_info:
-            self.setitem( 'title', iptc_info, 517, True )
-            self.setitem( 'date' , iptc_info, 567, True )
-            self.setitem( 'comment', iptc_info, 617, True )
-            self.setitem( 'keywords', iptc_info, 537, True )
-            self.setitem( 'artist', iptc_info, 592, True )
-            self.setitem( 'country', iptc_info, 612, True )
-            self.setitem( 'caption', iptc_info, 632, True )
+            i = iptc_info.data
+            iptc_info = {}
+            for key, value in IPTCkeys.items():
+                if key in i and i[value]:
+                    iptc_info[value] = i[value]
+            self.setitem( 'title', iptc_info, 'by-line title', True )
+            self.setitem( 'title', iptc_info, 'headline', True )
+            self.setitem( 'date' , iptc_info, 'date created', True )
+            self.setitem( 'keywords', iptc_info, 'keywords', False )
+            self.setitem( 'artist', iptc_info, 'writer/editor', True )
+            self.setitem( 'artist', iptc_info, 'credit', True )
+            self.setitem( 'country', iptc_info, 'country/primary location name', True )
+            self.setitem( 'caption', iptc_info, 'caption/abstract', True )
+            self.setitem( 'city', iptc_info, 'city', True )
             self.appendtable( 'IPTC', iptc_info )
 
         if len(self.meta.keys()):
@@ -141,4 +146,9 @@ class JPGInfo(core.ImageInfo):
                 if not key in self.keys:
                     self.keys.append(key)
 
+    def IPTC(self):
+        if not self.url.startswith('file://'):
+            return None
+        return IPTCInfo(self.url[6:], force=True)
+    
 factory.register( 'image/jpeg', ('jpg','jpeg'), mediainfo.TYPE_IMAGE, JPGInfo )
