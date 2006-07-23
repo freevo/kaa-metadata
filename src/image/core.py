@@ -45,7 +45,7 @@ log = logging.getLogger('metadata')
 
 # attributes for image files
 ATTRIBUTES = ['description', 'people', 'location', 'event', 'width', 'height',
-              'thumbnail','software','hardware', 'dpi']
+              'thumbnail','software','hardware', 'dpi', 'city']
 
 
 class ImageInfo(mediainfo.MediaInfo):
@@ -57,6 +57,7 @@ class ImageInfo(mediainfo.MediaInfo):
         for k in ATTRIBUTES:
             setattr(self,k,None)
             self.keys.append(k)
+
 
     def correct_data(self):
         """
