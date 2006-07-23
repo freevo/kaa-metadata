@@ -36,7 +36,7 @@ import copy
 import sys
 
 # kaa imports
-from kaa.strutils import str_to_unicode
+from kaa.strutils import str_to_unicode, unicode_to_str
 
 # kaa metadata imports
 import table
@@ -57,10 +57,10 @@ MEDIACORE = ['title', 'caption', 'comment', 'artist', 'size', 'type', 'cover',
              'subtype', 'date', 'keywords', 'country', 'language', 'url']
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
-             'samplebits', 'bitrate', 'language', 'title' ]
+             'samplebits', 'bitrate', 'language' ]
 
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
-             'samplebits', 'width', 'height', 'fps', 'aspect', 'title', 'trackno']
+             'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno']
 
 MUSICCORE = ['trackno', 'trackof', 'album', 'genre','discs', 'image',
              'thumbnail']
@@ -116,7 +116,6 @@ class MediaInfo:
 
     def __unicode__(self):
         keys = copy.copy(self.keys)
-
         hidden = []
         for k in UNPRINTABLE_KEYS:
             if k in keys:
@@ -141,6 +140,10 @@ class MediaInfo:
         return result
 
 
+    def __str__(self):
+        return unicode_to_str(unicode(self))
+
+    
     def appendtable(self, name, hashmap, language='en'):
         """
         Appends a tables of additional metadata to the Object.
@@ -184,9 +187,10 @@ class MediaInfo:
         """
         try:
             if self.__dict__.has_key(item):
-                if convert_to_str:
-                    if not isinstance(dict[key], unicode):
-                        self.__dict__[item] = str_to_unicode(str(dict[key]))
+                if not dict[key]:
+                    return
+                if convert_to_str and not isinstance(dict[key], unicode):
+                    self.__dict__[item] = str_to_unicode(str(dict[key]))
                 else:
                     self.__dict__[item] = dict[key]
             else:

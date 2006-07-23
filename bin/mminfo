@@ -38,7 +38,6 @@ import logging
 
 # kaa.metadata imports
 import kaa.metadata
-from kaa.strutils import unicode_to_str
 
 def usage():
     print
@@ -95,7 +94,7 @@ for file in args:
     else:
         print "filename : %s" % file
     if medium:
-        print unicode_to_str(unicode(medium))
+        print medium
         print
     else:
         print "No Match found"
