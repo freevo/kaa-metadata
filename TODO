@@ -15,5 +15,10 @@ Create doc in the Wiki and dump it into the doc subdir
 
 Add list of external files kaa.vfs should know about
 
-Move some code from mediainfo to media/core.py See image/core.py was
+Move some code from mediainfo to media/core.py See image/core.py as
 example.
+
+Check attributes. Some are very similar and could be merged
+
+Cleanup stuff about what is stored in the __dict__ and what is a 
+memeber variable.
