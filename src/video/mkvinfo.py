@@ -463,11 +463,7 @@ class MkvInfo(mediainfo.AVInfo):
         # Right now we only support attachments that could be cover images.
         # Make a guess to see if this attachment is a cover image.
         if mimetype.startswith("image/") and "cover" in (name+desc).lower() and data:
-            try:
-                import kaa.imlib2
-                self.cover = kaa.imlib2.open_from_memory(data)
-            except:
-                pass
+            self.thumbnail = data
 
         log.debug('Attachment "%s" found' % name)
 

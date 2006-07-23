@@ -164,7 +164,7 @@ class eyeD3Info(mediainfo.MusicInfo):
             if id3.tag.frames['APIC']:
                pic = id3.tag.frames['APIC'][0]
                if pic.imageData:
-                  setattr(self, 'thumbnail', pic.imageData)
+                  self.thumbnail = pic.imageData
             if id3.tag.getYear():
                self.date = id3.tag.getYear()
             tab = {}

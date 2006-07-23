@@ -53,7 +53,7 @@ TYPE_MUSIC     = 6
 TYPE_HYPERTEXT = 8
 TYPE_MISC      = 10
 
-MEDIACORE = ['title', 'caption', 'comment', 'artist', 'size', 'type', 'cover',
+MEDIACORE = ['title', 'caption', 'comment', 'artist', 'size', 'type',
              'subtype', 'date', 'keywords', 'country', 'language', 'url']
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
