@@ -38,9 +38,6 @@ import sys
 # kaa imports
 from kaa.strutils import str_to_unicode, unicode_to_str
 
-# kaa metadata imports
-import table
-
 UNPRINTABLE_KEYS = [ 'thumbnail']
 
 # type definitions
@@ -151,8 +148,7 @@ class MediaInfo:
         added to the existing one.
         """
         if not self._tables.has_key((name, language)):
-            self._tables[(name, language)] = \
-                                table.Table(hashmap, name, language)
+            self._tables[(name, language)] = hashmap
         else:
             # Append to the already existing table
             for k in hashmap.keys():
