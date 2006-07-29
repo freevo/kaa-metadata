@@ -96,7 +96,7 @@ class JPGInfo(core.ImageInfo):
                 (precision,self.height,self.width,\
                  num_comp) = struct.unpack('>BHHB', data[:6])
             elif segtype == 0xed:
-                iptc_info = IPTCInfo(file.name)
+                iptc_info = IPTCInfo(file.name, force=True)
                 break
             elif segtype == 0xe7:
                 # information created by libs like epeg
