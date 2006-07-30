@@ -266,7 +266,7 @@ class AudioInfo(MediaInfo):
     Audio Tracks in a Multiplexed Container.
     """
     def __init__(self):
-        self.keys = []
+        MediaInfo.__init__(self)
         for k in AUDIOCORE:
             setattr(self,k,None)
             self.keys.append(k)
@@ -304,7 +304,7 @@ class VideoInfo(MediaInfo):
     Video Tracks in a Multiplexed Container.
     """
     def __init__(self):
-        self.keys = []
+        MediaInfo.__init__(self)
         for k in VIDEOCORE:
             setattr(self,k,None)
             self.keys.append(k)
@@ -315,6 +315,7 @@ class ChapterInfo(MediaInfo):
     Chapter in a Multiplexed Container.
     """
     def __init__(self, name="", pos=0):
+        MediaInfo.__init__(self)
         self.keys = ['name', 'pos', 'enabled']
         setattr(self,'name', name)
         setattr(self,'pos', pos)
@@ -326,6 +327,7 @@ class SubtitleInfo(MediaInfo):
     Subtitle Tracks in a Multiplexed Container.
     """
     def __init__(self):
+        MediaInfo.__init__(self)
         self.keys = ['language', 'trackno', 'title']
         for k in self.keys:
             setattr(self, k, None)
