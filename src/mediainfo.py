@@ -129,14 +129,16 @@ class MediaInfo:
             if self[h]:
                 result += u'\n        %s: <unprintable data>' % h
         if log.level < 30:
-            try:
-                for i in self._tables.keys():
+            for name, table in self._tables.items():
+                result += '\n\n    Table %s' % str(name)
+                for key, value in table.items():
                     try:
-                        result += unicode(self._tables[i])
-                    except AttributeError:
-                        pass
-            except AttributeError:
-                pass
+                        value = unicode(value) 
+                        if len(value) > 50:
+                            value = '<unprintable data>'
+                    except UnicodeDecodeError:
+                        value = '<unprintable data>'
+                    result += '\n        %s: %s' % (unicode(key), unicode(value))
         return result
 
 
