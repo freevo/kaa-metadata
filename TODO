@@ -26,3 +26,8 @@ from dict. That is the only way we can support attributes with
 whitespaces, etc. No more self.length, it is self['length'] in that
 case. That means all parser have to be updated, maybe temp. in
 WIP/metadata until it is done. THIS NEEDS CLEANUP!
+
+If possible, attributes should match
+http://www.freedesktop.org/wiki/Standards_2fshared_2dfilemetadata_2dspec
+and mime type should match
+http://www.freedesktop.org/wiki/Standards_2fshared_2dmime_2dinfo_2dspec
