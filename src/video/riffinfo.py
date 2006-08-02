@@ -35,6 +35,7 @@ import struct
 import string
 import fourcc
 import logging
+import time
 
 # kaa imports
 from kaa.metadata import factory
@@ -47,8 +48,7 @@ log = logging.getLogger('metadata')
 # List of tags
 # http://kibus1.narod.ru/frames_eng.htm?sof/abcavi/infotags.htm
 # http://www.divx-digest.com/software/avitags_dll.html
-# File Format
-# http://www.taenam.co.kr/pds/documents/odmlff2.pdf
+# File Format: google for odmlff2.pdf
 
 AVIINFO_tags = { 'title': 'INAM',
                  'artist': 'IART',
@@ -350,12 +350,39 @@ class RiffInfo(mediainfo.AVInfo):
                 i += sz + 8
             else:
                 sz = struct.unpack('<I',t[i+4:i+8])[0]
-                log.debug("Unknown Key: %s, len: %d" % (key,sz))
                 i+=8
+                if key not in ('IDIT', 'ISFT'):
+                    log.debug("Unknown Key: %s, len: %d" % (key,sz))
                 value = self._extractHeaderString(t,i,sz)
+                if key == 'ISFT':
+                    if value.find('\0') > 0:
+                        # works for Casio S500 camera videos
+                        value = value[:value.find('\0')]
+                    value = value.replace('\0', '').lstrip().rstrip()
+                    if value:
+                        self.product = value
                 value = value.replace('\0', '').lstrip().rstrip()
                 if value:
                     retval[key] = value
+                    if key == 'IDIT':
+                        # Date the video was created
+                        try:
+                            # The doc says it should be a format like
+                            # "Wed Jan 02 02:03:55 1990"
+                            date = time.strptime(value, "%a %b %d %Y %H:%M:%S")
+                        except ValueError:
+                            try:
+                                # The Casio S500 uses "2005/12/24/ 14:11"
+                                date = time.strptime(value, "%Y/%m/%d/ %H:%M")
+                            except ValueError, e:
+                                # FIXME: something different
+                                log.debug('no support for time format %s', value)
+                                date = 0
+                        if date:
+                            # format date to something similar to a date in an
+                            # EXIF header. This creates one unique way in
+                            # kaa.metadata to handle this.
+                            self.date = time.strftime("%Y:%m:%d %H:%M:%S", date)
                 i+=sz
         return retval
 
