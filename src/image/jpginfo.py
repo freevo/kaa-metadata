@@ -147,7 +147,11 @@ class JPGInfo(core.ImageInfo):
 
             elif segtype == 0xfe:
                 self.comment = file.read(seglen-2)
-
+                if self.comment.startswith('<?xml'):
+                    # This could be a comment based on
+                    # http://www.w3.org/TR/photo-rdf/
+                    log.error('xml comment parser not integrated')
+                    self.comment = ''
             else:
                 # Huffman table marker (FFC4)
                 # Start of Scan marker (FFDA)
