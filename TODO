@@ -1,6 +1,7 @@
 Dynamic loading without importing everything from __init__
 
 Make everything faster :)
+The EXIF parser is way to slow
 
 Add more types and information.
 
@@ -13,7 +14,7 @@ dir lib to serperate our code from external modules we just copy.
 
 Create doc in the Wiki and dump it into the doc subdir
 
-Add list of external files kaa.vfs should know about
+Add list of external files kaa.beacon should know about
 
 Move some code from mediainfo to media/core.py See image/core.py as
 example.
