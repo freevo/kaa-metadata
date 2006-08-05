@@ -32,15 +32,17 @@
 # python imports
 import struct
 import logging
+import cStringIO
 
 # kaa imports
 from kaa.metadata import mediainfo
 from kaa.metadata import factory
+import libxml2
 
 # image imports
 import EXIF
 import core
-from iptcinfo import IPTCInfo, c_datasets as IPTCkeys
+import IPTC
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -83,59 +85,78 @@ class JPGInfo(core.ImageInfo):
         file.seek(2)
         app = file.read(4)
         self.meta = {}
-        iptc_info = None
         
         while (len(app) == 4):
             (ff,segtype,seglen) = struct.unpack(">BBH", app)
             if ff != 0xff: break
-            log.debug("SEGMENT: 0x%x%x, len=%d" % (ff,segtype,seglen))
             if segtype == 0xd9:
                 break
+
             elif SOF.has_key(segtype):
                 data = file.read(seglen-2)
                 (precision,self.height,self.width,\
                  num_comp) = struct.unpack('>BHHB', data[:6])
+
+            elif segtype == 0xe1:
+                data = file.read(seglen-2)
+                type = data[:data.find('\0')]
+                if type == 'Exif':
+                    # create a fake file from the data we have to
+                    # pass it to the EXIF parser
+                    fakefile = cStringIO.StringIO()
+                    fakefile.write('\xFF\xD8')
+                    fakefile.write(app)
+                    fakefile.write(data)
+                    fakefile.seek(0)
+                    exif = EXIF.process_file(fakefile)
+                    fakefile.close()
+                    if exif:
+                        self.setitem( 'date', exif, 'Image DateTime')
+                        self.setitem( 'artist', exif, 'Image Artist')
+                        self.setitem( 'hardware', exif, 'Image Model')
+                        self.setitem( 'software', exif, 'Image Software')
+                        self.setitem( 'thumbnail', exif, 'JPEGThumbnail')
+                        self.appendtable( 'EXIF', exif )
+                elif type == 'http://ns.adobe.com/xap/1.0/':
+                    doc = libxml2.parseDoc(data[data.find('\0')+1:])
+                    # FIXME: parse XMP data
+                    doc.freeDoc()
+                else:
+                    pass
+
             elif segtype == 0xed:
-                iptc_info = IPTCInfo(file.name, force=True)
-                break
+                iptc = IPTC.parseiptc(file.read(seglen-2))
+                if iptc:
+                    self.setitem( 'title', iptc, 'by-line title')
+                    self.setitem( 'title', iptc, 'headline')
+                    self.setitem( 'date' , iptc, 'date created')
+                    self.setitem( 'keywords', iptc, 'keywords')
+                    self.setitem( 'artist', iptc, 'writer/editor')
+                    self.setitem( 'artist', iptc, 'credit')
+                    self.setitem( 'country', iptc, 'country/primary location name')
+                    self.setitem( 'caption', iptc, 'caption/abstract')
+                    self.setitem( 'city', iptc, 'city')
+                    self.appendtable( 'IPTC', iptc )
+
             elif segtype == 0xe7:
                 # information created by libs like epeg
                 data = file.read(seglen-2)
                 if data.count('\n') == 1:
                     key, value = data.split('\n')
                     self.meta[key] = value
+
             elif segtype == 0xfe:
                 self.comment = file.read(seglen-2)
+
             else:
+                # Huffman table marker (FFC4)
+                # Start of Scan marker (FFDA)
+                # Quantization table marker (FFDB)
+                # Restart Interval (FFDD) ???
+                if not segtype in (0xc4, 0xda, 0xdb, 0xdd):
+                    log.info("SEGMENT: 0x%x%x, len=%d" % (ff,segtype,seglen))
                 file.seek(seglen-2,1)
             app = file.read(4)
-        file.seek(0)
-        exif_info = EXIF.process_file(file)
-
-        if exif_info:
-            self.setitem( 'date', exif_info, 'Image DateTime', True )
-            self.setitem( 'artist', exif_info, 'Image Artist', True )
-            self.setitem( 'hardware', exif_info, 'Image Model', True )
-            self.setitem( 'software', exif_info, 'Image Software', True )
-            self.setitem( 'thumbnail', exif_info, 'JPEGThumbnail', False )
-            self.appendtable( 'EXIF', exif_info )
-
-        if iptc_info:
-            i = iptc_info.data
-            iptc_info = {}
-            for key, value in IPTCkeys.items():
-                if key in i and i[value]:
-                    iptc_info[value] = i[value]
-            self.setitem( 'title', iptc_info, 'by-line title', True )
-            self.setitem( 'title', iptc_info, 'headline', True )
-            self.setitem( 'date' , iptc_info, 'date created', True )
-            self.setitem( 'keywords', iptc_info, 'keywords', False )
-            self.setitem( 'artist', iptc_info, 'writer/editor', True )
-            self.setitem( 'artist', iptc_info, 'credit', True )
-            self.setitem( 'country', iptc_info, 'country/primary location name', True )
-            self.setitem( 'caption', iptc_info, 'caption/abstract', True )
-            self.setitem( 'city', iptc_info, 'city', True )
-            self.appendtable( 'IPTC', iptc_info )
 
         if len(self.meta.keys()):
             self.appendtable( 'JPGMETA', self.meta )
@@ -145,10 +166,5 @@ class JPGInfo(core.ImageInfo):
                 setattr(self, key, value)
                 if not key in self.keys:
                     self.keys.append(key)
-
-    def IPTC(self):
-        if not self.url.startswith('file://'):
-            return None
-        return IPTCInfo(self.url[6:], force=True)
     
 factory.register( 'image/jpeg', ('jpg','jpeg'), mediainfo.TYPE_IMAGE, JPGInfo )
