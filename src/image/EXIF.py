@@ -815,6 +815,10 @@ class EXIF_header:
         # See http://bugs.php.net/bug.php?id=34704 for more info.  This fix
         # is a bit hasty and I'm not sure it's correct but it seems to work.
         while i and len(a) < 10:
+            # kaa.metadata addition: I have an image that wants to read from
+            # the next position 1229608262. This is nonsense (I hope). 
+            if i > 1000:
+                break
             a.append(i)
             i=self.next_IFD(i)
         return a
@@ -835,8 +839,9 @@ class EXIF_header:
             field_type=self.s2n(entry+2, 2)
             if not 0 < field_type < len(FIELD_TYPES):
                 # unknown field type
-                raise ValueError, \
-                      'unknown type %d in tag 0x%04X' % (field_type, tag)
+                # kaa.metadata addition: do not raise exception, return
+                # what we have right now
+                return
             typelen=FIELD_TYPES[field_type][0]
             count=self.s2n(entry+4, 4)
             offset=entry+8
