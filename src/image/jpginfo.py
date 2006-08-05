@@ -111,11 +111,11 @@ class JPGInfo(core.ImageInfo):
                     exif = EXIF.process_file(fakefile)
                     fakefile.close()
                     if exif:
-                        self.setitem( 'date', exif, 'Image DateTime')
-                        self.setitem( 'artist', exif, 'Image Artist')
-                        self.setitem( 'hardware', exif, 'Image Model')
-                        self.setitem( 'software', exif, 'Image Software')
-                        self.setitem( 'thumbnail', exif, 'JPEGThumbnail')
+                        self.setitem( 'date', exif, 'Image DateTime', True)
+                        self.setitem( 'artist', exif, 'Image Artist', True)
+                        self.setitem( 'hardware', exif, 'Image Model', True)
+                        self.setitem( 'software', exif, 'Image Software', True)
+                        self.setitem( 'thumbnail', exif, 'JPEGThumbnail', True)
                         self.appendtable( 'EXIF', exif )
                 elif type == 'http://ns.adobe.com/xap/1.0/':
                     doc = libxml2.parseDoc(data[data.find('\0')+1:])

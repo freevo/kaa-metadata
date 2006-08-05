@@ -182,7 +182,7 @@ class MediaInfo:
         return self._tables.get((name, language), {})
 
 
-    def setitem(self, item, dict, key):
+    def setitem(self, item, dict, key, convert_to_unicode=False):
         """
         Set item to a specific value for the dict.
         """
@@ -191,6 +191,8 @@ class MediaInfo:
             return
         if isinstance(value, str):
             value = str_to_unicode(value)
+        elif convert_to_unicode and not isinstance(value, unicode):
+            value = str_to_unicode(str(value))
         self.__dict__[item] = value
 
 
