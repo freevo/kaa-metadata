@@ -182,27 +182,16 @@ class MediaInfo:
         return self._tables.get((name, language), {})
 
 
-    def setitem(self, item, dict, key, convert_to_str=False):
+    def setitem(self, item, dict, key):
         """
-        set item to a specific value for the dict
+        Set item to a specific value for the dict.
         """
-        try:
-            if self.__dict__.has_key(item):
-                if not dict[key]:
-                    return
-                if convert_to_str and not isinstance(dict[key], unicode):
-                    self.__dict__[item] = str_to_unicode(str(dict[key]))
-                else:
-                    self.__dict__[item] = dict[key]
-            else:
-                log.error("Unknown key: %s" % item)
-        except KeyError:
-            pass
-        except (KeyboardInterrupt, SystemExit):
-            sys.exit(0)
-        except:
-            if log.level < 30:
-                log.exception('setkey')
+        value = dict.get(key)
+        if not value:
+            return
+        if isinstance(value, str):
+            value = str_to_unicode(value)
+        self.__dict__[item] = value
 
 
     def __contains__(self, key):
