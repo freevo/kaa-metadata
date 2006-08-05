@@ -74,7 +74,7 @@ class TIFFInfo(core.ImageInfo):
                       struct.unpack('>HHIHH', app[i*12:i*12+12])
                 if tag == 0x8649:
                     file.seek(offset,0)
-                    iptc = IPTC.flatten(IPTC.parseiptc(file.read(1000)))
+                    iptc = IPTC.parseiptc(file.read(1000))
                 elif tag == 0x0100:
                     if value != 0:
                         self.width = value
@@ -97,7 +97,7 @@ class TIFFInfo(core.ImageInfo):
                       struct.unpack('<HHIHH', app[i*12:i*12+12])
                 if tag == 0x8649:
                     file.seek(offset)
-                    iptc = IPTC.flatten(IPTC.parseiptc(file.read(1000)))
+                    iptc = IPTC.parseiptc(file.read(1000))
                 elif tag == 0x0100:
                     if value != 0:
                         self.width = value
@@ -112,14 +112,16 @@ class TIFFInfo(core.ImageInfo):
             raise mediainfo.KaaMetadataParseError()
 
         if iptc:
-            self.setitem( 'title', iptc, 517 )
-            self.setitem( 'date' , iptc, 567 )
-            self.setitem( 'comment', iptc, 617 )
-            self.setitem( 'keywords', iptc, 537 )
-            self.setitem( 'artist', iptc, 592 )
-            self.setitem( 'country', iptc, 612 )
-            self.setitem( 'caption', iptc, 632 )
-            self.appendtable('IPTC', iptc)
+            self.setitem( 'title', iptc, 'by-line title')
+            self.setitem( 'title', iptc, 'headline')
+            self.setitem( 'date' , iptc, 'date created')
+            self.setitem( 'keywords', iptc, 'keywords')
+            self.setitem( 'artist', iptc, 'writer/editor')
+            self.setitem( 'artist', iptc, 'credit')
+            self.setitem( 'country', iptc, 'country/primary location name')
+            self.setitem( 'caption', iptc, 'caption/abstract')
+            self.setitem( 'city', iptc, 'city')
+            self.appendtable( 'IPTC', iptc )
 
 
 factory.register( 'image/tiff', ('tif','tiff'), mediainfo.TYPE_IMAGE, TIFFInfo)
