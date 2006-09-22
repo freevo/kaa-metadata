@@ -78,6 +78,10 @@ class DirInfo(MediaInfo):
                 if self.image.startswith('./'):
                     self.image = self.image[2:]
                 self.keys.append('image')
+            if l.startswith('Name='):
+                self.title = l[5:].strip()
+            if l.startswith('Comment='):
+                self.comment = l[8:].strip()
         f.close()
 
 
