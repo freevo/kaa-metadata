@@ -117,6 +117,15 @@ class JPGInfo(core.ImageInfo):
                         self.setitem( 'software', exif, 'Image Software', True)
                         self.setitem( 'thumbnail', exif, 'JPEGThumbnail', True)
                         self.appendtable( 'EXIF', exif )
+
+                        if 'Image Orientation' in exif:
+                            orientation = str(exif['Image Orientation'])
+                            if orientation.find('90 CW') > 0:
+                                self.rotation = 90
+                            elif orientation.find('90') > 0:
+                                self.rotation = 270
+                            elif orientation.find('180') > 0:
+                                self.rotation = 180
                 elif type == 'http://ns.adobe.com/xap/1.0/':
                     doc = libxml2.parseDoc(data[data.find('\0')+1:])
                     # FIXME: parse XMP data

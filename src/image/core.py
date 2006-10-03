@@ -45,7 +45,7 @@ log = logging.getLogger('metadata')
 
 # attributes for image files
 ATTRIBUTES = ['description', 'people', 'location', 'event', 'width', 'height',
-              'thumbnail','software','hardware', 'dpi', 'city']
+              'thumbnail','software','hardware', 'dpi', 'city', 'rotation']
 
 
 class ImageInfo(mediainfo.MediaInfo):
