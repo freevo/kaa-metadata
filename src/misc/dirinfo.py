@@ -74,9 +74,9 @@ class DirInfo(MediaInfo):
         f = open(info)
         for l in f.readlines():
             if l.startswith('Icon='):
-                self.image = l[5:]
-                if self.image.startswith('./'):
-                    self.image = self.image[2:]
+                self.image = l[5:].strip()
+                if not self.image.startswith('/'):
+                    self.image = os.path.join(directory, self.image[2:])
                 self.keys.append('image')
             if l.startswith('Name='):
                 self.title = l[5:].strip()
