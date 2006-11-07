@@ -122,17 +122,17 @@ FRAME_RATE = [
 ##------------------------------------------------------------------------
 ## ASPECT_RATIO -- INCOMPLETE?
 ##
-## This lookup table maps the header aspect ratio index to a common name.
+## This lookup table maps the header aspect ratio index to a float value.
 ## These are just the defined ratios for CPB I believe.  As I understand
 ## it, a stream that doesn't adhere to one of these aspect ratios is
 ## technically considered non-compliant.
 ##------------------------------------------------------------------------
-ASPECT_RATIO = [ 'Forbidden',
-                 '1/1 (VGA)',
-                 '4/3 (TV)',
-                 '16/9 (Large TV)',
-                 '2.21/1 (Cinema)',
-               ]
+ASPECT_RATIO = ( None,     # Forbidden
+                 1.0,      # 1/1 (VGA)
+                 4.0 / 3,  # 4/3 (TV)
+                 16.0 / 9, # 16/9 (Widescreen)
+                 2.21      # (Cinema)
+               )
 
 
 class MpegInfo(mediainfo.AVInfo):
