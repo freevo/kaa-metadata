@@ -68,6 +68,13 @@ AVIINFO_tags = { 'title': 'INAM',
                  'comment': 'ICMT',
                }
 
+PIXEL_ASPECT = {  # Taken from libavcodec/mpeg4data.h (pixel_aspect struct)
+    1: (1, 1),
+    2: (12, 11),
+    3: (10, 11),
+    4: (16, 11),
+    5: (40, 33)
+}
 
 
 class RiffInfo(mediainfo.AVInfo):
@@ -302,6 +309,91 @@ class RiffInfo(mediainfo.AVInfo):
         return ( retval, v[0] )
 
 
+    def parseLISTmovi(self, size, file):
+        """
+        Digs into movi list, looking for a Video Object Layer header in an 
+        mpeg4 stream in order to determine aspect ratio.
+        """
+        i = 0
+        done = False
+        while i < min(500000, size - 8):
+            data = file.read(8)
+            if ord(data[0]) == 0:
+                # Eat leading nulls.
+                data = data[1:] + file.read(1)
+                i += 1
+
+            key, sz = struct.unpack('<4sI', data)
+            if key[2:] != 'dc' or sz > 50000:
+                # This chunk is not video or is unusually big; skip it.
+                file.seek(sz, 1)
+                i += 8 + sz
+                continue
+
+            # Read video chunk into memory
+            data = file.read(sz)
+
+            #for p in range(0,min(80, sz)):
+            #    print "%02x " % ord(data[p]),
+            #print "\n\n"
+
+            # Look through the picture header for VOL startcode.  The basic
+            # logic for this is taken from libavcodec, h263.c
+            pos = 0
+            startcode = 0xff
+            def bits(v, o, n): 
+                # Returns n bits in v, offset o bits.
+                return (v & 2**n-1 << (64-n-o)) >> 64-n-o
+
+            while pos < sz:
+                startcode = ((startcode << 8) | ord(data[pos])) & 0xffffffff
+                pos += 1
+                if startcode & 0xFFFFFF00 != 0x100:
+                    # No startcode found yet
+                    continue
+
+                if startcode >= 0x120 and startcode <= 0x12F:
+                    # We have the VOL startcode.  Pull 64 bits of it and treat
+                    # as a bitstream
+                    v = struct.unpack(">Q", data[pos : pos+8])[0]
+                    offset = 10
+                    if bits(v, 9, 1):
+                        # is_ol_id, skip over vo_ver_id and vo_priority
+                        offset += 7
+                    ar_info = bits(v, offset, 4)
+                    if ar_info == 15:
+                        # Extended aspect
+                        num = bits(v, offset + 4, 8)
+                        den = bits(v, offset + 12, 8)
+                    else:
+                        # A standard pixel aspect
+                        num, den = PIXEL_ASPECT.get(ar_info, (0, 0))
+
+                    # num/den indicates pixel aspect; convert to video aspect,
+                    # so we need frame width and height.
+                    if 0 not in (num, den):
+                        width, height = self.video[-1].width, self.video[-1].height
+                        self.video[-1].aspect = num / float(den) * width / height
+
+                    done = True
+                    break
+
+                startcode = 0xff
+
+            i += 8 + len(data)
+
+            if done:
+                # We have the aspect, no need to continue parsing the movi
+                # list, so break out of the loop.
+                break
+
+
+        if i < size:
+            # Seek past whatever might be remaining of the movi list.
+            file.seek(size-i,1)
+ 
+
+
     def parseLIST(self,t):
         retval = {}
         i = 0
@@ -394,12 +486,26 @@ class RiffInfo(mediainfo.AVInfo):
         name = h[:4]
         size = struct.unpack('<I',h[4:8])[0]
 
-        if name == 'LIST' and size < 80000:
+        if name == 'LIST':
             pos = file.tell() - 8
-            t = file.read(size)
-            key = t[:4]
-            log.debug('parse RIFF LIST: %d bytes' % (size))
-            value = self.parseLIST(t[4:])
+            key = file.read(4)
+            if key == 'movi' and self.video and not self.video[-1].aspect and \
+               self.video[-1].width and self.video[-1].height and \
+               self.video[-1].format in ('DIVX', 'XVID', 'FMP4'): # any others?
+                # If we don't have the aspect (i.e. it isn't in vprp or 
+                # odml headers), but we do know the video's dimensions, and
+                # we're dealing with an mpeg4 stream, try to get the aspect 
+                # from the VOL header in the mpeg4 stream.
+                self.parseLISTmovi(size-4, file)
+                return True
+            elif size > 80000:
+                log.debug('RIFF LIST "%s" to long to parse: %s bytes' % (key, size))
+                t = file.seek(size-4,1)
+                return True
+                
+            t = file.read(size-4)
+            log.debug('parse RIFF LIST "%s": %d bytes' % (key, size))
+            value = self.parseLIST(t)
             self.header[key] = value
             if key == 'INFO':
                 self.infoStart = pos
@@ -419,10 +525,6 @@ class RiffInfo(mediainfo.AVInfo):
         elif name == 'idx1':
             self.has_idx = True
             log.debug('idx1: %s bytes' % size)
-            # no need to parse this
-            t = file.seek(size,1)
-        elif name == 'LIST':
-            log.debug('RIFF LIST to long to parse: %s bytes' % size)
             # no need to parse this
             t = file.seek(size,1)
         elif name == 'RIFF':
