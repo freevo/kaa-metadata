@@ -273,9 +273,7 @@ class RiffInfo(mediainfo.AVInfo):
         sz = struct.unpack('<I',t[i+4:i+8])[0]
         i += 8
         value = t[i:]
-        if key == 'dmlh':
-            pass
-        else:
+        if key != 'dmlh':
             log.debug("parseODML: Error")
 
         i += sz - 8
@@ -492,8 +490,8 @@ class RiffInfo(mediainfo.AVInfo):
             if key == 'movi' and self.video and not self.video[-1].aspect and \
                self.video[-1].width and self.video[-1].height and \
                self.video[-1].format in ('DIVX', 'XVID', 'FMP4'): # any others?
-                # If we don't have the aspect (i.e. it isn't in vprp or 
-                # odml headers), but we do know the video's dimensions, and
+                # If we don't have the aspect (i.e. it isn't in odml vprp
+                # header), but we do know the video's dimensions, and
                 # we're dealing with an mpeg4 stream, try to get the aspect 
                 # from the VOL header in the mpeg4 stream.
                 self.parseLISTmovi(size-4, file)
