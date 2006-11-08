@@ -109,13 +109,13 @@ TS_SYNC          = 0x47
 ##------------------------------------------------------------------------
 FRAME_RATE = [
       0,
-      round(24000.0/1001*100)/100, ## 3-2 pulldown NTSC (CPB/Main Level)
+      24000.0/1001, ## 3-2 pulldown NTSC (CPB/Main Level)
       24,           ## Film (CPB/Main Level)
       25,           ## PAL/SECAM or 625/60 video
-      round(30000.0/1001*100)/100, ## NTSC (CPB/Main Level)
+      30000.0/1001, ## NTSC (CPB/Main Level)
       30,           ## drop-frame NTSC or component 525/60  (CPB/Main Level)
       50,           ## double-rate PAL
-      round(60000.0/1001*100)/100, ## double-rate NTSC
+      60000.0/1001, ## double-rate NTSC
       60,           ## double-rate, drop-frame NTSC/component 525/60 video
       ]
 
