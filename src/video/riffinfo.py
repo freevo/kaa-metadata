@@ -233,7 +233,7 @@ class RiffInfo(mediainfo.AVInfo):
             vi.width = retval['biWidth']
             vi.height = retval['biHeight']
             vi.bitrate = strh['dwRate']
-            vi.fps = round(float(strh['dwRate'] * 100) / strh['dwScale']) / 100
+            vi.fps = float(strh['dwRate']) / strh['dwScale']
             vi.length = strh['dwLength'] / vi.fps
             vi.format = retval['fourcc']
             self.video.append(vi)
