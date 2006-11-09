@@ -49,7 +49,7 @@ class VCDInfo(mediainfo.CollectionInfo):
     def parseVCD(self, file):
         type = None
 
-        buffer = file.readline()
+        buffer = file.readline(300)
 
         if not buffer[:6] == 'FILE "':
             raise mediainfo.KaaMetadataParseError()

@@ -177,11 +177,13 @@ class _Factory:
         """
         # Check extension as a hint
         e = os.path.splitext(file.name)[1].lower()
+        parser = None
         if e and e.startswith('.') and e[1:] in self.extmap:
             log.debug("trying ext %s" % e[1:])
             file.seek(0,0)
             try:
-                return self.extmap[e[1:]][3](file)
+                parser = self.extmap[e[1:]][3]
+                return parser(file)
             except mediainfo.KaaMetadataParseError:
                 pass
             except (KeyboardInterrupt, SystemExit):
@@ -196,6 +198,9 @@ class _Factory:
         log.info('No Type found by Extension. Trying all')
 
         for e in self.types:
+            if e[3] == parser:
+                # We already tried this parser, don't bother again.
+                continue
             log.debug('trying %s' % e[0])
             file.seek(0,0)
             try:
