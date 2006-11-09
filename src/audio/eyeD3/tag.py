@@ -26,6 +26,7 @@ import mp3;
 from frames import *;
 from binfuncs import *;
 import math;
+import struct
 
 ID3_V1_COMMENT_DESC = "ID3 v1 Comment";
 
@@ -1530,43 +1531,36 @@ class Mp3AudioFile(TagFile):
       f.seek(framePos);
       bString = f.read(4);
       if len(bString) < 4:
-         raise InvalidAudioFormatException("Unable to find a valid mp3 "\
-                                           "frame");
-      frameHead = bin2dec(bytes2bin(bString));
-      header = mp3.Header();
-      it_count = 0;
-      # Keep reading until we find a valid mp3 frame header.
-      while not header.isValid(frameHead):
-         # Originally, the search was one byte at a time.  Occasionally a tag
-         # was heavily, and incorrectly, padded or a corrupt mp3 would cause
-         # a byte by byte search to take a long time.  This algorithm speeds
-         # up this particular case.
-         if it_count > 9:
-             f.seek(f.tell() + 128); 
-             bString = f.read(4);
-             if len(bString) < 4:
-                raise InvalidAudioFormatException("Unable to find a valid mp3 "\
-                                                  "frame");
-             frameHead = bin2dec(bytes2bin(bString));
-             it_count = 0;
-             continue;
+         raise InvalidAudioFormatException("Unable to find a valid mp3 frame")
 
-         frameHead <<= 8;
-         bString = f.read(1);
-         if len(bString) != 1:
-            raise InvalidAudioFormatException("Unable to find a valid mp3 "\
-                                              "frame");
-         frameHead |= ord(bString[0]);
-         it_count += 1;
+      header = mp3.Header();
+      frameHead = header.find(bString)[0]
+      # Keep reading until we find a valid mp3 frame header, but give up if we
+      # don't find one within the first 300KB.
+      offset = n_chunks = 0
+      while not frameHead and n_chunks < 10:
+         bString = bString[-3:] + f.read(32768)
+         n_chunks += 1
+         if len(bString) <= 3:
+             break
+
+         frameHead, offset = header.find(bString)
+
+      if not frameHead:
+         raise InvalidAudioFormatException("Unable to find a valid mp3 frame")
+
+      if n_chunks:
+          # Seek back just before frame header, for Xing header detection.
+          f.seek(-32768+offset, 1)
+          
       TRACE_MSG("mp3 header %x found at position: %d (0x%x)" % \
-                (frameHead, f.tell() - 4, f.tell() - 4));
+                (frameHead, f.tell(), f.tell()))
 
       # Decode the header.
       try:
          header.decode(frameHead);
          # Check for Xing header inforamtion which will always be in the
          # first "null" frame.
-         f.seek(-4, 1);
          mp3Frame = f.read(header.frameLength);
          if mp3Frame.find("Xing") != -1:
             xingHeader = mp3.XingHeader();

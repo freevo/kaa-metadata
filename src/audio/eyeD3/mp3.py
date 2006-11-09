@@ -19,6 +19,7 @@
 ################################################################################
 from binfuncs import *;
 from utils import *;
+import struct
 
 #######################################################################
 class Mp3Exception(Exception):
@@ -115,6 +116,26 @@ class Header:
          return 0;
 
       return 1;
+
+   def find(self, buffer):
+      """
+      Search a string for an MP3 header.  Returns a 2-tuple containing the
+      header and the offset within the buffer where the header begins.
+      """
+      idx = buffer.find("\xff")
+      while idx != -1:
+         candidate = buffer[idx:idx+4]
+         if len(candidate) < 4:
+            return None, None
+
+         header = struct.unpack(">I", candidate)[0]
+         if self.isValid(header):
+            return header, idx
+
+         idx = buffer.find("\xff", idx + 1)
+   
+      return None, None
+
 
    # This may throw an Mp3Exception if the header is malformed.
    def decode(self, header):
