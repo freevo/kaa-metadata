@@ -313,8 +313,12 @@ class RiffInfo(mediainfo.AVInfo):
         mpeg4 stream in order to determine aspect ratio.
         """
         i = 0
+        n_dc = 0
         done = False
-        while i < min(500000, size - 8):
+        # If the VOL header doesn't appear within 5MB or 5 video chunks,
+        # give up.  The 5MB limit is not likely to apply except in
+        # pathological cases.
+        while i < min(1024*1024*5, size - 8) and n_dc < 5:
             data = file.read(8)
             if ord(data[0]) == 0:
                 # Eat leading nulls.
@@ -322,12 +326,14 @@ class RiffInfo(mediainfo.AVInfo):
                 i += 1
 
             key, sz = struct.unpack('<4sI', data)
-            if key[2:] != 'dc' or sz > 50000:
-                # This chunk is not video or is unusually big; skip it.
+            if key[2:] != 'dc' or sz > 1024*500:
+                # This chunk is not video or is unusually big (> 500KB); 
+                # skip it.
                 file.seek(sz, 1)
                 i += 8 + sz
                 continue
 
+            n_dc += 1
             # Read video chunk into memory
             data = file.read(sz)
 
