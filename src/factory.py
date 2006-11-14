@@ -267,8 +267,8 @@ class _Factory:
         if os.path.isfile(filename):
             try:
                 f = open(filename,'rb')
-            except IOError:
-                log.error('IOError reading %s' % filename)
+            except (IOError, OSError), e:
+                log.info('error reading %s: %s' % (filename, e))
                 return None
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(0)
