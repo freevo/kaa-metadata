@@ -1,6 +1,6 @@
 ################################################################################
 #
-#  Copyright (C) 2002-2005  Travis Shirk <travis@pobox.com>
+#  Copyright (C) 2002-2006  Travis Shirk <travis@pobox.com>
 #  Copyright (C) 2001  Ryan Finne <ryan@finnie.org>
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -44,12 +44,14 @@ SUBTITLE_FID       = "TIT3";
 CONTENT_TITLE_FID  = "TIT1";
 TITLE_FIDS         = [TITLE_FID, SUBTITLE_FID, CONTENT_TITLE_FID];
 COMMENT_FID        = "COMM";
+LYRICS_FID         = "USLT";
 GENRE_FID          = "TCON";
 TRACKNUM_FID       = "TRCK";
 DISCNUM_FID        = "TPOS";
 USERTEXT_FID       = "TXXX";
 CDID_FID           = "MCDI";
 IMAGE_FID          = "APIC";
+OBJECT_FID         = "GEOB";
 URL_COMMERCIAL_FID = "WCOM";
 URL_COPYRIGHT_FID  = "WCOP";
 URL_AUDIOFILE_FID  = "WOAF";
@@ -184,7 +186,7 @@ frameDesc = { "AENC": "Audio encryption",
 
 
 # mapping of 2.2 frames to 2.3/2.4
-TAGS2_2_TO_TAGS_2_3_AND_4 = {                  
+TAGS2_2_TO_TAGS_2_3_AND_4 = {
     "TT1" : "TIT1", # CONTENTGROUP content group description
     "TT2" : "TIT2", # TITLE title/songname/content description
     "TT3" : "TIT3", # SUBTITLE subtitle/description refinement
@@ -261,8 +263,10 @@ USERTEXT_FRAME_RX = re.compile("^" + USERTEXT_FID + "$");
 URL_FRAME_RX = re.compile("^W[A-Z0-9][A-Z0-9][A-Z0-9]$");
 USERURL_FRAME_RX = re.compile("^" + USERURL_FID + "$");
 COMMENT_FRAME_RX = re.compile("^" + COMMENT_FID + "$");
+LYRICS_FRAME_RX = re.compile("^" + LYRICS_FID + "$");
 CDID_FRAME_RX = re.compile("^" + CDID_FID + "$");
 IMAGE_FRAME_RX = re.compile("^" + IMAGE_FID + "$");
+OBJECT_FRAME_RX = re.compile("^" + OBJECT_FID + "$");
 PLAYCOUNT_FRAME_RX = re.compile("^" + PLAYCOUNT_FID + "$");
 UNIQUE_FILE_ID_FRAME_RX = re.compile("^" + UNIQUE_FILE_ID_FID + "$");
 
@@ -339,14 +343,14 @@ class FrameHeader:
 
    # 2.4 not only added flag bits, but also reordered the previously defined
    # flags.  So these are mapped once we know the version.
-   TAG_ALTER   = None;   
-   FILE_ALTER  = None;   
-   READ_ONLY   = None;   
-   COMPRESSION = None;   
-   ENCRYPTION  = None;   
-   GROUPING    = None;   
-   UNSYNC      = None;   
-   DATA_LEN    = None;   
+   TAG_ALTER   = None;
+   FILE_ALTER  = None;
+   READ_ONLY   = None;
+   COMPRESSION = None;
+   ENCRYPTION  = None;
+   GROUPING    = None;
+   UNSYNC      = None;
+   DATA_LEN    = None;
 
    # Constructor.
    def __init__(self, tagHeader = None):
@@ -973,7 +977,13 @@ class UserURLFrame(URLFrame):
       self.encoding = data[0];
       TRACE_MSG("UserURLFrame encoding: %s" %\
                 id3EncodingToString(self.encoding));
-      (d, u) = splitUnicode(data[1:], self.encoding);
+      try:
+          (d, u) = splitUnicode(data[1:], self.encoding);
+      except ValueError, ex:
+          if strictID3():
+              raise FrameException("Invalid WXXX frame, no null byte")
+          d = data[1:]
+          u = ""
       self.description = unicode(d, id3EncodingToString(self.encoding));
       TRACE_MSG("UserURLFrame description: %s" % self.description);
       self.url = u;
@@ -1071,6 +1081,87 @@ class CommentFrame(Frame):
    def __unicode__(self):
       return u"<%s (%s): %s [Lang: %s] [Desc: %s]>" %\
              (self.getFrameDesc(), self.header.id, self.comment,
+              self.lang, self.description);
+
+################################################################################
+class LyricsFrame(Frame):
+   lang = "";
+   description = u"";
+   lyrics = u"";
+
+   # Data string format:
+   # encoding (one byte) + lang (three byte code) + description + "\x00" +
+   # text
+   def __init__(self, frameHeader, data = None, lang = "",
+                description = u"", lyrics = u"", encoding = DEFAULT_ENCODING):
+       Frame.__init__(self, frameHeader);
+       if data != None:
+           self._set(data, frameHeader);
+       else:
+           assert(isinstance(description, unicode));
+           assert(isinstance(lyrics, unicode));
+           assert(isinstance(lang, str));
+           self.encoding = encoding;
+           self.lang = lang;
+           self.description = description;
+           self.lyrics = lyrics;
+
+   # Data string format:
+   # encoding (one byte) + lang (three byte code) + description + "\x00" +
+   # text
+   def _set(self, data, frameHeader = None):
+      assert(frameHeader);
+      if not LYRICS_FRAME_RX.match(frameHeader.id):
+         raise FrameException("Invalid frame id for LyricsFrame: " +\
+                              frameHeader.id);
+
+      data = self.disassembleFrame(data);
+      self.encoding = data[0];
+      TRACE_MSG("LyricsFrame encoding: " + id3EncodingToString(self.encoding));
+      try:
+          self.lang = str(data[1:4]).strip("\x00");
+          # Test ascii encoding
+          temp_lang = unicode(self.lang, "ascii");
+          if self.lang and \
+             not re.compile("[A-Z][A-Z][A-Z]", re.IGNORECASE).match(self.lang):
+             if strictID3():
+                 raise FrameException("[LyricsFrame] Invalid language "\
+                                       "code: %s" % self.lang);
+      except UnicodeDecodeError, ex:
+          if strictID3():
+              raise FrameException("[LyricsFrame] Invalid language code: "\
+                                   "[%s] %s" % (ex.object, ex.reason));
+          else:
+              self.lang = "";
+      try:
+         (d, c) = splitUnicode(data[4:], self.encoding);
+         self.description = unicode(d, id3EncodingToString(self.encoding));
+         self.lyrics = unicode(c, id3EncodingToString(self.encoding));
+      except ValueError:
+          if strictID3():
+              raise FrameException("Invalid lyrics; no description/lyrics");
+          else:
+              self.description = u"";
+              self.lyrics = u"";
+      if not strictID3():
+          self.description = cleanNulls(self.description)
+          self.lyrics = cleanNulls(self.lyrics)
+
+   def render(self):
+      lang = self.lang.encode("ascii");
+      if len(lang) > 3:
+          lang = lang[0:3];
+      elif len(lang) < 3:
+          lang = lang + ('\x00' * (3 - len(lang)));
+      data = self.encoding + lang +\
+             self.description.encode(id3EncodingToString(self.encoding)) +\
+             self.getTextDelim() +\
+             self.lyrics.encode(id3EncodingToString(self.encoding));
+      return self.assembleFrame(data);
+
+   def __unicode__(self):
+      return u"<%s (%s): %s [Lang: %s] [Desc: %s]>" %\
+             (self.getFrameDesc(), self.header.id, self.lyrics,
               self.lang, self.description);
 
 ################################################################################
@@ -1203,7 +1294,7 @@ class ImageFrame(Frame):
           # character literal instead of it's byte value.
           try:
               pt = int(chr(pt));
-          except (ValueError):
+          except:
               pt = self.OTHER;
           if pt < self.MIN_TYPE or pt > self.MAX_TYPE:
               self.pictureType = self.OTHER;
@@ -1356,6 +1447,151 @@ class ImageFrame(Frame):
          raise FrameException("Invalid APIC picture type: %d" % t);
    picTypeToString = staticmethod(picTypeToString);
 
+################################################################################
+# This class refers to the GEOB frame
+class ObjectFrame(Frame):
+   mimeType = None;
+   description = u"";
+   filename = u"";
+   objectData = None;
+
+   def __init__(self, frameHeader, data = None,
+                desc = u"", filename = u"",
+                objectData = None, mimeType = None,
+                encoding = DEFAULT_ENCODING):
+       Frame.__init__(self, frameHeader);
+       if data != None:
+           self._set(data, frameHeader);
+       else:
+           assert(isinstance(desc, unicode));
+           self.description = desc;
+           assert(isinstance(filename, unicode));
+           self.filename = filename;
+           self.encoding = encoding;
+           assert(mimeType);
+           self.mimeType = mimeType;
+           assert(objectData);
+           self.objectData = objectData;
+
+   # Factory method
+   def create(objFile, mime = u"", desc = u"", filename = None,
+              encoding = DEFAULT_ENCODING):
+       if filename == None:
+           filename = unicode(os.path.basename(objFile));
+       if not isinstance(desc, unicode) or \
+          (not isinstance(filename, unicode) and filename != ""):
+           raise FrameException("Wrong description and/or filename type.");
+       # Load file
+       fp = file(objFile, "rb");
+       objData = fp.read();
+       if mime:
+           print("Using specified mime type %s" % mime);
+       else:
+           mt = mimetypes.guess_type(objFile);
+           if not mt[0]:
+               raise FrameException("Unable to guess mime-type for %s" %
+                                    objFile);
+           mime = mt[0];
+           print("Guessing mime type %s" % mime);
+
+       frameData = DEFAULT_ENCODING;
+       frameData += mime + "\x00";
+       frameData += filename.encode(id3EncodingToString(encoding)) + "\x00";
+       frameData += desc.encode(id3EncodingToString(encoding)) + "\x00";
+       frameData += objData;
+
+       frameHeader = FrameHeader();
+       frameHeader.id = OBJECT_FID;
+       return ObjectFrame(frameHeader, data = frameData);
+   # Make create a static method.  Odd....
+   create = staticmethod(create);
+
+   # Data string format:
+   # <Header for 'General encapsulated object', ID: "GEOB">
+   #  Text encoding          $xx
+   #  MIME type              <text string> $00
+   #  Filename               <text string according to encoding> $00 (00)
+   #  Content description    <text string according to encoding> $00 (00)
+   #  Encapsulated object    <binary data>
+   def _set(self, data, frameHeader = None):
+      assert(frameHeader);
+      if not OBJECT_FRAME_RX.match(frameHeader.id):
+         raise FrameException("Invalid frame id for ObjectFrame: " +\
+                              frameHeader.id);
+
+      data = self.disassembleFrame(data);
+
+      input = StringIO(data);
+      TRACE_MSG("GEOB frame data size: " + str(len(data)));
+      self.encoding = input.read(1);
+      TRACE_MSG("GEOB encoding: " + id3EncodingToString(self.encoding));
+
+      # Mime type
+      self.mimeType = "";
+      if self.header.minorVersion != 2:
+          ch = input.read(1);
+          while ch != "\x00":
+              self.mimeType += ch;
+              ch = input.read(1);
+      else:
+          # v2.2 (OBSOLETE) special case
+          self.mimeType = input.read(3);
+      TRACE_MSG("GEOB mime type: " + self.mimeType);
+      if strictID3() and not self.mimeType:
+         raise FrameException("GEOB frame does not contain a mime type");
+      if strictID3() and self.mimeType.find("/") == -1:
+         raise FrameException("GEOB frame does not contain a valid mime type");
+
+      self.filename = u"";
+      self.description = u"";
+
+      # Remaining data is a NULL separated filename, description and object data
+      buffer = input.read();
+      input.close();
+
+      (filename, buffer) = splitUnicode(buffer, self.encoding);
+      (desc, obj) = splitUnicode(buffer, self.encoding);
+      TRACE_MSG("filename len: %d" % len(filename));
+      TRACE_MSG("description len: %d" % len(desc));
+      TRACE_MSG("data len: %d" % len(obj));
+      self.filename = unicode(filename, id3EncodingToString(self.encoding));
+      self.description = unicode(desc, id3EncodingToString(self.encoding));
+      TRACE_MSG("GEOB filename: " + self.filename);
+      TRACE_MSG("GEOB description: " + self.description);
+
+      self.objectData = obj;
+      TRACE_MSG("GEOB data: " + str(len(self.objectData)) + " bytes");
+      if strictID3() and not self.objectData:
+         raise FrameException("GEOB frame does not contain any data");
+
+
+   def writeFile(self, path = "./", name = None):
+      if not self.objectData:
+         raise IOError("Fetching remote object files is not implemented.");
+      if not name:
+         name = self.getDefaultFileName();
+      objectFile = os.path.join(path, name);
+
+      f = file(objectFile, "wb");
+      f.write(self.objectData);
+      f.flush();
+      f.close();
+   def getDefaultFileName(self, suffix = ""):
+      nameStr = self.filename;
+      if suffix:
+          nameStr += suffix;
+      nameStr = nameStr +  "." + self.mimeType.split("/")[1];
+      return nameStr;
+
+   def render(self):
+      data = self.encoding + self.mimeType + "\x00" +\
+             self.filename.encode(id3EncodingToString(self.encoding)) +\
+             self.getTextDelim() +\
+             self.description.encode(id3EncodingToString(self.encoding)) +\
+             self.getTextDelim() +\
+             self.objectData;
+      return self.assembleFrame(data);
+
 class PlayCountFrame(Frame):
     count = None;
 
@@ -1370,7 +1606,7 @@ class PlayCountFrame(Frame):
         assert(frameHeader);
         assert(len(data) >= 4);
         self.count = long(bytes2dec(data));
-        
+
     def render(self):
         data = dec2bytes(self.count, 32);
         return self.assembleFrame(data);
@@ -1400,7 +1636,7 @@ class UniqueFileIDFrame(Frame):
         if strictID3() and (len(self.owner_id) == 0 or
                             len(self.id) == 0 or len(self.id) > 64):
             raise FrameException("Invalid UFID frame");
-        
+
     def render(self):
         data = self.owner_id + "\x00" + self.id;
         return self.assembleFrame(data);
@@ -1410,13 +1646,12 @@ class UnknownFrame(Frame):
    data = "";
 
    def __init__(self, frameHeader, data):
-       Frame.__init__(self, frameHeader);
        assert(frameHeader and data);
+       Frame.__init__(self, frameHeader);
        self._set(data, frameHeader);
 
    def _set(self, data, frameHeader):
-      data = self.disassembleFrame(data);
-      self.data = data;
+      self.data = self.disassembleFrame(data);
 
    def render(self):
       return self.assembleFrame(self.data)
@@ -1526,7 +1761,7 @@ class FrameSet(list):
       for f in self:
          sz += len(f.render());
       return sz;
-   
+
    def setTagHeader(self, tagHeader):
       self.tagHeader = tagHeader;
       for f in self:
@@ -1558,6 +1793,17 @@ class FrameSet(list):
                                      language and description not allowed." %\
                                      fid);
 
+      # Lyrics frame restrictions.
+      # Multiples must have a unique description/language combination.
+      if strictID3() and LYRICS_FRAME_RX.match(fid) and self[fid]:
+         lyricsFrames = self[fid];
+         for frm in lyricsFrames:
+            if frm.description == frame.description and\
+               frm.lang == frame.lang:
+               raise FrameException("Multiple %s frames with the same\
+                                     language and description not allowed." %\
+                                     fid);
+
       # URL frame restrictions.
       # No multiples except for TXXX which must have unique descriptions.
       if strictID3() and URL_FRAME_RX.match(fid) and self[fid]:
@@ -1581,6 +1827,15 @@ class FrameSet(list):
          imageFrames = self[fid];
          for frm in imageFrames:
             if frm.pictureType == frame.pictureType:
+               raise FrameException("Multiple %s frames with the same "\
+                                    "content descriptor not allowed." % fid);
+
+      # Object (GEOB) frame restrictions.
+      # Multiples must have a unique content desciptor.
+      if OBJECT_FRAME_RX.match(fid) and self[fid] and strictID3():
+         objectFrames = self[fid];
+         for frm in objectFrames:
+            if frm.description == frame.description:
                raise FrameException("Multiple %s frames with the same "\
                                     "content descriptor not allowed." % fid);
 
@@ -1662,6 +1917,38 @@ class FrameSet(list):
                                    description = description,
                                    comment = comment));
 
+   # If a user text frame with the same description exists then
+   # the frame text is replaced, otherwise the frame is added.
+   def setLyricsFrame(self, lyrics, description, lang = DEFAULT_LANG,
+                       encoding = None):
+      assert(isinstance(lyrics, unicode) and isinstance(description, unicode));
+
+      if self[LYRICS_FID]:
+         found = 0;
+         for f in self[LYRICS_FID]:
+            if f.lang == lang and f.description == description:
+               f.lyrics = lyrics;
+               if encoding:
+                   f.encoding = encoding;
+               found = 1;
+               break;
+         if not found:
+            h = FrameHeader(self.tagHeader);
+            h.id = LYRICS_FID;
+            if not encoding:
+                encoding = DEFAULT_ENCODING;
+            self.addFrame(LyricsFrame(h, encoding = encoding, lang = lang,
+                                       description = description,
+                                       lyrics = lyrics));
+      else:
+        if not encoding:
+            encoding = DEFAULT_ENCODING;
+        h = FrameHeader(self.tagHeader);
+        h.id = LYRICS_FID;
+        self.addFrame(LyricsFrame(h, encoding = encoding, lang = lang,
+                                   description = description,
+                                   lyrics = lyrics));
+
    def setUniqueFileIDFrame(self, owner_id, id):
       assert(isinstance(owner_id, str) and isinstance(id, str));
 
@@ -1712,7 +1999,7 @@ class FrameSet(list):
           self.addFrame(UserTextFrame(h, encoding = encoding,
                                       description = description,
                                       text = txt));
-         
+
    # This method removes all frames with the matching frame ID.
    # The number of frames removed is returned.
    # Note that calling this method with a key like "COMM" may remove more
@@ -1740,7 +2027,7 @@ class FrameSet(list):
       try:
          del self.frames[key];
          return 1;
-      except (KeyError, IndexError, NameError):
+      except:
          return 0;
 
    # Accepts both int (indexed access) and string keys (a valid frame Id).
@@ -1766,14 +2053,16 @@ class FrameSet(list):
       else:
          raise TypeError("FrameSet key must be type int or string");
 
-#  Mmmmm!  Cheesy!
 def splitUnicode(data, encoding):
-    if encoding == LATIN1_ENCODING or encoding == UTF_8_ENCODING or\
-       encoding == UTF_16BE_ENCODING:
+    if encoding == LATIN1_ENCODING or encoding == UTF_8_ENCODING:
         return data.split("\x00", 1);
-    elif encoding == UTF_16_ENCODING:
-        (d, t) = data.split("\x00\x00\x00", 1);
-        d += "\x00";
+    elif encoding == UTF_16_ENCODING or encoding == UTF_16BE_ENCODING:
+        # Two null bytes split, but since each utf16 char is also two 
+        # bytes we need to ensure we found a proper boundary.
+        (d, t) = data.split("\x00\x00", 1);
+        if (len(d) % 2) != 0:
+            (d, t) = data.split("\x00\x00\x00", 1);
+            d += "\x00";
         return (d, t);
 
 #######################################################################
@@ -1797,6 +2086,9 @@ def createFrame(frameHeader, data):
   # Comment Frames.
   elif COMMENT_FRAME_RX.match(frameHeader.id):
      f = CommentFrame(frameHeader, data = data);
+  # Lyrics Frames.
+  elif LYRICS_FRAME_RX.match(frameHeader.id):
+     f = LyricsFrame(frameHeader, data = data);
   # URL Frames.
   elif URL_FRAME_RX.match(frameHeader.id):
      if USERURL_FRAME_RX.match(frameHeader.id):
@@ -1809,6 +2101,9 @@ def createFrame(frameHeader, data):
   # Attached picture
   elif IMAGE_FRAME_RX.match(frameHeader.id):
      f = ImageFrame(frameHeader, data = data);
+  # Encapsulated object
+  elif OBJECT_FRAME_RX.match(frameHeader.id):
+     f = ObjectFrame(frameHeader, data = data);
   # Play count
   elif PLAYCOUNT_FRAME_RX.match(frameHeader.id):
      f = PlayCountFrame(frameHeader, data = data);
@@ -1823,9 +2118,7 @@ def createFrame(frameHeader, data):
 
 
 def map2_2FrameId(originalId):
-    
-    if not TAGS2_2_TO_TAGS_2_3_AND_4.has_key(originalId): return originalId
+    if not TAGS2_2_TO_TAGS_2_3_AND_4.has_key(originalId):
+        return originalId
     return TAGS2_2_TO_TAGS_2_3_AND_4[originalId]
-        
-        
-    
+

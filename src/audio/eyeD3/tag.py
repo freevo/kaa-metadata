@@ -1,6 +1,6 @@
 ###############################################################################
 #
-#  Copyright (C) 2002-2005  Travis Shirk <travis@pobox.com>
+#  Copyright (C) 2002-2006  Travis Shirk <travis@pobox.com>
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@ import mp3;
 from frames import *;
 from binfuncs import *;
 import math;
-import struct
 
 ID3_V1_COMMENT_DESC = "ID3 v1 Comment";
 
@@ -52,7 +51,7 @@ class TagHeader:
 
    # The size in the most recently parsed header.
    tagSize = 0;
-   
+
    # Constructor
    def __init__(self):
       self.clear();
@@ -317,7 +316,7 @@ class ExtendedTagHeader:
          data = size + flags + paddingSize;
          if crc:
             data += crc;
-      return data; 
+      return data;
 
    # Only call this when you *know* there is an extened header.
    def parse(self, fp, header):
@@ -453,7 +452,7 @@ class Tag:
       elif isinstance(f, str) or isinstance(f, unicode):
          fileName = f;
       else:
-         raise TagException("Invalid type passed to Tag.link: " + 
+         raise TagException("Invalid type passed to Tag.link: " +
                             str(type(f)));
 
       if v != ID3_V1 and v != ID3_V2 and v != ID3_ANY_VERSION:
@@ -508,7 +507,7 @@ class Tag:
          self.getTrackNum()[0] != None and version != ID3_V1_0:
          version = ID3_V1_1;
          self.setVersion(version);
-      
+
       # If there are no frames then simply remove the current tag.
       if len(self.frames) == 0:
          self.remove(version);
@@ -540,7 +539,7 @@ class Tag:
       if version == ID3_CURRENT_VERSION:
          version = self.getVersion();
 
-      retval = 0;   
+      retval = 0;
       if version & ID3_V1 or version == ID3_ANY_VERSION:
          tagFile = file(self.linkedFile.name, "r+b");
          tagFile.seek(-128, 2);
@@ -555,26 +554,37 @@ class Tag:
           self.header.tagSize:
          tagFile = file(self.linkedFile.name, "r+b");
          if tagFile.read(3) == "ID3":
+            # FIXME:
+            print "POINT #2"
             TRACE_MSG("Removing ID3 v2.x Tag");
             tagSize = self.header.tagSize + self.header.SIZE;
             tagFile.seek(tagSize);
-            data = tagFile.read();
-            tagFile.seek(0);
-            tagFile.write(data);
+
+            # Open tmp file
+            tmpName = tempfile.mktemp();
+            tmpFile = file(tmpName, "w+b");
+
+            # Write audio data in chunks
+            self.__copyRemaining(tagFile, tmpFile);
             tagFile.truncate();
             tagFile.close();
+
+            tmpFile.close();
+
+            # Move tmp to orig.
+            shutil.copyfile(tmpName, self.linkedFile.name);
+            os.unlink(tmpName);
+
             retval |= 1;
 
       return retval;
 
-
-
    # Get artist.  There are a few frames that can contain this information,
    # and they are subtley different. 
-   #   eyeD3.frames.ARTIST_FID - Lead performer(s)/Soloist(s)
-   #   eyeD3.frames.BAND_FID - Band/orchestra/accompaniment
-   #   eyeD3.frames.CONDUCTOR_FID - Conductor/performer refinement
-   #   eyeD3.frames.REMIXER_FID - Interpreted, remixed, or otherwise modified by
+   #   frames.ARTIST_FID - Lead performer(s)/Soloist(s)
+   #   frames.BAND_FID - Band/orchestra/accompaniment
+   #   frames.CONDUCTOR_FID - Conductor/performer refinement
+   #   frames.REMIXER_FID - Interpreted, remixed, or otherwise modified by
    #
    # Any of these values can be passed as an argument to select the artist
    # of interest.  By default, the first one found (searched in the above order)
@@ -592,8 +602,8 @@ class Tag:
          f = self.frames[fid];
          if f:
              return f[0].text;
-      return u""; 
- 
+      return u"";
+
    def getAlbum(self):
       f = self.frames[ALBUM_FID];
       if f:
@@ -603,9 +613,9 @@ class Tag:
 
    # Get the track title.  By default the main title is returned.  Optionally,
    # you can pass:
-   #   eyeD3.frames.TITLE_FID - The title; the default.
-   #   eyeD3.frames.SUBTITLE_FID - The subtitle.
-   #   eyeD3.frames.CONTENT_TITLE_FID - Conten group description???? Rare.
+   #   frames.TITLE_FID - The title; the default.
+   #   frames.SUBTITLE_FID - The subtitle.
+   #   frames.CONTENT_TITLE_FID - Conten group description???? Rare.
    # An empty string is returned when no title exists.
    def getTitle(self, titleID = TITLE_FID):
       f = self.frames[titleID];
@@ -628,9 +638,9 @@ class Tag:
            return dateFrame[0].getYear();
        else:
            return None;
-            
+
    # Throws GenreException when the tag contains an unrecognized genre format.
-   # Note this method returns a eyeD3.Genre object, not a raw string.
+   # Note this method returns a Genre object, not a raw string.
    def getGenre(self):
       f = self.frames[GENRE_FID];
       if f and f[0].text:
@@ -651,7 +661,7 @@ class Tag:
          elif len(n) == 2:
             tn = self.toInt(n[0])
             tt = self.toInt(n[1])
-      return (tn, tt)      
+      return (tn, tt)
 
    # Returns a tuple with the first value containing the track number and the
    # second the total number of tracks.  One or both of these values may be
@@ -666,15 +676,25 @@ class Tag:
 
    # Since multiple comment frames are allowed this returns a list with 0
    # or more elements.  The elements are not the comment strings, they are
-   # eyeD3.frames.CommentFrame objects.
+   # frames.CommentFrame objects.
    def getComments(self):
       return self.frames[COMMENT_FID];
 
-   # Returns a list (possibly empty) of eyeD3.frames.ImageFrame objects.
+   # Since multiple lyrics frames are allowed this returns a list with 0
+   # or more elements.  The elements are not the lyrics strings, they are
+   # frames.LyricsFrame objects.
+   def getLyrics(self):
+      return self.frames[LYRICS_FID];
+
+   # Returns a list (possibly empty) of frames.ImageFrame objects.
    def getImages(self):
       return self.frames[IMAGE_FID];
 
-   # Returns a list (possibly empty) of eyeD3.frames.URLFrame objects.
+   # Returns a list (possibly empty) of frames.ObjectFrame objects.
+   def getObjects(self):
+      return self.frames[OBJECT_FID];
+
+   # Returns a list (possibly empty) of frames.URLFrame objects.
    # Both URLFrame and UserURLFrame objects are returned.  UserURLFrames
    # add a description and encoding, and have a different frame ID.
    def getURLs(self):
@@ -789,7 +809,7 @@ class Tag:
 
    def setDiscNum(self, n):
       self.setNum(DISCNUM_FID, n)
-   
+
    def setNum(self, fid, n):
       if n[0] == None and n[1] == None:
          self.frames.removeFramesByID(fid);
@@ -842,6 +862,21 @@ class Tag:
                                      self.strToUnicode(desc),
                                      lang, self.encoding);
 
+   # Add lyrics.  Semantics similar to addComment
+   def addLyrics(self, lyr, desc = u"", lang = DEFAULT_LANG):
+      if not lyr:
+         # A little more than a call to removeFramesByID is involved since we
+         # need to look at more than the frame ID.
+         lyrics = self.frames[LYRICS_FID];
+         for l in lyrics:
+            if l.lang == lang and l.description == desc:
+               self.frames.remove(l);
+               break;
+      else:
+         self.frames.setLyricsFrame(self.strToUnicode(lyr),
+                                     self.strToUnicode(desc),
+                                     lang, self.encoding);
+
    # Semantics similar to addComment
    def addUserTextFrame(self, desc, text):
       if not text:
@@ -857,6 +892,9 @@ class Tag:
    def removeComments(self):
        return self.frames.removeFramesByID(COMMENT_FID);
 
+   def removeLyrics(self):
+       return self.frames.removeFramesByID(LYRICS_FID);
+
    def addImage(self, type, image_file_path, desc = u""):
        if image_file_path:
            image_frame = ImageFrame.create(type, image_file_path, desc);
@@ -867,6 +905,17 @@ class Tag:
                if i.pictureType == type:
                    self.frames.remove(i);
                    break;
+
+   def addObject(self, object_file_path, mime = "", desc = u"",
+                 filename = None ):
+       object_frames = self.frames[OBJECT_FID];
+       for i in object_frames:
+           if i.description == desc:
+               self.frames.remove(i);
+       if object_file_path:
+           object_frame = ObjectFrame.create(object_file_path, mime, desc,
+                                             filename);
+           self.frames.addFrame(object_frame);
 
    def getPlayCount(self):
        if self.frames[PLAYCOUNT_FID]:
@@ -887,7 +936,7 @@ class Tag:
            frameHeader.id = PLAYCOUNT_FID;
            pc = PlayCountFrame(frameHeader, count = count);
            self.frames.addFrame(pc);
-   
+
    def incrementPlayCount(self, n = 1):
        pc = self.getPlayCount();
        if pc != None:
@@ -941,13 +990,13 @@ class Tag:
       if v != ID3_CURRENT_VERSION:
          self.header.setVersion(v);
          self.frames.setTagHeader(self.header);
-   
+
    def setTextFrame(self, fid, txt):
        if not txt:
           self.frames.removeFramesByID(fid);
        else:
           self.frames.setTextFrame(fid, self.strToUnicode(txt), self.encoding);
-   
+
    def setTextEncoding(self, enc):
        if enc != LATIN1_ENCODING and enc != UTF_16_ENCODING and\
           enc != UTF_16BE_ENCODING and enc != UTF_8_ENCODING:
@@ -1020,7 +1069,7 @@ class Tag:
             cmt = cmt[0:28] + "\x00" + chr(int(track) & 0xff);
       tag += cmt;
 
-      if not self.getGenre():
+      if not self.getGenre() or self.getGenre().getId() is None:
          genre = 0;
       else:
          genre = self.getGenre().getId();
@@ -1043,7 +1092,7 @@ class Tag:
       tagFile.write(tag);
       tagFile.flush();
       tagFile.close();
-      
+
    def _fixToWidth(self, s, n):
       retval = str(s);
       retval = retval[0:n];
@@ -1207,19 +1256,20 @@ class Tag:
          tagFile.write(tagData);
          tagFile.close();
       else:
-         # Open original
-         tagFile = file(self.linkedFile.name, "rb");
-         # Read all audio data
-         tagFile.seek(currTagSize);
-         audioData = tagFile.read();
-         tagFile.close();
-
+         # FIXME
+         print "POINT #1"
          # Open tmp file
          tmpName = tempfile.mktemp();
          tmpFile = file(tmpName, "w+b");
          TRACE_MSG("Writing %d bytes of tag data" % len(tagData));
          tmpFile.write(tagData);
-         tmpFile.write(audioData);
+
+         # Write audio data in chunks
+         tagFile = file(self.linkedFile.name, "rb");
+         tagFile.seek(currTagSize);
+         self.__copyRemaining(tagFile, tmpFile);
+
+         tagFile.close();
          tmpFile.close();
 
          # Move tmp to orig.
@@ -1287,6 +1337,18 @@ class Tag:
          raise TagException("Invalid date field: " + fStr);
       return fStr;
 
+   def __copyRemaining(self, src_fp, dest_fp):
+       # Write audio data in chunks
+       done = False
+       amt = 1024 * 512
+       while not done:
+           data = src_fp.read(amt)
+           if data:
+               dest_fp.write(data)
+           else:
+               done = True
+           del data
+
    # DEPRECATED
    # This method will return the first comment in the FrameSet
    # and not all of them.  Multiple COMM frames are common and useful.  Use
@@ -1320,7 +1382,7 @@ class Genre:
       return self.name;
 
    # Sets the genre id.  The objects name field is set to the corresponding
-   # value obtained from eyeD3.genres.
+   # value obtained from genres.
    #
    # Throws GenreException when name does not map to a valid ID3 v1.1. id.
    # This behavior can be disabled by passing 0 as the second argument.
@@ -1341,7 +1403,7 @@ class Genre:
       self.name = name;
 
    # Sets the genre name.  The objects id field is set to the corresponding
-   # value obtained from eyeD3.genres.
+   # value obtained from genres.
    #
    # Throws GenreException when name does not map to a valid ID3 v1.1. name.
    # This behavior can be disabled by passing 0 as the second argument.
@@ -1353,7 +1415,7 @@ class Genre:
          id = genres[name];
          # Get titled case.
          name = genres[id];
-      except (IndexError, KeyError):
+      except:
           if utils.strictID3():
               raise GenreException("Invalid genre name: " + name);
           id = None;
@@ -1364,7 +1426,7 @@ class Genre:
 
    # Sets the genre id and name. 
    #
-   # Throws GenreException when eyeD3.genres[id] != name (case insensitive). 
+   # Throws GenreException when genres[id] != name (case insensitive). 
    # This behavior can be disabled by passing 0 as the second argument.
    def set(self, id, name):
       if not isinstance(id, int):
@@ -1378,14 +1440,14 @@ class Genre:
       else:
          try:
             if genres[name] != id:
-               raise GenreException("eyeD3.genres[" + str(id) + "] " +\
+               raise GenreException("genres[" + str(id) + "] " +\
                                     "does not match " + name);
             self.id = id;
             self.name = name;
-         except (KeyError, IndexError):
-            raise GenreException("eyeD3.genres[" + str(id) + "] " +\
+         except:
+            raise GenreException("genres[" + str(id) + "] " +\
                                  "does not match " + name);
-      
+
    # Parses genre information from genreStr. 
    # The following formats are supported:
    # 01, 2, 23, 125 - ID3 v1 style.
@@ -1426,7 +1488,7 @@ class Genre:
          (id, name) = m.groups();
          if len(id) != 1 and id[0] == '0':
             id = id[1:];
-            
+
          if id and name:
             self.set(int(id), name.strip());
          else:
@@ -1435,7 +1497,7 @@ class Genre:
 
       # Non standard, but witnessed.
       # Match genreName alone.  e.g. Rap, Rock, blues.
-      regex = re.compile("^[A-Z 0-9+/\-&]+\00*$", re.IGNORECASE);
+      regex = re.compile("^[A-Z 0-9'+/\-&]+\00*$", re.IGNORECASE);
       if regex.match(genreStr):
          self.setName(genreStr);
          return;
@@ -1515,7 +1577,7 @@ class Mp3AudioFile(TagFile):
          raise self.invalidFileExc;
 
       # Parse ID3 tag.
-      f = file(fileName, "rb");
+      f = file(self.fileName, "rb");
       tag = Tag();
       hasTag = tag.link(f, tagVersion);
       # Find the first mp3 frame.
@@ -1531,36 +1593,43 @@ class Mp3AudioFile(TagFile):
       f.seek(framePos);
       bString = f.read(4);
       if len(bString) < 4:
-         raise InvalidAudioFormatException("Unable to find a valid mp3 frame")
-
+         raise InvalidAudioFormatException("Unable to find a valid mp3 "\
+                                           "frame");
+      frameHead = bin2dec(bytes2bin(bString));
       header = mp3.Header();
-      frameHead = header.find(bString)[0]
-      # Keep reading until we find a valid mp3 frame header, but give up if we
-      # don't find one within the first 300KB.
-      offset = n_chunks = 0
-      while not frameHead and n_chunks < 10:
-         bString = bString[-3:] + f.read(32768)
-         n_chunks += 1
-         if len(bString) <= 3:
-             break
+      it_count = 0;
+      # Keep reading until we find a valid mp3 frame header.
+      while not header.isValid(frameHead):
+         # Originally, the search was one byte at a time.  Occasionally a tag
+         # was heavily, and incorrectly, padded or a corrupt mp3 would cause
+         # a byte by byte search to take a long time.  This algorithm speeds
+         # up this particular case.
+         if it_count > 9:
+             f.seek(f.tell() + 128);
+             bString = f.read(4);
+             if len(bString) < 4:
+                raise InvalidAudioFormatException("Unable to find a valid mp3 "\
+                                                  "frame");
+             frameHead = bin2dec(bytes2bin(bString));
+             it_count = 0;
+             continue;
 
-         frameHead, offset = header.find(bString)
-
-      if not frameHead:
-         raise InvalidAudioFormatException("Unable to find a valid mp3 frame")
-
-      if n_chunks:
-          # Seek back just before frame header, for Xing header detection.
-          f.seek(-32768+offset, 1)
-          
+         frameHead <<= 8;
+         bString = f.read(1);
+         if len(bString) != 1:
+            raise InvalidAudioFormatException("Unable to find a valid mp3 "\
+                                              "frame");
+         frameHead |= ord(bString[0]);
+         it_count += 1;
       TRACE_MSG("mp3 header %x found at position: %d (0x%x)" % \
-                (frameHead, f.tell(), f.tell()))
+                (frameHead, f.tell() - 4, f.tell() - 4));
 
       # Decode the header.
       try:
          header.decode(frameHead);
          # Check for Xing header inforamtion which will always be in the
          # first "null" frame.
+         f.seek(-4, 1);
          mp3Frame = f.read(header.frameLength);
          if mp3Frame.find("Xing") != -1:
             xingHeader = mp3.XingHeader();
@@ -1585,7 +1654,7 @@ class Mp3AudioFile(TagFile):
                length -= 128;
          elif tag and tag.isV1():
             length -= 128;
-         self.play_time = int((length / header.frameLength) * tpf);    
+         self.play_time = int((length / header.frameLength) * tpf);
 
       self.header = header;
       self.xingHeader = xingHeader;
@@ -1815,7 +1884,7 @@ class GenreMap(list):
       while count < 256:
          self.append("Unknown");
          count += 1;
-      
+
       for index in range(len(self)):
          if self[index]:
             self.reverseDict[string.lower(self[index])] = index
@@ -1825,14 +1894,22 @@ class LinkedFile:
    tagSize = 0;  # This includes the padding byte count.
 
    def __init__(self, fileName):
-       self.name = fileName
+       if isinstance(fileName, str):
+           try:
+               self.name = unicode(fileName, sys.getfilesystemencoding());
+           except:
+               # Work around the local encoding not matching that of a mounted
+               # filesystem
+               self.name = fileName
+       else:
+           self.name = fileName;
 
 def tagToUserTune(tag):
     audio_file = None;
     if isinstance(tag, Mp3AudioFile):
         audio_file = tag;
         tag = audio_file.getTag();
-        
+
     tune =  u"<tune xmlns='http://jabber.org/protocol/tune'>\n";
     if tag.getArtist():
         tune += "  <artist>" + tag.getArtist() + "</artist>\n";

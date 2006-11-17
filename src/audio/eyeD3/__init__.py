@@ -18,7 +18,7 @@
 #
 ################################################################################
 
-eyeD3Version = "0.6.9";
+eyeD3Version = "0.6.11";
 eyeD3Maintainer = "Travis Shirk <travis@pobox.com>";
 
 # Version constants

@@ -19,7 +19,6 @@
 ################################################################################
 from binfuncs import *;
 from utils import *;
-import struct
 
 #######################################################################
 class Mp3Exception(Exception):
@@ -117,40 +116,25 @@ class Header:
 
       return 1;
 
-   def find(self, buffer):
-      """
-      Search a string for an MP3 header.  Returns a 2-tuple containing the
-      header and the offset within the buffer where the header begins.
-      """
-      idx = buffer.find("\xff")
-      while idx != -1:
-         candidate = buffer[idx:idx+4]
-         if len(candidate) < 4:
-            return None, None
-
-         header = struct.unpack(">I", candidate)[0]
-         if self.isValid(header):
-            return header, idx
-
-         idx = buffer.find("\xff", idx + 1)
-   
-      return None, None
-
-
    # This may throw an Mp3Exception if the header is malformed.
    def decode(self, header):
       # MPEG audio version from bits 19 and 20.
-      if not header & (1 << 20) and header & (1 << 19):
-         raise Mp3Exception("Illegal MPEG audio version");
-      elif not header & (1 << 20) and not header & (1 << 19):
-         self.version = 2.5;
+      bit20 = header & (1 << 20)
+      bit19 = header & (1 << 19)
+      if not bit20 and bit19:
+          # http://www.dv.co.yu/mpgscript/mpeghdr.htm states that this mpeg
+          # version is "reserved", yet I see more and more mp3s using it.
+          # FIXME: I can't locate what version this is supposed to be, so use
+          #        v2.5.
+          self.version = 2.5;
+      elif not bit20 and not bit19:
+          self.version = 2.5;
       else:
-         if not header & (1 << 19):
-            self.version = 2.0;
-         else:
-            self.version = 1.0;
+          if not bit19:
+              self.version = 2.0;
+          else:
+              self.version = 1.0;
 
-      
       # MPEG audio layer from bits 18 and 17.
       if not header & (1 << 18) and not header & (1 << 17):
          raise Mp3Exception("Illegal MPEG layer value");
