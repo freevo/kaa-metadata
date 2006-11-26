@@ -8,8 +8,8 @@
 # kaa-Metadata - Media Metadata for Python
 # Copyright (C) 2003-2006 Thomas Schueppel, Dirk Meyer
 #
-# First Edition: Dirk Meyer <dmeyer@tzi.de>
-# Maintainer:    Dirk Meyer <dmeyer@tzi.de>
+# First Edition: Dirk Meyer <dischi@freevo.org>
+# Maintainer:    Dirk Meyer <dischi@freevo.org>
 #
 # Please see the file AUTHORS for a complete list of authors.
 #

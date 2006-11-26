@@ -9,7 +9,7 @@
 # Copyright (C) 2003-2006 Thomas Schueppel, Dirk Meyer
 #
 # First Edition: Thomas Schueppel <stain@acm.org>
-# Maintainer:    Dirk Meyer <dmeyer@tzi.de>
+# Maintainer:    Dirk Meyer <dischi@freevo.org>
 #
 # Please see the file AUTHORS for a complete list of authors.
 #
