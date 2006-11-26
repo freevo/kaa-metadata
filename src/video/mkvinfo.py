@@ -6,7 +6,7 @@
 #
 # -----------------------------------------------------------------------------
 # kaa-Metadata - Media Metadata for Python
-# Copyright (C) 2003-2005 Thomas Schueppel, Dirk Meyer, Jason Tackaberry
+# Copyright (C) 2003-2006 Thomas Schueppel, Dirk Meyer, Jason Tackaberry
 #
 # Maintainer:    Jason Tackaberry <tack@urandom.ca>
 #

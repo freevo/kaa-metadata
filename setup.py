@@ -6,12 +6,12 @@
 #
 # -----------------------------------------------------------------------------
 # kaa-Metadata - Media Metadata for Python
-# Copyright (C) 2003-2005 Thomas Schueppel, Dirk Meyer
+# Copyright (C) 2003-2006 Thomas Schueppel, Dirk Meyer
 #
 # First Edition: Thomas Schueppel <stain@acm.org>
 # Maintainer:    Dirk Meyer <dmeyer@tzi.de>
 #
-# Please see the file doc/CREDITS for a complete list of authors.
+# Please see the file AUTHORS for a complete list of authors.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,8 +61,9 @@ except AttributeError:
     ext_modules = [ cdrom ]
     
 setup (module      = 'metadata',
-       version     = '0.4.99.1',
-       description = "Module for retrieving information about media files",
+       version     = '0.5',
+       license     = 'GPL',
+       description = 'Module for retrieving information about media files',
        author      = "Thomas Schueppel, Dirk Meyer",
        scripts     = [ 'bin/mminfo' ],
        ext_modules = ext_modules

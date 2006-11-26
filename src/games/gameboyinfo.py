@@ -6,7 +6,7 @@
 #
 # -----------------------------------------------------------------------------
 # kaa-Metadata - Media Metadata for Python
-# Copyright (C) 2003-2005 Thomas Schueppel, Dirk Meyer
+# Copyright (C) 2003-2006 Thomas Schueppel, Dirk Meyer
 #
 # First Edition: Richard Mottershead <richard.mottershead@v21net.co.uk>
 # Maintainer:    Richard Mottershead <richard.mottershead@v21net.co.uk>

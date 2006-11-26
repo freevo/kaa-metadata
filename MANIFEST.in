@@ -1,7 +1,6 @@
 recursive-include src *.py
 recursive-include src *.c
 recursive-include src *.h
-recursive-include i18n *
 
 include bin/mminfo
 include MANIFEST README COPYING TODO AUTHORS
