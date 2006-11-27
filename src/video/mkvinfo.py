@@ -42,6 +42,7 @@ import logging
 # kaa imports
 from kaa.metadata import mediainfo
 from kaa.metadata import factory
+import fourcc
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -61,8 +62,6 @@ MATROSKA_CRC_ID                   = 0xBF
 MATROSKA_TIMECODESCALE_ID         = 0x2AD7B1
 MATROSKA_DURATION_ID              = 0x4489
 MATROSKA_CRC32_ID                 = 0xBF
-MATROSKA_TRACK_TYPE_ID            = 0x83
-MATROSKA_TRACK_LANGUAGE_ID        = 0x22B59C
 MATROSKA_TIMECODESCALE_ID         = 0x2AD7B1
 MATROSKA_MUXING_APP_ID            = 0x4D80
 MATROSKA_WRITING_APP_ID           = 0x5741
@@ -72,6 +71,7 @@ MATROSKA_FRAME_DURATION_ID        = 0x23E383
 MATROSKA_VIDEO_SETTINGS_ID        = 0xE0
 MATROSKA_VID_WIDTH_ID             = 0xB0
 MATROSKA_VID_HEIGHT_ID            = 0xBA
+MATROSKA_VID_INTERLACED           = 0x9A
 MATROSKA_DISPLAY_VID_WIDTH_ID     = 0x54B0
 MATROSKA_DISPLAY_VID_HEIGHT_ID    = 0x54BA
 MATROSKA_AUDIO_SETTINGS_ID        = 0xE1
@@ -79,6 +79,9 @@ MATROSKA_AUDIO_SAMPLERATE_ID      = 0xB5
 MATROSKA_AUDIO_CHANNELS_ID        = 0x9F
 MATROSKA_TRACK_UID_ID             = 0x73C5
 MATROSKA_TRACK_NUMBER_ID          = 0xD7
+MATROSKA_TRACK_TYPE_ID            = 0x83
+MATROSKA_TRACK_LANGUAGE_ID        = 0x22B59C
+MATROSKA_TRACK_OFFSET             = 0x537F
 MATROSKA_TITLE_ID                 = 0x7BA9
 MATROSKA_DATE_UTC_ID              = 0x4461
 MATROSKA_NAME_ID                  = 0x536E
@@ -99,6 +102,9 @@ MATROSKA_FILE_DESC_ID             = 0x467E
 MATROSKA_FILE_NAME_ID             = 0x466E
 MATROSKA_FILE_MIME_TYPE_ID        = 0x4660
 MATROSKA_FILE_DATA_ID             = 0x465C
+
+# See mkv spec for details:
+# http://www.matroska.org/technical/specs/index.html
 
 class EbmlEntity:
     """
@@ -207,6 +213,12 @@ class EbmlEntity:
     def get_data(self):
         return self.entity_data
 
+    def get_utf8(self):
+        return unicode(self.entity_data, 'utf-8', 'replace')
+
+    def get_str(self):
+        return unicode(self.entity_data, 'ascii', 'replace')
+
     def get_id(self):
         return self.entity_id
 
@@ -263,7 +275,7 @@ class MkvInfo(mediainfo.AVInfo):
                 pass
 
             if MATROSKA_TITLE_ID in seginfotab:
-                self.title = seginfotab[MATROSKA_TITLE_ID].get_data()
+                self.title = seginfotab[MATROSKA_TITLE_ID].get_utf8()
 
             if MATROSKA_DATE_UTC_ID in seginfotab:
                 self.date =  unpack('!q', seginfotab[MATROSKA_DATE_UTC_ID].get_data())[0] / 10.0**9
@@ -324,17 +336,21 @@ class MkvInfo(mediainfo.AVInfo):
             track = mediainfo.VideoInfo()
             try:
                 elem = tabelem[MATROSKA_CODEC_ID]
-                track.codec = elem.get_data()
+                track.codec = elem.get_str()
                 if track.codec.startswith('V_'):
                     track.codec = track.codec[2:]
             except (ZeroDivisionError, KeyError, IndexError):
-                track.codec = 'Unknown'
+                track.codec = u'Unknown'
 
-            if MATROSKA_CODEC_PRIVATE_ID in tabelem:
-                if tabelem[MATROSKA_CODEC_PRIVATE_ID].get_len() == 40:
-                    # Assuming it's a alBITMAPINFOHEADER, grab fourcc
-                    track.format = tabelem[MATROSKA_CODEC_PRIVATE_ID].get_data()[16:20]
-
+            if MATROSKA_CODEC_PRIVATE_ID in tabelem and \
+                   tabelem[MATROSKA_CODEC_PRIVATE_ID].get_len() == 40:
+                # Assuming it's a alBITMAPINFOHEADER, grab fourcc
+                c = tabelem[MATROSKA_CODEC_PRIVATE_ID].get_data()[16:20]
+                if c in fourcc.RIFFWAVE:
+                    track.format = fourcc.RIFFWAVE[c]
+                if c in fourcc.RIFFCODEC:
+                    track.format = fourcc.RIFFCODEC[c]
+                        
             try:
                 elem = tabelem[MATROSKA_FRAME_DURATION_ID]
                 track.fps = 1 / (pow(10, -9) * (elem.get_value()))
@@ -350,6 +366,10 @@ class MkvInfo(mediainfo.AVInfo):
                    vidtab.has_key(MATROSKA_DISPLAY_VID_HEIGHT_ID):
                     track.aspect = float(vidtab[MATROSKA_DISPLAY_VID_WIDTH_ID].get_value()) / \
                                 vidtab[MATROSKA_DISPLAY_VID_HEIGHT_ID].get_value()
+                if MATROSKA_VID_INTERLACED in vidtab:
+                    self.keys.append('interlaced')
+                    self.interlaced = int(vidtab[MATROSKA_VID_INTERLACED].get_value())
+                    
             except Exception, e:
                 log.debug("No other info about video track !!!")
             self.media = 'video'
@@ -361,11 +381,11 @@ class MkvInfo(mediainfo.AVInfo):
 
             try:
                 elem = tabelem[MATROSKA_CODEC_ID]
-                track.codec = elem.get_data()
+                track.codec = elem.get_str()
                 if track.codec.startswith('A_'):
                     track.codec = track.codec[2:]
             except (KeyError, IndexError):
-                track.codec = "Unknown"
+                track.codec = u"Unknown"
 
             try:
                 ainfo = tabelem[MATROSKA_AUDIO_SETTINGS_ID]
@@ -385,13 +405,13 @@ class MkvInfo(mediainfo.AVInfo):
             return
 
         if MATROSKA_TRACK_LANGUAGE_ID in tabelem:
-            track.language = tabelem[MATROSKA_TRACK_LANGUAGE_ID].get_data()
+            track.language = tabelem[MATROSKA_TRACK_LANGUAGE_ID].get_str()
             log.debug("Track language found: %s" % track.language)
         else:
-            track.language = "und"
+            track.language = u"und"
 
         if MATROSKA_NAME_ID in tabelem:
-            track.title = tabelem[MATROSKA_NAME_ID].get_data()
+            track.title = tabelem[MATROSKA_NAME_ID].get_utf8()
 
         if MATROSKA_TRACK_NUMBER_ID in tabelem:
             track.trackno = tabelem[MATROSKA_TRACK_NUMBER_ID].get_value()
@@ -429,7 +449,7 @@ class MkvInfo(mediainfo.AVInfo):
             # logic will only take the last one in the list.
             tabelem = self.process_one_level(tabelem[MATROSKA_CHAPTER_DISPLAY_ID])
             if MATROSKA_CHAPTER_STRING_ID in tabelem:
-                chap.name = tabelem[MATROSKA_CHAPTER_STRING_ID].get_data()
+                chap.name = tabelem[MATROSKA_CHAPTER_STRING_ID].get_utf8()
 
         log.debug('Chapter "%s" found' % str(chap.name))
         self.chapters.append(chap)
@@ -450,9 +470,9 @@ class MkvInfo(mediainfo.AVInfo):
         name = desc = mimetype = ""
 
         if MATROSKA_FILE_NAME_ID in tabelem:
-            name = tabelem[MATROSKA_FILE_NAME_ID].get_data()
+            name = tabelem[MATROSKA_FILE_NAME_ID].get_utf8()
         if MATROSKA_FILE_DESC_ID in tabelem:
-            desc = tabelem[MATROSKA_FILE_DESC_ID].get_data()
+            desc = tabelem[MATROSKA_FILE_DESC_ID].get_utf8()
         if MATROSKA_FILE_MIME_TYPE_ID in tabelem:
             mimetype = tabelem[MATROSKA_FILE_MIME_TYPE_ID].get_data()
         if MATROSKA_FILE_DATA_ID in tabelem:
@@ -462,7 +482,7 @@ class MkvInfo(mediainfo.AVInfo):
 
         # Right now we only support attachments that could be cover images.
         # Make a guess to see if this attachment is a cover image.
-        if mimetype.startswith("image/") and "cover" in (name+desc).lower() and data:
+        if mimetype.startswith("image/") and u"cover" in (name+desc).lower() and data:
             self.thumbnail = data
 
         log.debug('Attachment "%s" found' % name)
