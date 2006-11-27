@@ -350,7 +350,9 @@ class AVInfo(MediaInfo):
         for container in [ self ] + self.video + self.audio:
             if container['length']:
                 container['length'] = int(container['length'])
-
+        for subitem in self.video + self.audio:
+            subitem.correct_data()
+            
 
     def find_subtitles(self, filename):
         """
