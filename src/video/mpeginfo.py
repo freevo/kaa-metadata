@@ -293,6 +293,9 @@ class MpegInfo(mediainfo.AVInfo):
         """
         read SCR (timestamp) for MPEG2 at the buffer beginning (6 Bytes)
         """
+        if len(buffer) < 6:
+            return -1
+
         highbit = (ord(buffer[0])&0x20)>>5
 
         low4Bytes= ((long(ord(buffer[0])) & 0x18) >> 3) << 30
@@ -313,6 +316,9 @@ class MpegInfo(mediainfo.AVInfo):
         """
         read SCR (timestamp) for MPEG1 at the buffer beginning (5 Bytes)
         """
+        if len(buffer) < 5:
+            return -1
+
         highbit = (ord(buffer[0]) >> 3) & 0x01
 
         low4Bytes = ((long(ord(buffer[0])) >> 1) & 0x03) << 30
