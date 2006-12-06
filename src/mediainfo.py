@@ -272,7 +272,8 @@ class AudioInfo(MediaInfo):
             if value == None:
                 continue
             if key == 'codec':
-                value = fourcc.resolve(value)
+                f, value = fourcc.resolve(value)
+                result += u'\n        fourcc: %s' % f
             result += u'\n        %s: %s' % (unicode(key), unicode(value))
         return result
 
@@ -322,7 +323,8 @@ class VideoInfo(MediaInfo):
             if value == None:
                 continue
             if key == 'codec':
-                value = fourcc.resolve(value)
+                f, value = fourcc.resolve(value)
+                result += u'\n        fourcc: %s' % f
             result += u'\n        %s: %s' % (unicode(key), unicode(value))
         return result
 

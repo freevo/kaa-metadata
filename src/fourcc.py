@@ -6,16 +6,18 @@ def resolve(code):
     """
     if isinstance(code, (int, long)):
         if code in TWOCC:
-            return unicode(TWOCC[code])
-        return u'Unknown'
+            return u'0x%x' % code, unicode(TWOCC[code])
+        return u'0x%x' % code, u'Unknown'
     if code.upper() in FOURCC:
-        return unicode(FOURCC[code.upper()])
+        return unicode(code.upper()), unicode(FOURCC[code.upper()])
     if code.upper().startswith('MS'):
         code = code[2:]
+    if len(code) > 2:
+        return unicode(code), u'Unknown'
     code = (ord(code[0]) << 8) + ord(code[1])
     if code in TWOCC:
-        return unicode(TWOCC[code])
-    return u'Unknown'
+        return u'0x%x' % code, unicode(TWOCC[code])
+    return u'0x%x' % code, u'Unknown'
 
 
 TWOCC = {
