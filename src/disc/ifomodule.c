@@ -49,7 +49,7 @@
 #include <dvdread/ifo_read.h>
 
 static PyObject * ifoinfo_get_audio_tracks(ifo_handle_t *vtsfile, int id) {
-    char audioformat[10];
+    char audioformat[7];
     char audiolang[5];
     int audiochannels;
     int audiofreq;
@@ -76,28 +76,22 @@ static PyObject * ifoinfo_get_audio_tracks(ifo_handle_t *vtsfile, int id) {
     /* audio format */
     switch (attr->audio_format) {
     case 0:
-        snprintf(audioformat, 10, "ac3");
-        break;
-    case 1:
-        snprintf(audioformat, 10, "N/A");
+        snprintf(audioformat, 7, "0x2000");
         break;
     case 2:
-        snprintf(audioformat, 10, "mpeg1");
+        snprintf(audioformat, 7, "0x0050");
         break;
     case 3:
-        snprintf(audioformat, 10, "mpeg2ext");
+        snprintf(audioformat, 5, "MP2A");
         break;
     case 4:
-        snprintf(audioformat, 10, "lpcm");
-        break;
-    case 5:
-        snprintf(audioformat, 10, "N/A");
+        snprintf(audioformat, 7, "0x0001");
         break;
     case 6:
-        snprintf(audioformat, 10, "dts");
+        snprintf(audioformat, 7, "0x2001");
         break;
     default:
-        snprintf(audioformat, 10, "N/A");
+        snprintf(audioformat, 7, "%02x%02x", 0, 0);
     }
 
     switch (attr->lang_type) {

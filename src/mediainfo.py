@@ -347,7 +347,11 @@ class SubtitleInfo(MediaInfo):
     _keys = ['language', 'trackno', 'title']
     media = 'subtitle'
 
+    def __init__(self, language=None):
+        MediaInfo.__init__(self)
+        self.language = language
 
+        
 class AVInfo(MediaInfo):
     """
     Container for Audio and Video streams. This is the Container Type for

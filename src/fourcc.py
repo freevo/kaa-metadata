@@ -4,6 +4,8 @@ def resolve(code):
     """
     Transform a twocc or fourcc code into a name.
     """
+    if isinstance(code, str) and code.startswith('0x'):
+        code = int(code[2:], 16)
     if isinstance(code, (int, long)):
         if code in TWOCC:
             return u'0x%04x' % code, unicode(TWOCC[code])
@@ -69,7 +71,7 @@ TWOCC = {
     0x0042: 'MSG723',
     0x0043: 'IBM AVC ADPCM',
     0x0045: 'ITU-T G.726 ADPCM',
-    0x0050: 'MPEG',
+    0x0050: 'MPEG 1, Layer 1,2',
     0x0052: 'RT24',
     0x0053: 'PAC',
     0x0055: 'MPEG Layer 3',
