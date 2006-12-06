@@ -395,7 +395,7 @@ FOURCC = {
     'H261': 'Intel ITU H.261 Videoconferencing',
     'H262': 'Intel ITU H.262 Videoconferencing',
     'H263': 'Intel ITU H.263 Videoconferencing',
-    'H264': 'Intel ITU H.264 Videoconferencing',
+    'H264': 'H.264 AVC',
     'H265': 'Intel ITU H.265 Videoconferencing',
     'H266': 'Intel ITU H.266 Videoconferencing',
     'H267': 'Intel ITU H.267 Videoconferencing',
