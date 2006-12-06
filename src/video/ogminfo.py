@@ -39,7 +39,6 @@ import logging
 # kaa imports
 from kaa.metadata import mediainfo
 from kaa.metadata import factory
-import fourcc
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -289,10 +288,7 @@ class OgmInfo(mediainfo.AVInfo):
                 vi.width /= 65536
                 vi.height /= 65536
                 # XXX length, bitrate are very wrong
-                try:
-                    vi.codec = fourcc.RIFFCODEC[type]
-                except (KeyError, IndexError):
-                    vi.codec = 'Unknown (%s)' % type
+                vi.codec = type
                 vi.fps = 10000000 / timeunit
                 self.video.append(vi)
                 self.all_streams.append(vi)

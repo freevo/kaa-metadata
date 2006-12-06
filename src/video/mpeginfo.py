@@ -40,7 +40,6 @@ import stat
 # kaa imports
 from kaa.metadata import mediainfo
 from kaa.metadata import factory
-import fourcc
 
 # get logging object
 log = logging.getLogger('metadata')

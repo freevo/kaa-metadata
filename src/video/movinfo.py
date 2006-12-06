@@ -43,7 +43,6 @@ from struct import unpack
 from kaa.metadata import factory
 from kaa.metadata import mediainfo
 from movlanguages import *
-import fourcc
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -211,7 +210,8 @@ class MovInfo(mediainfo.AVInfo):
                                     # jpeg is no video, remove it from the list
                                     self.video.remove(vi)
                                     info = None
-
+                                print codec
+                                
                         elif mdia[1] == 'dinf':
                             dref = unpack('>I4s', atomdata[pos+8:pos+8+8])
                             log.debug('  --> %s, %s' % mdia)

@@ -42,7 +42,6 @@ import logging
 # kaa imports
 from kaa.metadata import mediainfo
 from kaa.metadata import factory
-import fourcc
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -106,6 +105,23 @@ MATROSKA_FILE_DATA_ID             = 0x465C
 # See mkv spec for details:
 # http://www.matroska.org/technical/specs/index.html
 
+# Map to convert to well known codes
+# http://haali.cs.msu.ru/mkv/codecs.pdf
+FOURCCMap = {
+    'V_THEORA': 'THEO',
+    'V_SNOW': 'SNOW',
+    'V_MPEG4/ISO/ASP': 'MP4V',
+    'V_MPEG4/ISO/AVC': 'AVC1',
+    'A_AC3': 0x2000,
+    'A_MPEG/L3': 0x0055,
+    'A_MPEG/L2': 0x0050,
+    'A_MPEG/L1': 0x0050,
+    'A_DTS': 0x2001,
+    'A_PCM/INT/LIT': 0x0001,
+    'A_PCM/FLOAT/IEEE': 0x003,
+    'A_TTA1': 0x77a1
+}
+    
 class EbmlEntity:
     """
     This is class that is responsible to handle one Ebml entity as described in
@@ -337,20 +353,23 @@ class MkvInfo(mediainfo.AVInfo):
             try:
                 elem = tabelem[MATROSKA_CODEC_ID]
                 track.codec = elem.get_str()
-                if track.codec.startswith('V_'):
-                    track.codec = track.codec[2:]
             except (ZeroDivisionError, KeyError, IndexError):
                 track.codec = u'Unknown'
 
-            if MATROSKA_CODEC_PRIVATE_ID in tabelem and \
+            # convert codec information
+            # http://haali.cs.msu.ru/mkv/codecs.pdf
+            if track.codec in FOURCCMap:
+                track.codec = FOURCCMap[track.codec]
+            elif track.codec.endswith('FOURCC') and \
+                   MATROSKA_CODEC_PRIVATE_ID in tabelem and \
                    tabelem[MATROSKA_CODEC_PRIVATE_ID].get_len() == 40:
-                # Assuming it's a alBITMAPINFOHEADER, grab fourcc
-                c = tabelem[MATROSKA_CODEC_PRIVATE_ID].get_data()[16:20]
-                if c in fourcc.RIFFWAVE:
-                    track.format = fourcc.RIFFWAVE[c]
-                if c in fourcc.RIFFCODEC:
-                    track.format = fourcc.RIFFCODEC[c]
-                        
+                track.codec = tabelem[MATROSKA_CODEC_PRIVATE_ID].get_data()[16:20]
+            elif track.codec.startswith('V_REAL/'):
+                track.codec = track.codec[7:]
+            elif track.codec.startswith('V_'):
+                # FIXME: add more video codecs here
+                track.codec = track.codec[2:]
+
             try:
                 elem = tabelem[MATROSKA_FRAME_DURATION_ID]
                 track.fps = 1 / (pow(10, -9) * (elem.get_value()))
@@ -382,7 +401,9 @@ class MkvInfo(mediainfo.AVInfo):
             try:
                 elem = tabelem[MATROSKA_CODEC_ID]
                 track.codec = elem.get_str()
-                if track.codec.startswith('A_'):
+                if track.codec in FOURCCMap:
+                    track.codec = FOURCCMap[track.codec]
+                elif track.codec.startswith('A_'):
                     track.codec = track.codec[2:]
             except (KeyError, IndexError):
                 track.codec = u"Unknown"

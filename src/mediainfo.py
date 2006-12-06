@@ -38,6 +38,9 @@ import sys
 # kaa imports
 from kaa.strutils import str_to_unicode, unicode_to_str
 
+# fourcc list for debugging
+import fourcc
+
 UNPRINTABLE_KEYS = [ 'thumbnail']
 
 # type definitions
@@ -262,6 +265,17 @@ class AudioInfo(MediaInfo):
             setattr(self,k,None)
             self.keys.append(k)
 
+    def __unicode__(self):
+        result = u''
+        for key in self.keys:
+            value = self[key]
+            if value == None:
+                continue
+            if key == 'codec':
+                value = fourcc.resolve(value)
+            result += u'\n        %s: %s' % (unicode(key), unicode(value))
+        return result
+
 
 class MusicInfo(AudioInfo):
     """
@@ -300,6 +314,17 @@ class VideoInfo(MediaInfo):
             setattr(self,k,None)
             self.keys.append(k)
 
+
+    def __unicode__(self):
+        result = u''
+        for key in self.keys:
+            value = self[key]
+            if value == None:
+                continue
+            if key == 'codec':
+                value = fourcc.resolve(value)
+            result += u'\n        %s: %s' % (unicode(key), unicode(value))
+        return result
 
 class ChapterInfo(MediaInfo):
     """

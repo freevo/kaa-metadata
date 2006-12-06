@@ -33,7 +33,6 @@
 import re
 import struct
 import string
-import fourcc
 import logging
 import time
 
@@ -205,11 +204,7 @@ class RiffInfo(mediainfo.AVInfo):
             # http://www.stats.uwa.edu.au/Internal/Specs/DXALL/FileSpec/\
             #    Languages
             # ai.language = strh['wLanguage']
-            try:
-                ai.codec = fourcc.RIFFWAVE[retval['wFormatTag']]
-            except (KeyError, IndexError):
-                ai.codec = "Unknown"
-            ai.format = retval['wFormatTag']
+            ai.codec = retval['wFormatTag']
             self.audio.append(ai)
         elif fccType == 'vids':
             v = struct.unpack('<IIIHH',t[0:16])
@@ -218,7 +213,6 @@ class RiffInfo(mediainfo.AVInfo):
               retval['biHeight'],
               retval['biPlanes'],
               retval['biBitCount'], ) = v
-            retval['fourcc'] = t[16:20]
             v = struct.unpack('IIIII',t[20:40])
             ( retval['biSizeImage'],
               retval['biXPelsPerMeter'],
@@ -226,16 +220,12 @@ class RiffInfo(mediainfo.AVInfo):
               retval['biClrUsed'],
               retval['biClrImportant'], ) = v
             vi = mediainfo.VideoInfo()
-            try:
-                vi.codec = fourcc.RIFFCODEC[t[16:20]]
-            except (KeyError, IndexError):
-                vi.codec = "Unknown"
+            vi.codec = t[16:20]
             vi.width = retval['biWidth']
             vi.height = retval['biHeight']
             vi.bitrate = strh['dwRate']
             vi.fps = float(strh['dwRate']) / strh['dwScale']
             vi.length = strh['dwLength'] / vi.fps
-            vi.format = retval['fourcc']
             self.video.append(vi)
         return retval
 
