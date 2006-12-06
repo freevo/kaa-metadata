@@ -22,7 +22,7 @@ def resolve(code):
 
 TWOCC = {
     0x0000: 'Unknown Wave Format',
-    0x0001: 'PCM'
+    0x0001: 'PCM',
     0x0002: 'Microsoft ADPCM',
     0x0003: 'IEEE Float',
     0x0004: 'Compaq Computer VSELP',
@@ -669,8 +669,8 @@ FOURCC = {
     'TRLE': 'Akula Alpha Pro Custom AVI (LossLess)',
     'TSCC': 'TechSmith Screen Capture Codec',
     'TV10': 'Tecomac Low-Bit Rate Codec',
-    'TVJP': 'TrueVision Field Encoded Motion JPEG'
-    'TVMJ': 'Truevision TARGA MJPEG Hardware Codec'
+    'TVJP': 'TrueVision Field Encoded Motion JPEG',
+    'TVMJ': 'Truevision TARGA MJPEG Hardware Codec',
     'TY0N': 'Trident TY0N',
     'TY2C': 'Trident TY2C',
     'TY2N': 'Trident TY2N',
