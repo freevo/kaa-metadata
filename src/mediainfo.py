@@ -53,33 +53,20 @@ TYPE_MUSIC     = 6
 TYPE_HYPERTEXT = 8
 TYPE_MISC      = 10
 
-MEDIACORE = ['title', 'caption', 'comment', 'artist', 'size', 'type',
-             'subtype', 'date', 'keywords', 'country', 'language', 'url']
+MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'date',
+             'keywords', 'country', 'language', 'url', 'media', 'artist']
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
-             'samplebits', 'bitrate' ]
+             'samplebits', 'bitrate', 'fourcc' ]
 
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
-             'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno' ]
+             'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno', 'fourcc' ]
 
-MUSICCORE = ['trackno', 'trackof', 'album', 'genre','discs', 'thumbnail' ]
-
-# AVCORE is such a funny list. Who created it? I don't see any parser
-# that could ever fill out stuff like 'production designer'. Making this
-# list smaller would make kaa.metadata faster.
+MUSICCORE = ['trackno', 'trackof', 'album', 'genre', 'discs', 'thumbnail' ]
 
 AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
-             'genre', 'secondary genre', 'subject', 'writer', 'producer',
-             'cinematographer', 'production designer', 'edited by',
-             'costume designer', 'music by', 'studio', 'distributed by',
-             'rating', 'starring', 'ripped by', 'digitizing date',
-             'internet address', 'source form', 'medium', 'source',
-             'archival location', 'commisioned by', 'engineer', 'cropped',
-             'sharpness', 'dimensions', 'lightness', 'dots per inch',
-             'palette setting', 'default audio stream', 'logo url',
-             'watermark url', 'info url', 'banner image', 'banner url',
-             'infotext', 'delay', 'image' ]
-
+             'genre', 'writer', 'producer', 'studio', 'rating', 'starring',
+             'delay', 'image', 'video', 'audio', 'subtitles', 'chapters' ]
 
 EXTENSION_DEVICE    = 'device'
 EXTENSION_DIRECTORY = 'directory'
@@ -92,51 +79,67 @@ log = logging.getLogger('metadata')
 class KaaMetadataParseError:
     pass
 
-class MediaInfo:
+
+class MediaInfo(object):
     """
     MediaInfo is the base class to all Media Metadata Containers. It defines
     the basic structures that handle metadata. MediaInfo and its derivates
     contain a common set of metadata attributes that is listed in keys.
     Specific derivates contain additional keys to the dublin core set that is
     defined in MediaInfo.
-    MediaInfo also contains tables of addional metadata. These tables are maps
-    of keys to values. The keys themselves should remain in the format that is
-    defined by the metadata (I.E. Hex-Numbers, FOURCC, ...) and will be
-    translated to more readable and i18nified values by an external entity.
     """
-    def __init__(self):
-        self.keys = []
-        self._tables = {}
-        for k in MEDIACORE:
-            setattr(self,k,None)
-            self.keys.append(k)
-        # get media type by parsing the __class__ information
-        media = str(self.__class__)
-        media = media[media.find('kaa.metadata.') + 13:]
-        self.media = media[:media.find('.')]
-        self.keys.append('media')
+    _keys = MEDIACORE
+    table_mapping = {}
 
+    def __init__(self, hash=None):
+        if hash is not None:
+            # create mediainfo based on dict
+            for key, value in hash.items():
+                if isinstance(value, list) and value and isinstance(value[0], dict):
+                    value = [ MediaInfo(x) for x in value ]
+                self._set(key, value)
+            return
+        
+        self._keys = self._keys[:]
+        self._tables = {}
+        for key in self._keys:
+            setattr(self, key, None)
+
+
+    #
+    # unicode and string convertion for debugging
+    #
 
     def __unicode__(self):
-        keys = copy.copy(self.keys)
-        hidden = []
-        for k in UNPRINTABLE_KEYS:
-            if k in keys:
-                keys.remove(k)
-                hidden.append(k)
+        result = u''
 
-        result = reduce( lambda a,b: self[b] and b != u'url' and \
-                         u'%s\n        %s: %s' % \
-                         (a, unicode(b), unicode(self[b])) or a, keys, u'' )
-        for h in hidden:
-            if self[h]:
-                result += u'\n        %s: <unprintable data>' % h
-        if log.level < 30:
+        # print normal attributes
+        lists = []
+        for key in self._keys:
+            value = getattr(self, key, None)
+            if value == None or key == 'url':
+                continue
+            if isinstance(value, list):
+                if value:
+                    lists.append((key, value))
+                continue
+            if key in UNPRINTABLE_KEYS:
+                value = '<unprintable data>'
+            result += u'  %10s: %s\n' % (unicode(key), unicode(value))
+
+        # print lists
+        for key, l in lists:
+            result += u'\n  %5s list:' % key
+            for item in l:
+                result += '\n    ' + unicode(item).replace('\n', '\n    ') + u'\n'
+
+        # print tables
+        if log.level >= 10:
             for name, table in self._tables.items():
                 result += '\n\n    Table %s' % str(name)
                 for key, value in table.items():
                     try:
-                        value = unicode(value) 
+                        value = unicode(value)
                         if len(value) > 50:
                             value = '<unprintable data>'
                     except UnicodeDecodeError:
@@ -148,62 +151,84 @@ class MediaInfo:
     def __str__(self):
         return unicode_to_str(unicode(self))
 
-    
-    def appendtable(self, name, hashmap, language='en'):
+
+    def __repr__(self):
+        return '<%s %s>' % (str(self.__class__)[8:-2], self.url)
+
+
+    #
+    # internal functions
+    #
+
+    def _appendtable(self, name, hashmap):
         """
         Appends a tables of additional metadata to the Object.
         If such a table already exists, the given tables items are
         added to the existing one.
         """
-        if not self._tables.has_key((name, language)):
-            self._tables[(name, language)] = hashmap
+        if not self._tables.has_key(name):
+            self._tables[name] = hashmap
         else:
             # Append to the already existing table
             for k in hashmap.keys():
-                self._tables[(name, language)][k] = hashmap[k]
+                self._tables[name][k] = hashmap[k]
 
 
-    def correct_data(self):
+    def _set(self, key, value):
+        """
+        Set key to value and add the key to the internal keys list if
+        missing.
+        """
+        if value is None and getattr(self, key, None) is None:
+            return
+        if isinstance(value, str):
+            value = str_to_unicode(value)
+        setattr(self, key, value)
+        if not key in self._keys:
+            self._keys.append(key)
+
+
+    def _finalize(self):
         """
         Correct same data based on specific rules
         """
         # make sure all strings are unicode
-        for key in self.keys:
+        for key in self._keys:
             if key in UNPRINTABLE_KEYS:
                 continue
             value = getattr(self, key)
+            if value is None:
+                continue
             if isinstance(value, str):
                 setattr(self, key, str_to_unicode(value))
             if isinstance(value, unicode):
                 setattr(self, key, value.strip().rstrip().replace(u'\0', u''))
+            if isinstance(value, list) and value and isinstance(value[0], MediaInfo):
+                for submenu in value:
+                    submenu._finalize()
 
+        # copy needed tags from tables
+        for name, table in self._tables.items():
+            mapping = self.table_mapping.get(name, {})
+            for tag, attr in mapping.items():
+                value = table.get(tag, None)
+                if value is not None:
+                    if not isinstance(value, (str, unicode)):
+                        value = unicode(str(value))
+                    elif isinstance(value, str):
+                        value = str_to_unicode(value)
+                    value = value.strip().rstrip().replace(u'\0', u'')
+                    setattr(self, attr, value)
 
-    def gettable(self, name, language='en'):
-        """
-        returns a table of the given name and language
-        """
-        return self._tables.get((name, language), {})
-
-
-    def setitem(self, item, dict, key, convert_to_unicode=False):
-        """
-        Set item to a specific value for the dict.
-        """
-        value = dict.get(key)
-        if not value:
-            return
-        if isinstance(value, str):
-            value = str_to_unicode(value)
-        elif convert_to_unicode and not isinstance(value, unicode):
-            value = str_to_unicode(str(value))
-        self.__dict__[item] = value
-
+    #
+    # data access
+    #
 
     def __contains__(self, key):
         """
         Test if key exists in the dict
         """
-        return key in self.__dict__
+        return hasattr(self, key)
 
 
     def get(self, key, default = None):
@@ -211,94 +236,79 @@ class MediaInfo:
         Returns key in dict, otherwise defaults to 'default' if key doesn't
         exist.
         """
-        if key not in self:
-            return default
-        return self[key]
+        return getattr(self, key, default)
 
 
-    def __getitem__(self,key):
+    def __getitem__(self, key):
         """
         get the value of 'key'
         """
-        if self.__dict__.has_key(key):
-            return self.__dict__[key]
-        elif hasattr(self, key):
-            return getattr(self, key)
-        return None
+        return getattr(self, key, None)
 
 
-    def __setitem__(self, key, val):
+    def __setitem__(self, key, value):
         """
-        set the value of 'key' to 'val'
+        set the value of 'key' to 'value'
         """
-        self.__dict__[key] = val
+        setattr(self, key, value)
 
 
     def has_key(self, key):
         """
         check if the object has a key 'key'
         """
-        return self.__dict__.has_key(key) or hasattr(self, key)
+        return hasattr(self, key)
 
 
-    def __delitem__(self, key):
+    def convert(self):
         """
-        delete informations about 'key'
+        Convert mediainfo to dict.
         """
-        try:
-            del self.__dict__[key]
-        except (KeyboardInterrupt, SystemExit):
-            sys.exit(0)
-        except:
-            pass
-        if hasattr(self, key):
-            setattr(self, key, None)
+        result = {}
+        for k in self._keys:
+            value = getattr(self, k, None)
+            if isinstance(value, list) and value and isinstance(value[0], MediaInfo):
+                value = [ x.convert() for x in value ]
+            result[k] = value
+        return result
+
+
+    def keys(self):
+        """
+        Return all keys.
+        """
+        return self._keys
 
 
 class AudioInfo(MediaInfo):
     """
     Audio Tracks in a Multiplexed Container.
     """
-    def __init__(self):
-        MediaInfo.__init__(self)
-        for k in AUDIOCORE:
-            setattr(self,k,None)
-            self.keys.append(k)
+    _keys = MediaInfo._keys + AUDIOCORE
+    media = 'audio'
 
-    def __unicode__(self):
-        result = u''
-        for key in self.keys:
-            value = self[key]
-            if value == None:
-                continue
-            if key == 'codec':
-                f, value = fourcc.resolve(value)
-                result += u'\n        fourcc: %s' % f
-            result += u'\n        %s: %s' % (unicode(key), unicode(value))
-        return result
+    def _finalize(self):
+        if self.codec is not None:
+            self.fourcc, self.codec = fourcc.resolve(self.codec)
 
 
 class MusicInfo(AudioInfo):
     """
     Digital Music.
     """
-    def __init__(self):
-        MediaInfo.__init__(self)
-        for k in AUDIOCORE+MUSICCORE:
-            setattr(self,k,None)
-            self.keys.append(k)
+    _keys = AudioInfo._keys + AUDIOCORE
+    media = 'audio'
 
-
-    def correct_data(self):
+    def _finalize(self):
         """
-        correct trackof to be two digest
+        Correct same data based on specific rules
         """
-        AudioInfo.correct_data(self)
-        if self['trackof']:
+        AudioInfo._finalize(self)
+        if self.trackof:
             try:
                 # XXX Why is this needed anyway?
-                if int(self['trackno']) < 10:
-                    self['trackno'] = '0%s' % int(self['trackno'])
+                if int(self.trackno) < 10:
+                    self.trackno = '0%s' % int(self.trackno)
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(0)
             except:
@@ -309,46 +319,33 @@ class VideoInfo(MediaInfo):
     """
     Video Tracks in a Multiplexed Container.
     """
-    def __init__(self):
-        MediaInfo.__init__(self)
-        for k in VIDEOCORE:
-            setattr(self,k,None)
-            self.keys.append(k)
+    _keys = MediaInfo._keys + VIDEOCORE
+    media = 'video'
 
+    def _finalize(self):
+        if self.codec is not None:
+            self.fourcc, self.codec = fourcc.resolve(self.codec)
 
-    def __unicode__(self):
-        result = u''
-        for key in self.keys:
-            value = self[key]
-            if value == None:
-                continue
-            if key == 'codec':
-                f, value = fourcc.resolve(value)
-                result += u'\n        fourcc: %s' % f
-            result += u'\n        %s: %s' % (unicode(key), unicode(value))
-        return result
 
 class ChapterInfo(MediaInfo):
     """
     Chapter in a Multiplexed Container.
     """
+    _keys = ['name', 'pos', 'enabled']
+
     def __init__(self, name="", pos=0):
         MediaInfo.__init__(self)
-        self.keys = ['name', 'pos', 'enabled']
-        setattr(self,'name', name)
-        setattr(self,'pos', pos)
-        setattr(self,'enabled', True)
+        self.name = name
+        self.pos = pos
+        self.enabled = True
 
 
 class SubtitleInfo(MediaInfo):
     """
     Subtitle Tracks in a Multiplexed Container.
     """
-    def __init__(self):
-        MediaInfo.__init__(self)
-        self.keys = ['language', 'trackno', 'title']
-        for k in self.keys:
-            setattr(self, k, None)
+    _keys = ['language', 'trackno', 'title']
+    media = 'subtitle'
 
 
 class AVInfo(MediaInfo):
@@ -356,92 +353,34 @@ class AVInfo(MediaInfo):
     Container for Audio and Video streams. This is the Container Type for
     all media, that contain more than one stream.
     """
+    _keys = MediaInfo._keys + AVCORE
+
     def __init__(self):
         MediaInfo.__init__(self)
-        for k in AVCORE:
-            setattr(self,k,None)
-            self.keys.append(k)
         self.audio = []
         self.video = []
         self.subtitles = []
         self.chapters  = []
 
 
-    def correct_data(self):
+    def _finalize(self):
         """
-        correct length to be an int
+        Correct same data based on specific rules
         """
-        MediaInfo.correct_data(self)
-        if not self['length'] and len(self.video) and self.video[0]['length']:
-            self['length'] = self.video[0]['length']
+        MediaInfo._finalize(self)
+        if not self.length and len(self.video) and self.video[0].length:
+            self.length = self.video[0].length
         for container in [ self ] + self.video + self.audio:
-            if container['length']:
-                container['length'] = int(container['length'])
-        for subitem in self.video + self.audio:
-            subitem.correct_data()
-            
-
-    def find_subtitles(self, filename):
-        """
-        Search for subtitle files. Right now only VobSub is supported
-        """
-        base = os.path.splitext(filename)[0]
-        if os.path.isfile(base+'.idx') and \
-               (os.path.isfile(base+'.sub') or os.path.isfile(base+'.rar')):
-            file = open(base+'.idx')
-            if file.readline().find('VobSub index file') > 0:
-                for line in file.readlines():
-                    if line.find('id') == 0:
-                        sub = SubtitleInfo()
-                        sub.language = line[4:6]
-                        sub.trackno = base + '.idx'  # Maybe not?
-                        self.subtitles.append(sub)
-            file.close()
-
-
-    def __unicode__(self):
-        result = u'Attributes:'
-        result += MediaInfo.__unicode__(self)
-        if len(self.video) + len(self.audio) + len(self.subtitles) > 0:
-            result += "\n Stream list:"
-            if len(self.video):
-                result += reduce( lambda a,b: a + u'  \n   Video Stream:' + \
-                                  unicode(b), self.video, u'' )
-            if len(self.audio):
-                result += reduce( lambda a,b: a + u'  \n   Audio Stream:' + \
-                                  unicode(b), self.audio, u'' )
-            if len(self.subtitles):
-                result += reduce( lambda a,b: a + u'  \n   Subtitle Stream:' +\
-                                  unicode(b), self.subtitles, u'' )
-
-        if not isinstance(self.chapters, int) and len(self.chapters) > 0:
-            result += u'\n Chapter list:'
-            for i in range(len(self.chapters)):
-                pos = self.chapters[i]['pos']
-                result += u'\n   %2s: "%s" %02d:%02d:%02d.%03d' % \
-                          (i+1, unicode(self.chapters[i]['name']),
-                           int(pos)/60/60, int(pos/60) % 60, 
-                           int(pos)%60, (pos-int(pos))*1000)
-        return result
+            if container.length:
+                container.length = int(container.length)
 
 
 class CollectionInfo(MediaInfo):
     """
     Collection of Digial Media like CD, DVD, Directory, Playlist
     """
+    _keys = MediaInfo._keys + [ 'id', 'tracks' ]
+
     def __init__(self):
         MediaInfo.__init__(self)
         self.tracks = []
-        self.keys.append('id')
-        self.id = None
-
-    def __unicode__(self):
-        result = MediaInfo.__unicode__(self)
-        result += u'\nTrack list:'
-        for counter in range(0,len(self.tracks)):
-             result += u' \nTrack %d:\n%s' % \
-                       (counter+1, unicode(self.tracks[counter]))
-        return result
-
-    def appendtrack(self, track):
-        self.tracks.append(track)

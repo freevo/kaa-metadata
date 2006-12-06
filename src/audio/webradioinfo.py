@@ -40,13 +40,16 @@ from kaa.metadata import factory
 
 # http://205.188.209.193:80/stream/1006
 
-ICY_tags = { 'title': 'icy-name',
-             'genre': 'icy-genre',
-             'bitrate': 'icy-br',
-             'caption': 'icy-url',
-           }
+ICY = { 'icy-name': 'title',
+        'icy-genre': 'genre',
+        'icy-br': 'bitrate',
+        'icy-url': 'caption'
+      }
 
 class WebRadioInfo(mediainfo.MusicInfo):
+
+    table_mapping = { 'ICY' : ICY }
+
     def __init__(self, url):
         mediainfo.MusicInfo.__init__(self)
         tup = urlparse.urlsplit(url)
@@ -88,13 +91,11 @@ class WebRadioInfo(mediainfo.MusicInfo):
                 tab[icyline[:cidx].strip()] = icyline[cidx+2:].strip()
         if fi:
             fi.close()
-        self.appendtable('ICY', tab)
-        self.tag_map = { ('ICY', 'en') : ICY_tags }
-        # Copy Metadata from tables into the main set of attributes
-        for k in self.tag_map.keys():
-            map(lambda x:self.setitem(x,self.gettable(k[0],k[1]),
-                                      self.tag_map[k][x]),
-                self.tag_map[k].keys())
+        self._appendtable('ICY', tab)
+
+
+    def _finalize(self):
+        mediainfo.MusicInfo._finalize(self)
         self.bitrate = string.atoi(self.bitrate)*1000
 
 

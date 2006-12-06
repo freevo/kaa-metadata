@@ -53,12 +53,20 @@ log = logging.getLogger('metadata')
 #     chapter_5_section_2.html#//apple_ref/doc/uid/TP40000939-CH206-BBCBIICE
 # Note: May need to define custom log level to work like ATOM_DEBUG did here
 
+QTUDTA = {
+    'nam': 'title',
+    'aut': 'artist',
+    'cpy': 'copyright'
+}
 
 class MovInfo(mediainfo.AVInfo):
+
+    table_mapping = { 'QTUDTA': QTUDTA }
+
     def __init__(self,file):
         mediainfo.AVInfo.__init__(self)
         self.context = 'video'
-        self.references = []
+        self._references = []
 
         self.mime = 'video/quicktime'
         self.type = 'Quicktime Video'
@@ -81,13 +89,8 @@ class MovInfo(mediainfo.AVInfo):
         while self._readatom(file):
             pass
 
-        info = self.gettable('QTUDTA', 'en')
-        self.setitem('title', info, 'nam')
-        self.setitem('artist', info, 'aut')
-        self.setitem('copyright', info, 'cpy')
-
-        if self.references:
-            self.keys.append('references')
+        if self._references:
+            self._set('references', self._references)
 
 
     def _readatom(self, file):
@@ -129,12 +132,12 @@ class MovInfo(mediainfo.AVInfo):
                 pos += datasize
             if len(i18ntabl.keys()) > 0:
                 for k in i18ntabl.keys():
-                    if QTLANGUAGES.has_key(k):
-                        self.appendtable('QTUDTA', i18ntabl[k], QTLANGUAGES[k])
-                        self.appendtable('QTUDTA', tabl, QTLANGUAGES[k])
+                    if QTLANGUAGES.has_key(k) and QTLANGUAGES[k] == 'en':
+                        self._appendtable('QTUDTA', i18ntabl[k])
+                        self._appendtable('QTUDTA', tabl)
             else:
                 log.debug('NO i18')
-                self.appendtable('QTUDTA', tabl)
+                self._appendtable('QTUDTA', tabl)
 
         elif atomtype == 'trak':
             atomdata = file.read(atomsize-8)
@@ -210,8 +213,7 @@ class MovInfo(mediainfo.AVInfo):
                                     # jpeg is no video, remove it from the list
                                     self.video.remove(vi)
                                     info = None
-                                print codec
-                                
+
                         elif mdia[1] == 'dinf':
                             dref = unpack('>I4s', atomdata[pos+8:pos+8+8])
                             log.debug('  --> %s, %s' % mdia)
@@ -323,7 +325,7 @@ class MovInfo(mediainfo.AVInfo):
 
                 pos += datasize
             if url:
-                self.references.append((url, quality, datarate))
+                self._references.append((url, quality, datarate))
 
         else:
             if not atomtype in ('wide', 'free'):

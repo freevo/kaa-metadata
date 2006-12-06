@@ -54,20 +54,23 @@ PACKET_IS_SYNCPOINT  = 0x08
 STREAM_HEADER_VIDEO = '<4sIQQIIHII'
 STREAM_HEADER_AUDIO = '<4sIQQIIHHHI'
 
-VORBISCOMMENT_tags = { 'title': 'TITLE',
-                       'album': 'ALBUM',
-                       'artist': 'ARTIST',
-                       'comment': 'COMMENT',
-                       'date': 'DATE',
-                       'encoder': 'ENCODER',
-                       'trackno': 'TRACKNUMBER',
-                       'language': 'LANGUAGE',
-                       'genre': 'GENRE',
-                     }
+VORBISCOMMENT = { 'TITLE': 'title',
+                  'ALBUM': 'album',
+                  'ARTIST': 'artist',
+                  'COMMENT': 'comment',
+                  'DATE': 'date',
+                  'ENCODER': 'encoder',
+                  'TRACKNUMBER': 'trackno',
+                  'LANGUAGE': 'language',
+                  'GENRE': 'genre',
+                }
 
 MAXITERATIONS = 10
 
 class OgmInfo(mediainfo.AVInfo):
+
+    table_mapping = { 'VORBISCOMMENT' : VORBISCOMMENT }
+
     def __init__(self, file):
         mediainfo.AVInfo.__init__(self)
         self.samplerate  = 1
@@ -110,7 +113,7 @@ class OgmInfo(mediainfo.AVInfo):
                 self.length = max(self.all_streams[i].length, self.length)
 
                 # get meta info
-                for key in self.all_streams[i].keys:
+                for key in self.all_streams[i].keys():
                     if self.all_header[i].has_key(key):
                         self.all_streams[i][key] = self.all_header[i][key]
                         del self.all_header[i][key]
@@ -162,13 +165,7 @@ class OgmInfo(mediainfo.AVInfo):
 
         # Copy Metadata from tables into the main set of attributes
         for header in self.all_header:
-            self.appendtable('VORBISCOMMENT', header)
-
-        self.tag_map = { ('VORBISCOMMENT', 'en') : VORBISCOMMENT_tags }
-        for k in self.tag_map.keys():
-            map(lambda x:self.setitem(x,self.gettable(k[0],k[1]),
-                                      self.tag_map[k][x]),
-                self.tag_map[k].keys())
+            self._appendtable('VORBISCOMMENT', header)
 
 
     def _parseOGGS(self,file):
@@ -306,8 +303,8 @@ class OgmInfo(mediainfo.AVInfo):
 
             elif htype[:4] == 'text':
                 subtitle = mediainfo.MediaInfo()
-                subtitle.keys.append('language')
-                subtitle.type   = 'subtitle'
+                subtitle._set('language', None)
+                subtitle.type = 'subtitle'
                 subtitle.length = 0
                 self.all_streams.append(subtitle)
 

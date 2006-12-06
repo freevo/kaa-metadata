@@ -54,6 +54,8 @@ INTELSIGNATURE = 'II\x2a\x00'
 
 class TIFFInfo(core.ImageInfo):
 
+    table_mapping = { 'IPTC': IPTC.mapping }
+
     def __init__(self,file):
         core.ImageInfo.__init__(self)
         self.iptc = None
@@ -112,16 +114,7 @@ class TIFFInfo(core.ImageInfo):
             raise mediainfo.KaaMetadataParseError()
 
         if iptc:
-            self.setitem( 'title', iptc, 'by-line title')
-            self.setitem( 'title', iptc, 'headline')
-            self.setitem( 'date' , iptc, 'date created')
-            self.setitem( 'keywords', iptc, 'keywords')
-            self.setitem( 'artist', iptc, 'writer/editor')
-            self.setitem( 'artist', iptc, 'credit')
-            self.setitem( 'country', iptc, 'country/primary location name')
-            self.setitem( 'caption', iptc, 'caption/abstract')
-            self.setitem( 'city', iptc, 'city')
-            self.appendtable( 'IPTC', iptc )
+            self._appendtable('IPTC', iptc)
 
 
 factory.register( 'image/tiff', ('tif','tiff'), mediainfo.TYPE_IMAGE, TIFFInfo)

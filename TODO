@@ -21,13 +21,6 @@ example.
 
 Check attributes. Some are very similar and could be merged
 
-Cleanup stuff about what is stored in the __dict__ and what is a
-memeber variable. OK, after some thinking: MediaInfo should inherit
-from dict. That is the only way we can support attributes with
-whitespaces, etc. No more self.length, it is self['length'] in that
-case. That means all parser have to be updated, maybe temp. in
-WIP/metadata until it is done. THIS NEEDS CLEANUP!
-
 If possible, attributes should match
 http://www.freedesktop.org/wiki/Standards_2fshared_2dfilemetadata_2dspec
 and mime type should match

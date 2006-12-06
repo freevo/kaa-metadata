@@ -227,11 +227,9 @@ class MpegInfo(mediainfo.AVInfo):
                 pass
             elif ext == 1:
                 if (ord(buffer[pos+5]) >> 3) & 1:
-                    self.keys.append('progressive')
-                    self.progressive = 1
+                    self._set('progressive', True)
                 else:
-                    self.keys.append('interlaced')
-                    self.interlaced = 1
+                    self._set('interlaced', True)
                 return True
             else:
                 log.debug('ext', ext)
@@ -373,8 +371,7 @@ class MpegInfo(mediainfo.AVInfo):
                     break
             else:
                 self.audio.append(mediainfo.AudioInfo())
-                self.audio[-1].id = id
-                self.audio[-1].keys.append('id')
+                self.audio[-1]._set('id', id)
             return 0
 
         if 0xE0 <= id <= 0xEF:
@@ -384,8 +381,7 @@ class MpegInfo(mediainfo.AVInfo):
                     break
             else:
                 self.video.append(mediainfo.VideoInfo())
-                self.video[-1].id = id
-                self.video[-1].keys.append('id')
+                self.video[-1]._set('id', id)
             return 0
 
         if id == SEQ_HEAD:
@@ -405,9 +401,8 @@ class MpegInfo(mediainfo.AVInfo):
                         break
                 else:
                     self.audio.append(mediainfo.AudioInfo())
-                    self.audio[-1].id = id
+                    self.audio[-1]._set('id', id)
                     self.audio[-1].codec = 'AC3'
-                    self.audio[-1].keys.append('id')
             return 0
 
         if id == SYS_PKT:
@@ -520,8 +515,7 @@ class MpegInfo(mediainfo.AVInfo):
                     break
             else:
                 self.audio.append(mediainfo.AudioInfo())
-                self.audio[-1].id = id
-                self.audio[-1].keys.append('id')
+                self.audio[-1]._set('id', id)
 
         elif ord(buffer[3]) & 0xF0 == 0xE0:
             id = id or ord(buffer[3]) & 0xF
@@ -530,8 +524,7 @@ class MpegInfo(mediainfo.AVInfo):
                     break
             else:
                 self.video.append(mediainfo.VideoInfo())
-                self.video[-1].id = id
-                self.video[-1].keys.append('id')
+                self.video[-1]._set('id', id)
 
             # new mpeg starting
             if buffer[header_length+9:header_length+13] == \
@@ -549,9 +542,8 @@ class MpegInfo(mediainfo.AVInfo):
                         break
                 else:
                     self.audio.append(mediainfo.AudioInfo())
-                    self.audio[-1].id = id
+                    self.audio[-1]._set('id', id)
                     self.audio[-1].codec = 'AC3'
-                    self.audio[-1].keys.append('id')
 
         else:
             # unknown content
@@ -723,9 +715,6 @@ class MpegInfo(mediainfo.AVInfo):
 
         if not self.sequence_header_offset:
             return 0
-
-        if hasattr(self, 'start') and self.start:
-            self.keys.append('start')
 
         # fill in values for support functions:
         self.__seek_size__   = 10000000  # 10 MB

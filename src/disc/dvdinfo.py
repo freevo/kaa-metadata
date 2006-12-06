@@ -71,13 +71,13 @@ class DVDAudio(mediainfo.AudioInfo):
 
 
 class DVDTitle(mediainfo.AVInfo):
+
+    _keys = mediainfo.AVInfo._keys + [ 'chapters', 'subtitles', 'angles' ]
+
     def __init__(self, info):
         mediainfo.AVInfo.__init__(self)
         self.chapters = info[0]
         self.angles = info[1]
-        self.keys.append('chapters')
-        self.keys.append('subtitles')
-        self.keys.append('angles')
 
         self.mime = 'video/mpeg'
         self.video.append(DVDVideo(info[2:8]))
@@ -91,6 +91,9 @@ class DVDTitle(mediainfo.AVInfo):
 
 
 class DVDInfo(DiscInfo):
+
+    _keys = DiscInfo._keys + [ 'length' ]
+
     def __init__(self, device):
         DiscInfo.__init__(self)
         self.context = 'video'
@@ -103,7 +106,6 @@ class DVDInfo(DiscInfo):
         else:
             self.parseDisc(device)
 
-        self.keys.append('length')
         self.length = 0
         first       = 0
 
@@ -129,7 +131,7 @@ class DVDInfo(DiscInfo):
             ti = DVDTitle(title)
             ti.trackno = pos + 1
             ti.trackof = len(info)
-            self.appendtrack(ti)
+            self.tracks.append(ti)
 
 
     def parseDVDdir(self, dirname):

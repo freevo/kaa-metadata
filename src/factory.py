@@ -79,25 +79,15 @@ def gettype(mimetype, extensions):
     return Factory().get(mimetype,extensions)
 
 
-if TIME_DEBUG:
-    import time
+def parse(filename, force=True):
+    """
+    parse a file
+    """
+    result = Factory().create(filename, force)
+    if result:
+        result._finalize()
+    return result
 
-    def parse(filename, force=True):
-        """
-        parse a file
-        """
-        t1 = time.time()
-        result = Factory().create(filename, force)
-        t2 = time.time()
-        log.info('%s took %s seconds' % (filename, (t2-t1)))
-        return result
-else:
-    def parse(filename, force=True):
-        """
-        parse a file
-        """
-        return Factory().create(filename, force)
-        
 
 class _Factory:
     """
@@ -194,7 +184,7 @@ class _Factory:
         if not force:
             log.info('No Type found by Extension. Give up')
             return None
-        
+
         log.info('No Type found by Extension. Trying all')
 
         for e in self.types:
@@ -276,7 +266,6 @@ class _Factory:
             f.close()
             if r:
                 r.url = 'file://%s' % os.path.abspath(filename)
-                r.correct_data()
                 return r
         return None
 

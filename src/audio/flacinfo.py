@@ -101,7 +101,7 @@ class FlacInfo(mediainfo.MusicInfo):
                 if header.has_key('TRACKNUMBER'):
                     self.trackno = header['TRACKNUMBER']
 
-                self.appendtable('VORBISCOMMENT', header)
+                self._appendtable('VORBISCOMMENT', header)
             elif type == 5:
                 # CUESHEET
                 pass

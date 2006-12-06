@@ -186,7 +186,7 @@ class eyeD3Info(mediainfo.MusicInfo):
                   tab[f.header.id] = f
                else:
                   log.debug(f.__class__)
-            self.appendtable('id3v2', tab, 'en')
+            self._appendtable('id3v2', tab)
 
             if id3.tag.frames['TCON']:
                genre = None
@@ -204,10 +204,10 @@ class eyeD3Info(mediainfo.MusicInfo):
                   except KeyError:
                      self.genre = str(genre)
             # and some tools store it as trackno/trackof in TRCK
-            if not self['trackof'] and self['trackno'] and \
-                   self['trackno'].find('/') > 0:
-               self['trackof'] = self['trackno'][self['trackno'].find('/')+1:]
-               self['trackno'] = self['trackno'][:self['trackno'].find('/')]
+            if not self.trackof and self.trackno and \
+                   self.trackno.find('/') > 0:
+               self.trackof = self.trackno[self.trackno.find('/')+1:]
+               self.trackno = self.trackno[:self.trackno.find('/')]
          if id3:
             self.length = id3.getPlayTime()
       except (KeyboardInterrupt, SystemExit):
@@ -297,8 +297,7 @@ class eyeD3Info(mediainfo.MusicInfo):
       if self.bitrate is None or self.samplerate is None:
          return
 
-      self.mode = _modes[mode]
-      self.keys.append('mode')
+      self._set('mode', _modes[mode])
 
 
 factory.register( 'audio/mp3', ('mp3',), mediainfo.TYPE_MUSIC, eyeD3Info )

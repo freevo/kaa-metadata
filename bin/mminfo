@@ -92,7 +92,7 @@ for file in args:
     if len(file) > 70:
         print "filename : %s[...]%s" % (file[:30], file[len(file)-30:])
     else:
-        print "filename : %s" % file
+        print "    filename: %s" % file
     if medium:
         print medium
         print

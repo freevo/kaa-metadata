@@ -105,7 +105,7 @@ class OggInfo(mediainfo.MusicInfo):
             self.type = 'OGG Vorbis'
             self.subtype = ''
             self.length = self._calculateTrackLength(file)
-            self.appendtable('VORBISCOMMENT',header)
+            self._appendtable('VORBISCOMMENT',header)
 
 
     def _extractHeaderString(self,f):

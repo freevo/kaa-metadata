@@ -71,12 +71,10 @@ class PNGInfo(core.ImageInfo):
         while self._readChunk(file):
             pass
         if len(self.meta.keys()):
-            self.appendtable( 'PNGMETA', self.meta )
+            self._appendtable( 'PNGMETA', self.meta )
         for key, value in self.meta.items():
             if key.startswith('Thumb:') or key == 'Software':
-                setattr(self, key, value)
-                if not key in self.keys:
-                    self.keys.append(key)
+                self._set(key, value)
 
 
     def _readChunk(self,file):

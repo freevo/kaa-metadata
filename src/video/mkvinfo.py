@@ -121,7 +121,7 @@ FOURCCMap = {
     'A_PCM/FLOAT/IEEE': 0x003,
     'A_TTA1': 0x77a1
 }
-    
+
 class EbmlEntity:
     """
     This is class that is responsible to handle one Ebml entity as described in
@@ -386,9 +386,9 @@ class MkvInfo(mediainfo.AVInfo):
                     track.aspect = float(vidtab[MATROSKA_DISPLAY_VID_WIDTH_ID].get_value()) / \
                                 vidtab[MATROSKA_DISPLAY_VID_HEIGHT_ID].get_value()
                 if MATROSKA_VID_INTERLACED in vidtab:
-                    self.keys.append('interlaced')
-                    self.interlaced = int(vidtab[MATROSKA_VID_INTERLACED].get_value())
-                    
+                    value = int(vidtab[MATROSKA_VID_INTERLACED].get_value())
+                    self._set('interlaced', value)
+
             except Exception, e:
                 log.debug("No other info about video track !!!")
             self.media = 'video'
@@ -451,8 +451,8 @@ class MkvInfo(mediainfo.AVInfo):
             if elem.get_id() == MATROSKA_CHAPTER_ATOM_ID:
                 self.process_chapter_atom(elem)
             indice += elem.get_total_len() + elem.get_crc_len()
- 
-        
+
+
     def process_chapter_atom(self, atom):
         tabelem = self.process_one_level(atom)
         chap = mediainfo.ChapterInfo()

@@ -36,6 +36,18 @@
 from struct import unpack
 from kaa.strutils import str_to_unicode
 
+mapping = {
+    'by-line title': 'title',
+    'headline': 'title',
+    'date created': 'date',
+    'keywords': 'keywords',
+    'writer/editor': 'artist',
+    'credit': 'artist',
+    'country/primary location name': 'country',
+    'caption/abstract': 'caption',
+    'city': 'city'
+}
+
 # These names match the codes defined in ITPC's IIM record 2.
 # copied from iptcinfo by Josh Carter, josh@multipart-mixed.com
 c_datasets = {

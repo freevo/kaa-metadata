@@ -31,6 +31,7 @@
 
 # python imports
 import re
+import os
 import struct
 import string
 import logging
@@ -49,23 +50,20 @@ log = logging.getLogger('metadata')
 # http://www.divx-digest.com/software/avitags_dll.html
 # File Format: google for odmlff2.pdf
 
-AVIINFO_tags = { 'title': 'INAM',
-                 'artist': 'IART',
-                 'product': 'IPRD',
-                 'date': 'ICRD',
-                 'comment': 'ICMT',
-                 'language': 'ILNG',
-                 'keywords': 'IKEY',
-                 'trackno': 'IPRT',
-                 'trackof': 'IFRM',
-                 'producer': 'IPRO',
-                 'writer': 'IWRI',
-                 'genre': 'IGNR',
-                 'copyright': 'ICOP',
-                 'trackno': 'IPRT',
-                 'trackof': 'IFRM',
-                 'comment': 'ICMT',
-               }
+AVIINFO = { 'INAM': 'title',
+            'IART': 'artist',
+            'IPRD': 'product',
+            'ICRD': 'date',
+            'ICMT': 'comment',
+            'ILNG': 'language',
+            'IKEY': 'keywords',
+            'IPRT': 'trackno',
+            'IFRM': 'trackof',
+            'IPRO': 'producer',
+            'IWRI': 'writer',
+            'IGNR': 'genre',
+                 'ICOP': 'copyright'
+          }
 
 PIXEL_ASPECT = {  # Taken from libavcodec/mpeg4data.h (pixel_aspect struct)
     1: (1, 1),
@@ -77,6 +75,9 @@ PIXEL_ASPECT = {  # Taken from libavcodec/mpeg4data.h (pixel_aspect struct)
 
 
 class RiffInfo(mediainfo.AVInfo):
+
+    table_mapping = { 'AVIINFO' : AVIINFO }
+
     def __init__(self,file):
         mediainfo.AVInfo.__init__(self)
         # read the header
@@ -90,7 +91,6 @@ class RiffInfo(mediainfo.AVInfo):
         self.junkStart = None
         self.infoStart = None
         self.type = h[8:12]
-        self.tag_map = { ('AVIINFO', 'en') : AVIINFO_tags }
         if self.type == 'AVI ':
             self.mime = 'video/avi'
         elif self.type == 'WAVE':
@@ -101,21 +101,33 @@ class RiffInfo(mediainfo.AVInfo):
         except IOError:
             log.exception('error in file, stop parsing')
 
-        self.find_subtitles(file.name)
+        self._find_subtitles(file.name)
 
-        # Copy Metadata from tables into the main set of attributes
-        for k in self.tag_map.keys():
-            map(lambda x:self.setitem(x,self.gettable(k[0],k[1]),
-                                      self.tag_map[k][x]),
-                self.tag_map[k].keys())
         if not self.has_idx:
             log.debug('WARNING: avi has no index')
-            self.corrupt = 1
-            self.keys.append('corrupt')
+            self._set('corrupt', True)
 
 
     def _extractHeaderString(self,h,offset,len):
         return h[offset:offset+len]
+
+
+    def _find_subtitles(self, filename):
+        """
+        Search for subtitle files. Right now only VobSub is supported
+        """
+        base = os.path.splitext(filename)[0]
+        if os.path.isfile(base+'.idx') and \
+               (os.path.isfile(base+'.sub') or os.path.isfile(base+'.rar')):
+            file = open(base+'.idx')
+            if file.readline().find('VobSub index file') > 0:
+                for line in file.readlines():
+                    if line.find('id') == 0:
+                        sub = mediainfo.SubtitleInfo()
+                        sub.language = line[4:6]
+                        sub.trackno = base + '.idx'  # Maybe not?
+                        self.subtitles.append(sub)
+            file.close()
 
 
     def parseAVIH(self,t):
@@ -299,7 +311,7 @@ class RiffInfo(mediainfo.AVInfo):
 
     def parseLISTmovi(self, size, file):
         """
-        Digs into movi list, looking for a Video Object Layer header in an 
+        Digs into movi list, looking for a Video Object Layer header in an
         mpeg4 stream in order to determine aspect ratio.
         """
         i = 0
@@ -317,7 +329,7 @@ class RiffInfo(mediainfo.AVInfo):
 
             key, sz = struct.unpack('<4sI', data)
             if key[2:] != 'dc' or sz > 1024*500:
-                # This chunk is not video or is unusually big (> 500KB); 
+                # This chunk is not video or is unusually big (> 500KB);
                 # skip it.
                 file.seek(sz, 1)
                 i += 8 + sz
@@ -335,7 +347,7 @@ class RiffInfo(mediainfo.AVInfo):
             # logic for this is taken from libavcodec, h263.c
             pos = 0
             startcode = 0xff
-            def bits(v, o, n): 
+            def bits(v, o, n):
                 # Returns n bits in v, offset o bits.
                 return (v & 2**n-1 << (64-n-o)) >> 64-n-o
 
@@ -385,7 +397,7 @@ class RiffInfo(mediainfo.AVInfo):
         if i < size:
             # Seek past whatever might be remaining of the movi list.
             file.seek(size-i,1)
- 
+
 
 
     def parseLIST(self,t):
@@ -488,7 +500,7 @@ class RiffInfo(mediainfo.AVInfo):
                self.video[-1].format in ('DIVX', 'XVID', 'FMP4'): # any others?
                 # If we don't have the aspect (i.e. it isn't in odml vprp
                 # header), but we do know the video's dimensions, and
-                # we're dealing with an mpeg4 stream, try to get the aspect 
+                # we're dealing with an mpeg4 stream, try to get the aspect
                 # from the VOL header in the mpeg4 stream.
                 self.parseLISTmovi(size-4, file)
                 return True
@@ -496,16 +508,16 @@ class RiffInfo(mediainfo.AVInfo):
                 log.debug('RIFF LIST "%s" to long to parse: %s bytes' % (key, size))
                 t = file.seek(size-4,1)
                 return True
-                
+
             t = file.read(size-4)
             log.debug('parse RIFF LIST "%s": %d bytes' % (key, size))
             value = self.parseLIST(t)
             self.header[key] = value
             if key == 'INFO':
                 self.infoStart = pos
-                self.appendtable( 'AVIINFO', value )
+                self._appendtable( 'AVIINFO', value )
             elif key == 'MID ':
-                self.appendtable( 'AVIMID', value )
+                self._appendtable( 'AVIMID', value )
             elif key in ('hdrl', ):
                 # no need to add this info to a table
                 pass

@@ -265,9 +265,8 @@ class AsfInfo(mediainfo.AVInfo):
                     flags = struct.unpack('>QIIH4x', s[56:78])
             strno = flags & 63
             encrypted = flags >> 15
-            if encrypted and not 'encrypted' in self.keys:
-                self.encrypted = True
-                self.keys.append('encrypted')
+            if encrypted:
+                self._set('encrypted', True)
             if streamtype == GUIDS['ASF_Video_Media']:
                 vi = mediainfo.VideoInfo()
                 vi.width, vi.height, depth, \
@@ -323,7 +322,7 @@ class AsfInfo(mediainfo.AVInfo):
                 d = self._parsekv(s[pos:])
                 pos += d[0]
                 descriptor[d[1]] = d[2]
-            self.appendtable('ASFDESCRIPTOR', descriptor)
+            self._appendtable('ASFDESCRIPTOR', descriptor)
 
         elif guid == GUIDS['ASF_Metadata_Object']:
             (count,) = struct.unpack('<H', s[24:26])
@@ -336,7 +335,7 @@ class AsfInfo(mediainfo.AVInfo):
                 descriptor[d[1]] = d[2]
             # TODO: Find the stream in self.audio and self.video and
             #       append it there instead of here
-            self.appendtable('ASFMETADATA%d'%d[3], descriptor)
+            self._appendtable('ASFMETADATA%d'%d[3], descriptor)
 
         elif guid == GUIDS['ASF_Language_List_Object']:
             count = struct.unpack('<H', s[24:26])[0]
@@ -369,8 +368,8 @@ class AsfInfo(mediainfo.AVInfo):
         elif guid == GUIDS['ASF_Content_Encryption_Object'] or \
              guid == GUIDS['ASF_Extended_Content_Encryption_Object']:
             self.encrypted = True
-            if not 'encrypted' in self.keys:
-                self.keys.append('encrypted')
+            if encrypted:
+                self._set('encrypted', True)
         else:
             # Just print the type:
             for h in GUIDS.keys():

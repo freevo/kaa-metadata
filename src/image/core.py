@@ -45,28 +45,24 @@ log = logging.getLogger('metadata')
 
 # attributes for image files
 ATTRIBUTES = ['description', 'people', 'location', 'event', 'width', 'height',
-              'thumbnail','software','hardware', 'dpi', 'city', 'rotation']
+              'thumbnail','software','hardware', 'dpi', 'city', 'rotation' ]
 
 
 class ImageInfo(mediainfo.MediaInfo):
     """
     Digital Images, Photos, Pictures.
     """
-    def __init__(self):
-        mediainfo.MediaInfo.__init__(self)
-        for k in ATTRIBUTES:
-            setattr(self,k,None)
-            self.keys.append(k)
 
+    _keys = ATTRIBUTES
 
-    def correct_data(self):
+    def _finalize(self):
         """
         Add additional information and correct data.
         FIXME: parse_external_files here is very wrong
         """
         if self.url and self.url.startswith('file://'):
             self.parse_external_files(self.url[7:])
-        mediainfo.MediaInfo.correct_data(self)
+        mediainfo.MediaInfo._finalize(self)
 
 
     def parse_external_files(self, filename):
@@ -94,10 +90,7 @@ class ImageInfo(mediainfo.MediaInfo):
             key = str(child.getattr('name'))
             if not key or not child.content:
                 continue
-            self[key] = child.content
-            if not key in ATTRIBUTES + mediainfo.MEDIACORE:
-                # if it's in desc it must be important
-                self.keys.append(key)
+            self._set(key, child.content)
 
 
     def parse_dot_comment(self, filename):

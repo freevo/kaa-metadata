@@ -74,10 +74,10 @@ class DirInfo(MediaInfo):
         f = open(info)
         for l in f.readlines():
             if l.startswith('Icon='):
-                self.image = l[5:].strip()
-                if not self.image.startswith('/'):
-                    self.image = os.path.join(directory, self.image[2:])
-                self.keys.append('image')
+                image = l[5:].strip()
+                if not image.startswith('/'):
+                    image = os.path.join(directory, image[2:])
+                self._set('image', image)
             if l.startswith('Name='):
                 self.title = l[5:].strip()
             if l.startswith('Comment='):
@@ -102,13 +102,9 @@ class DirInfo(MediaInfo):
                 image = os.path.join(directory, unicode_to_str(child.content))
                 if not os.path.isfile(image):
                     continue
-                self.image = image
-                self.keys.append('image')
+                self._set('image', image)
                 continue
-            self[key] = child.content
-            if not key in MEDIACORE:
-                # if it's in desc it must be important
-                self.keys.append(key)
+            self._set(key, child.content)
 
 # register to kaa.metadata core
 register('directory', EXTENSION_DIRECTORY, TYPE_MISC, DirInfo)

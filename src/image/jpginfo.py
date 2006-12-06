@@ -66,7 +66,16 @@ SOF = { 0xC0 : "Baseline",
         0xCF : "Differential lossless, arithmetic coding",
 }
 
+EXIFMap = {
+    'Image DateTime': 'date',
+    'Image Artist': 'artist',
+    'Image Model': 'hardware',
+    'Image Software': 'software',
+}
+
 class JPGInfo(core.ImageInfo):
+
+    table_mapping = { 'EXIF': EXIFMap, 'IPTC': IPTC.mapping }
 
     def __init__(self,file):
         core.ImageInfo.__init__(self)
@@ -85,7 +94,7 @@ class JPGInfo(core.ImageInfo):
         file.seek(2)
         app = file.read(4)
         self.meta = {}
-        
+
         while (len(app) == 4):
             (ff,segtype,seglen) = struct.unpack(">BBH", app)
             if ff != 0xff: break
@@ -111,12 +120,10 @@ class JPGInfo(core.ImageInfo):
                     exif = EXIF.process_file(fakefile)
                     fakefile.close()
                     if exif:
-                        self.setitem( 'date', exif, 'Image DateTime', True)
-                        self.setitem( 'artist', exif, 'Image Artist', True)
-                        self.setitem( 'hardware', exif, 'Image Model', True)
-                        self.setitem( 'software', exif, 'Image Software', True)
-                        self.setitem( 'thumbnail', exif, 'JPEGThumbnail', True)
-                        self.appendtable( 'EXIF', exif )
+                        self.thumbnail = exif.get('JPEGThumbnail', None)
+                        if self.thumbnail:
+                            self.thumbnail = str(self.thumbnail)
+                        self._appendtable('EXIF', exif)
 
                         if 'Image Orientation' in exif:
                             orientation = str(exif['Image Orientation'])
@@ -136,16 +143,7 @@ class JPGInfo(core.ImageInfo):
             elif segtype == 0xed:
                 iptc = IPTC.parseiptc(file.read(seglen-2))
                 if iptc:
-                    self.setitem( 'title', iptc, 'by-line title')
-                    self.setitem( 'title', iptc, 'headline')
-                    self.setitem( 'date' , iptc, 'date created')
-                    self.setitem( 'keywords', iptc, 'keywords')
-                    self.setitem( 'artist', iptc, 'writer/editor')
-                    self.setitem( 'artist', iptc, 'credit')
-                    self.setitem( 'country', iptc, 'country/primary location name')
-                    self.setitem( 'caption', iptc, 'caption/abstract')
-                    self.setitem( 'city', iptc, 'city')
-                    self.appendtable( 'IPTC', iptc )
+                    self._appendtable('IPTC', iptc)
 
             elif segtype == 0xe7:
                 # information created by libs like epeg
@@ -172,12 +170,10 @@ class JPGInfo(core.ImageInfo):
             app = file.read(4)
 
         if len(self.meta.keys()):
-            self.appendtable( 'JPGMETA', self.meta )
+            self._appendtable( 'JPGMETA', self.meta )
 
         for key, value in self.meta.items():
             if key.startswith('Thumb:') or key == 'Software':
-                setattr(self, key, value)
-                if not key in self.keys:
-                    self.keys.append(key)
-    
+                self._set(key, value)
+
 factory.register( 'image/jpeg', ('jpg','jpeg'), mediainfo.TYPE_IMAGE, JPGInfo )

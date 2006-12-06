@@ -209,11 +209,13 @@ def cdrom_disc_id(device, handle_mix=0):
 
 
 class DiscInfo(mediainfo.CollectionInfo):
+
+    _keys = mediainfo.CollectionInfo._keys + [ 'mixed', 'label' ]
+
     def isDisc(self, device):
         (type, self.id) = cdrom_disc_id(device, handle_mix=1)
         if type != 2:
             if type == 4:
-                self.keys.append('mixed')
                 self.mixed = 1
                 type = 1
             return type
@@ -229,5 +231,4 @@ class DiscInfo(mediainfo.CollectionInfo):
             else:
                 self.label = self.id[16:]
 
-        self.keys.append('label')
         return type
