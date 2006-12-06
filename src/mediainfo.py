@@ -296,7 +296,7 @@ class MusicInfo(AudioInfo):
     """
     Digital Music.
     """
-    _keys = AudioInfo._keys + AUDIOCORE
+    _keys = AudioInfo._keys + MUSICCORE
     media = 'audio'
 
     def _finalize(self):
