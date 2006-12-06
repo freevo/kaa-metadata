@@ -59,7 +59,8 @@ class DVDVideo(mediainfo.VideoInfo):
         self.aspect = _video_aspect[data[3]]
         self.width  = _video_width[data[4]]
         self.height = _video_height[data[5]]
-
+        self.codec  = 'MP2V'
+        
 class DVDAudio(mediainfo.AudioInfo):
 
     _keys = mediainfo.AudioInfo._keys + [ 'id' ]
