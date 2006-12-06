@@ -46,9 +46,9 @@ log = logging.getLogger('metadata')
 
 _video_height = (480, 576, 0, 576)
 _video_width  = (720, 704, 352, 352)
-_video_fps    = (0, 25.00, 0, 29.97);
+_video_fps    = (0, 25.00, 0, 29.97)
 _video_format = ('NTSC', 'PAL')
-_video_aspect = (float(4) / 3, float(16) / 9, 1, float(16) / 9);
+_video_aspect = (4.0 / 3, 16.0 / 9, 1.0, 16.0 / 9)
 
 class DVDVideo(mediainfo.VideoInfo):
     def __init__(self, data):
