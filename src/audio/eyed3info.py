@@ -100,6 +100,7 @@ class eyeD3Info(mediainfo.MusicInfo):
    def __init__(self, file, tagVersion = eyeD3_tag.ID3_ANY_VERSION):
       mediainfo.MusicInfo.__init__(self)
       self.fileName = file.name;
+      self.codec = 0x0055 # fourcc code of mp3
       self.mime = 'audio/mp3'
 
       if not eyeD3_tag.isMp3File(file.name):

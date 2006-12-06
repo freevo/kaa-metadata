@@ -154,7 +154,7 @@ class AC3Info(mediainfo.MusicInfo):
         if info & 1:
             # subwover
             self.channels += 1
-        self.codec = 'AC3'
+        self.codec = 0x2000 # fourcc code of ac3
         self.mime = 'audio/ac3'
 
 factory.register( 'audio/ac3', ('ac3',), mediainfo.TYPE_MUSIC, AC3Info )
