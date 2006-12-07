@@ -503,7 +503,7 @@ FOURCC = {
     'MP4S': 'Microsoft MPEG-4 (MP4S)',
     'MP4T': 'MPEG-4 Transport Stream',
     'MP4V': 'Apple QuickTime MPEG-4 native',
-    'MPEG': 'MPEG 1 Video I-Frame',
+    'MPEG': 'MPEG-1',
     'MPG1': 'FFmpeg-1',
     'MPG2': 'FFmpeg-1',
     'MPG3': 'Same as Low motion DivX MPEG-4',
