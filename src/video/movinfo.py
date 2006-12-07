@@ -141,23 +141,18 @@ class MovInfo(mediainfo.AVInfo):
 
         elif atomtype == 'trak':
             atomdata = file.read(atomsize-8)
-            pos   = 0
-            vi    = None
-            ai    = None
-            info  = None
+            pos = 0
+            trackinfo = {}
+            tracktype = None
             while pos < atomsize-8:
                 (datasize, datatype) = unpack('>I4s', atomdata[pos:pos+8])
 
                 if datatype == 'tkhd':
                     tkhd = unpack('>6I8x4H36xII', atomdata[pos+8:pos+datasize])
-                    vi = mediainfo.VideoInfo()
-                    vi.width = tkhd[10] >> 16
-                    vi.height = tkhd[11] >> 16
-                    vi.id = tkhd[3]
-
-                    ai = mediainfo.AudioInfo()
-                    ai.id = tkhd[3]
-
+                    trackinfo['width'] = tkhd[10] >> 16
+                    trackinfo['height'] = tkhd[11] >> 16
+                    trackinfo['id'] = tkhd[3]
+                    
                     try:
                         # XXX Date number of Seconds is since January 1st 1904!
                         # XXX 2082844800 is the difference between Unix and
@@ -178,12 +173,9 @@ class MovInfo(mediainfo.AVInfo):
                         if mdia[1] == 'mdhd':
                             mdhd = unpack('>IIIIIhh', atomdata[pos+8:pos+8+24])
                             # duration / time scale
-                            if vi:
-                                vi.length = mdhd[4] / mdhd[3]
-                            if ai:
-                                ai.length = mdhd[4] / mdhd[3]
-                                if mdhd[5] in QTLANGUAGES:
-                                    ai.language = QTLANGUAGES[mdhd[5]]
+                            trackinfo['length'] = mdhd[4] / mdhd[3]
+                            if mdhd[5] in QTLANGUAGES:
+                                trackinfo['language'] = QTLANGUAGES[mdhd[5]]
                             # mdhd[6] == quality
                             self.length = max(self.length, mdhd[4] / mdhd[3])
                         elif mdia[1] == 'minf':
@@ -197,33 +189,38 @@ class MovInfo(mediainfo.AVInfo):
                         elif mdia[1] == 'hdlr':
                             hdlr = unpack('>I4s4s', atomdata[pos+8:pos+8+12])
                             if hdlr[1] == 'mhlr':
-                                if hdlr[2] == 'vide' and not vi in self.video:
-                                    self.video.append(vi)
-                                    info = vi
-                                if hdlr[2] == 'soun' and not ai in self.audio:
-                                    self.audio.append(ai)
-                                    info = ai
+                                if hdlr[2] == 'vide':
+                                    tracktype = 'video'
+                                if hdlr[2] == 'soun':
+                                    tracktype = 'audio'
                         elif mdia[1] == 'stsd':
                             stsd = unpack('>2I', atomdata[pos+8:pos+8+8])
-                            if stsd[1] > 0 and info:
+                            if stsd[1] > 0:
                                 codec = atomdata[pos+16:pos+16+8]
                                 codec = unpack('>I4s', codec)
-                                info.codec = codec[1]
-                                if info.codec == 'jpeg':
-                                    # jpeg is no video, remove it from the list
-                                    self.video.remove(vi)
-                                    info = None
-
+                                trackinfo['codec'] = codec[1]
+                                if codec[1] == 'jpeg':
+                                    tracktype = 'image'
                         elif mdia[1] == 'dinf':
                             dref = unpack('>I4s', atomdata[pos+8:pos+8+8])
-                            log.debug('  --> %s, %s' % mdia)
-                            log.debug('    --> %s, %s (reference)' % dref)
-
+                            log.debug('  --> %s, %s (useless)' % mdia)
+                            if dref[1] == 'dref':
+                                num = unpack('>I', atomdata[pos+20:pos+20+4])[0]
+                                rpos = pos+20+4
+                                for ref in range(num):
+                                    # FIXME: do somthing if this references
+                                    ref = unpack('>I3s', atomdata[rpos:rpos+7])
+                                    data = atomdata[rpos+7:rpos+ref[0]]
+                                    rpos += ref[0]
                         else:
                             if mdia[1].startswith('st'):
                                 log.debug('  --> %s, %s (sample)' % mdia)
-                            elif mdia[1] in ('vmhd', 'smhd'):
-                                log.debug('  --> %s, %s (media inf h)' % mdia)
+                            elif mdia[1] in ('vmhd',) and not tracktype:
+                                # indicates that this track is video
+                                tracktype = 'video'
+                            elif mdia[1] in ('vmhd', 'smhd') and not tracktype:
+                                # indicates that this track is audio
+                                tracktype = 'audio'
                             else:
                                 log.debug('  --> %s, %s (unknown)' % mdia)
 
@@ -241,6 +238,16 @@ class MovInfo(mediainfo.AVInfo):
                                   (datatype, datasize))
                 pos += datasize
 
+            info = None
+            if tracktype == 'video':
+                info = mediainfo.VideoInfo()
+                self.video.append(info)
+            if tracktype == 'audio':
+                info = mediainfo.AudioInfo()
+                self.audio.append(info)
+            if info:
+                for key, value in trackinfo.items():
+                    setattr(info, key, value)
 
         elif atomtype == 'mvhd':
             # movie header
