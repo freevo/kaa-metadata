@@ -139,7 +139,8 @@ class MpegInfo(mediainfo.AVInfo):
         mediainfo.AVInfo.__init__(self)
         self.context = 'video'
         self.sequence_header_offset = 0
-
+        self.mpeg_version = 2
+        
         # detect TS (fast scan)
         if not self.isTS(file):
             # detect system mpeg (many infos)
@@ -166,13 +167,17 @@ class MpegInfo(mediainfo.AVInfo):
                 vi.length = self.length
 
         if not self.type:
-            if self.video[0].width == 480:
-                self.type = 'MPEG2 video' # SVCD spec
-            elif self.video[0].width == 352:
-                self.type = 'MPEG1 video' # VCD spec
-            else:
-                self.type = 'MPEG video'
+            self.type = 'MPEG Video'
 
+        # set fourcc codec for video and audio
+        vc, ac = 'MP2V', 'MP2A'
+        if self.mpeg_version == 1:
+            vc, ac = 'MPEG', 0x0050
+        for v in self.video:
+            v.codec = vc
+        for a in self.audio:
+            if not a.codec:
+                a.codec = ac
 
     def dxy(self,file):
         """
@@ -353,11 +358,12 @@ class MpegInfo(mediainfo.AVInfo):
 
         if id == PACK_PKT:
             if ord(buffer[offset+4]) & 0xF0 == 0x20:
-                self.type     = 'MPEG1 video'
+                self.type = 'MPEG-1 Video'
                 self.get_time = self.ReadSCRMpeg1
+                self.mpeg_version = 1
                 return offset + 12
             elif (ord(buffer[offset+4]) & 0xC0) == 0x40:
-                self.type     = 'MPEG2 video'
+                self.type = 'MPEG-2 Video'
                 self.get_time = self.ReadSCRMpeg2
                 return offset + (ord(buffer[offset+13]) & 0x07) + 14
             else:
@@ -402,7 +408,7 @@ class MpegInfo(mediainfo.AVInfo):
                 else:
                     self.audio.append(mediainfo.AudioInfo())
                     self.audio[-1]._set('id', id)
-                    self.audio[-1].codec = 'AC3'
+                    self.audio[-1].codec = 0x2000 # AC3
             return 0
 
         if id == SYS_PKT:
@@ -543,7 +549,7 @@ class MpegInfo(mediainfo.AVInfo):
                 else:
                     self.audio.append(mediainfo.AudioInfo())
                     self.audio[-1]._set('id', id)
-                    self.audio[-1].codec = 'AC3'
+                    self.audio[-1].codec = 0x2000 # AC3
 
         else:
             # unknown content
