@@ -31,6 +31,7 @@
 
 # python imports
 import os
+import re
 import logging
 import copy
 import sys
@@ -125,18 +126,21 @@ class MediaInfo(object):
                 continue
             if key in UNPRINTABLE_KEYS:
                 value = '<unprintable data>'
-            result += u'  %10s: %s\n' % (unicode(key), unicode(value))
+            result += u'| %10s: %s\n' % (unicode(key), unicode(value))
 
         # print lists
         for key, l in lists:
-            result += u'\n  %5s list:' % key
-            for item in l:
-                result += '\n    ' + unicode(item).replace('\n', '\n    ') + u'\n'
+            for n, item in enumerate(l):
+                label = '+-- ' + key.rstrip('s').capitalize()
+                if key != 'tracks':
+                    label += ' Track'
+                result += u'%s #%d\n' % (label, n+1)
+                result += '|    ' + re.sub(r'\n(.)', r'\n|    \1', unicode(item))
 
         # print tables
         if log.level >= 10:
             for name, table in self._tables.items():
-                result += '\n\n    Table %s' % str(name)
+                result += '+-- Table %s\n' % str(name)
                 for key, value in table.items():
                     try:
                         value = unicode(value)
@@ -144,7 +148,7 @@ class MediaInfo(object):
                             value = '<unprintable data>'
                     except UnicodeDecodeError:
                         value = '<unprintable data>'
-                    result += '\n        %s: %s' % (unicode(key), unicode(value))
+                    result += u'|    | %s: %s\n' % (unicode(key), unicode(value))
         return result
 
 

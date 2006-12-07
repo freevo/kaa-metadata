@@ -90,11 +90,10 @@ for file in args:
     medium = kaa.metadata.parse(file)
     print
     if len(file) > 70:
-        print "filename : %s[...]%s" % (file[:30], file[len(file)-30:])
+        print "%s[...]%s" % (file[:30], file[len(file)-30:])
     else:
-        print "    filename: %s" % file
+        print "%s" % file
     if medium:
         print medium
-        print
     else:
         print "No Match found"
