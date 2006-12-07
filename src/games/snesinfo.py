@@ -58,21 +58,6 @@ class SNESInfo(mediainfo.MediaInfo):
     def __init__(self,file):
         mediainfo.MediaInfo.__init__(self)
 
-        romName= 'unknown'
-        romHL = 0
-        romMEM = 0
-        romROM = 0
-        romSRAM = 0
-        romCountry = chr(255)
-        romCountryTxt = 'unknown'
-        romLic = chr(51)
-        romLicTxt = 'unknown'
-        romVer = 0
-        romICHK = 0
-        romCHK = 0
-        romParsed = 0
-        description = 'unknown'
-
         self.mime = 'games/snes'
         self.type = 'SuperNintendo game'
 
@@ -81,35 +66,36 @@ class SNESInfo(mediainfo.MediaInfo):
             file.seek(offset)
             romHeader = file.read(32)
             try:
-                (romName,romHL,romMem,romROM,romSRAM,romCountry,romLic,romVer,romICHK,romCHK) = unpack('21scccccccHH', romHeader)
+                (romName, romHL, rom_type, romROM, romSRAM, romCountry,
+                 romLic, romVer, romICHK, romCHK) = \
+                 unpack('21sBBcccccHH', romHeader)
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(0)
-            except:
-                raise mediainfo.KaaMetadataParseError()
-            log.debug('ROM NAME: %s' % romName)
+            except Exception, e:
+                continue
+
+            if not rom_type in (0, 1, 2, 3, 4, 5, 19, 227, 246):
+                # invalid acording to the doc at www.classicgaming.com
+                continue
+
+            if not match('[a-zA-Z0-9 ]{21}', romName):
+                # FIXME: bad hack, but it shoudl work. If not, send some
+                # rom files to me. Without that many normal files are
+                # detect as ROM
+                continue
+
+            log.debug('ROM NAME: "%s"' % romName)
             # Break now if CHECKSUM is OK
             if (romICHK | romCHK) == 0xFFFF:
                 log.debug('SNES rom header detected at offset : %d!!!!' % offset)
                 break
-            else:
-                for offset in snesromFileOffset:
-                    log.debug('Checking for rom header at offset: %d' % offset)
-                    file.seek(offset)
-                    romHeader = file.read(32)
-                try:
-                    (romName,romHL,romMem,romROM,romSRAM,romCountry,romLic,romVer,romICHK,romCHK) = unpack('21scccccccHH', romHeader)
-                except (KeyboardInterrupt, SystemExit):
-                    sys.exit(0)
-                except:
-                    raise mediainfo.KaaMetadataParseError()
+            # Bad Checksum, ignore for now
+            break
 
-                # Some times, the ROM is OK, but the checksum is incorrect, so we do a very dummy ASCII detection
-                if match('[a-zA-Z0-9 ]{4}', romName[0:4]) != None:
-                    log.debug('SNES rom header detected by ASCII name : %d!!!!' % offset)
-                    break
-                else:
-                    raise mediainfo.KaaMetadataParseError()
-        self.title = romName
+        else:
+            # not detected as rom
+            raise mediainfo.KaaMetadataParseError()
+        self.title = romName.strip()
 
 
 factory.register( 'games/snes', ('smc', 'sfc', 'fig', ),
