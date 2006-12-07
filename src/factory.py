@@ -117,6 +117,7 @@ class _Factory:
         import video.mpeginfo
         import video.asfinfo
         import video.movinfo
+        import video.flvinfo
         import image.jpginfo
         import image.pnginfo
         import image.tiffinfo
