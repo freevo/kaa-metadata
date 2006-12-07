@@ -76,7 +76,7 @@ class DVDAudio(mediainfo.AudioInfo):
 
 class DVDTitle(mediainfo.AVInfo):
 
-    _keys = mediainfo.AVInfo._keys + [ 'chapters', 'subtitles', 'angles' ]
+    _keys = mediainfo.AVInfo._keys + [ 'angles' ]
 
     def __init__(self, info):
         mediainfo.AVInfo.__init__(self)
