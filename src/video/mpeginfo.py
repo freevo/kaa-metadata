@@ -137,7 +137,6 @@ ASPECT_RATIO = ( None,     # Forbidden
 class MpegInfo(mediainfo.AVInfo):
     def __init__(self,file):
         mediainfo.AVInfo.__init__(self)
-        self.context = 'video'
         self.sequence_header_offset = 0
         self.mpeg_version = 2
         

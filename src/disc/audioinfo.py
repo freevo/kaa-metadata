@@ -49,7 +49,6 @@ log = logging.getLogger('metadata')
 class AudioDiscInfo(discinfo.DiscInfo):
     def __init__(self,device):
         discinfo.DiscInfo.__init__(self)
-        self.context = 'audio'
         self.offset = 0
         # check disc
         if discinfo.DiscInfo.isDisc(self, device) != 1:

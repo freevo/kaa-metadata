@@ -47,7 +47,6 @@ log = logging.getLogger('metadata')
 class RealInfo(mediainfo.AVInfo):
     def __init__(self,file):
         mediainfo.AVInfo.__init__(self)
-        self.context = 'video'
         self.mime = 'video/real'
         self.type = 'Real Video'
         h = file.read(10)

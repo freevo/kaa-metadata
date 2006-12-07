@@ -65,7 +65,6 @@ class MovInfo(mediainfo.AVInfo):
 
     def __init__(self,file):
         mediainfo.AVInfo.__init__(self)
-        self.context = 'video'
         self._references = []
 
         self.mime = 'video/quicktime'

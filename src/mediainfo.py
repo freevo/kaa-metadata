@@ -362,6 +362,7 @@ class AVInfo(MediaInfo):
     all media, that contain more than one stream.
     """
     _keys = MediaInfo._keys + AVCORE
+    media = 'a/v container'
 
     def __init__(self):
         MediaInfo.__init__(self)
@@ -388,6 +389,7 @@ class CollectionInfo(MediaInfo):
     Collection of Digial Media like CD, DVD, Directory, Playlist
     """
     _keys = MediaInfo._keys + [ 'id', 'tracks' ]
+    media = 'container'
 
     def __init__(self):
         MediaInfo.__init__(self)

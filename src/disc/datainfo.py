@@ -39,7 +39,6 @@ class DataDiscInfo(DiscInfo):
         DiscInfo.__init__(self)
         if DiscInfo.isDisc(self, device) != 2:
             raise mediainfo.KaaMetadataParseError()
-        self.context = 'unknown'
         self.offset = 0
         self.mime = 'unknown/unknown'
         self.type = 'CD'

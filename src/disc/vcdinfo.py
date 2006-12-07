@@ -38,7 +38,6 @@ import cdrom
 class VCDInfo(DiscInfo):
     def __init__(self,device):
         DiscInfo.__init__(self)
-        self.context = 'video'
         self.offset = 0
         self.mime = 'video/vcd'
         self.type = 'CD'

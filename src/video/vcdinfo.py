@@ -39,7 +39,6 @@ from kaa.metadata import factory
 class VCDInfo(mediainfo.CollectionInfo):
     def __init__(self, file):
         mediainfo.CollectionInfo.__init__(self)
-        self.context = 'video'
         self.offset = 0
         self.mime = 'video/vcd'
         self.type = 'vcd video'

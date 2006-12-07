@@ -62,7 +62,6 @@ FLV_VIDEO_CODECID = ( 'FLV1', 'MSS1', 'VP60') # wild guess
 class FlashInfo(mediainfo.AVInfo):
     def __init__(self,file):
         mediainfo.AVInfo.__init__(self)
-        self.context = 'video'
         self.mime = 'video/flv'
         self.type = 'Flash Video'
         header = struct.unpack('>3sBBII', file.read(13))

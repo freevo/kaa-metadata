@@ -100,7 +100,6 @@ class DVDInfo(DiscInfo):
 
     def __init__(self, device):
         DiscInfo.__init__(self)
-        self.context = 'video'
         self.offset = 0
 
         if isinstance(device, file):
