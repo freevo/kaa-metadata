@@ -55,7 +55,7 @@ TYPE_HYPERTEXT = 8
 TYPE_MISC      = 10
 
 MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'date',
-             'keywords', 'country', 'language', 'url', 'media', 'artist']
+             'keywords', 'country', 'language', 'url', 'media', 'artist', 'mime']
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
              'samplebits', 'bitrate', 'fourcc' ]
