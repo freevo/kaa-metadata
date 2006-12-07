@@ -74,8 +74,21 @@ class MovInfo(mediainfo.AVInfo):
         (size,type) = unpack('>I4s',h)
 
         if type == 'ftyp':
-            # graphic type at the beginning, skip
-            file.seek(size)
+            # file type information
+            if size >= 12:
+                # this should always happen
+                if file.read(4) != 'qt  ':
+                    # not a quicktime movie, it is a mpeg4 container
+                    self.mime = 'video/mp4'
+                    self.type = 'MPEG-4 Video'
+                size -= 4
+            file.seek(size-8, 1)
+            h = file.read(8)
+            (size,type) = unpack('>I4s',h)
+
+        while type == 'mdat':
+            # movie data at the beginning, skip
+            file.seek(size-8, 1)
             h = file.read(8)
             (size,type) = unpack('>I4s',h)
 
@@ -347,5 +360,5 @@ class MovInfo(mediainfo.AVInfo):
         return atomsize
 
 
-factory.register( 'video/quicktime', ('mov', 'qt'), mediainfo.TYPE_AV, MovInfo)
-
+exts = ('mov', 'qt', 'mp4', 'mp4a', '3gp', '3gp2', 'mk2')
+factory.register( 'video/quicktime', exts, mediainfo.TYPE_AV, MovInfo)
