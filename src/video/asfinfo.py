@@ -4,8 +4,7 @@
 # -----------------------------------------------------------------------------
 # $Id$
 #
-# See http://www.thozie.de/dnn/AVIMaster.aspx?PageContentID=4
-# and http://download.microsoft.com/download/e/0/6/e06db390-1e2a-4978-\
+# See http://download.microsoft.com/download/e/0/6/e06db390-1e2a-4978-\
 #     82bb-311810d8a28d/ASF_Specification.doc
 #
 # -----------------------------------------------------------------------------
@@ -141,11 +140,10 @@ GUIDS = {
 
 
 class AsfInfo(mediainfo.AVInfo):
-    def __init__(self,file):
+    def __init__(self, file):
         mediainfo.AVInfo.__init__(self)
-        self.context = 'video'
-        self.mime = 'video/asf'
-        self.type = 'asf video'
+        self.mime = 'video/x-ms-asf'
+        self.type = 'asf format'
 
         h = file.read(30)
         if len(h) < 30:
@@ -165,11 +163,6 @@ class AsfInfo(mediainfo.AVInfo):
         for i in range(0,objnum):
             h = self._getnextheader(header)
             header = header[h[1]:]
-
-
-    def _printguid(self,guid):
-        r = "%.8X-%.4X-%.4X-%.2X%.2X-%s" % guid
-        return r
 
 
     def _parseguid(self,string):
@@ -377,8 +370,8 @@ class AsfInfo(mediainfo.AVInfo):
                     log.debug("Unparsed %s [%d]" % (h,objsize))
                     break
             else:
-                log.debug("unknown: %s [%d]" % \
-                          (self._printguid(guid), objsize))
+                r = "%.8X-%.4X-%.4X-%.2X%.2X-%s" % guid
+                log.debug("unknown: %s [%d]" % (r, objsize))
         return r
 
 
