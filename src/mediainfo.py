@@ -67,7 +67,7 @@ MUSICCORE = ['trackno', 'trackof', 'album', 'genre', 'discs', 'thumbnail' ]
 
 AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'genre', 'writer', 'producer', 'studio', 'rating', 'starring',
-             'delay', 'image', 'video', 'audio', 'subtitles', 'chapters' ]
+             'delay', 'image', 'video', 'audio', 'subtitles', 'chapters', 'software' ]
 
 EXTENSION_DEVICE    = 'device'
 EXTENSION_DIRECTORY = 'directory'

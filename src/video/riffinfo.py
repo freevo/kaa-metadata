@@ -44,28 +44,30 @@ from kaa.metadata import mediainfo
 # get logging object
 log = logging.getLogger('metadata')
 
-
 # List of tags
 # http://kibus1.narod.ru/frames_eng.htm?sof/abcavi/infotags.htm
 # http://www.divx-digest.com/software/avitags_dll.html
 # File Format: google for odmlff2.pdf
 
-AVIINFO = { 'INAM': 'title',
-            'IART': 'artist',
-            'IPRD': 'product',
-            'ICRD': 'date',
-            'ICMT': 'comment',
-            'ILNG': 'language',
-            'IKEY': 'keywords',
-            'IPRT': 'trackno',
-            'IFRM': 'trackof',
-            'IPRO': 'producer',
-            'IWRI': 'writer',
-            'IGNR': 'genre',
-                 'ICOP': 'copyright'
-          }
+AVIINFO = {
+    'INAM': 'title',
+    'IART': 'artist',
+    'IPRD': 'product',
+    'ISFT': 'software',
+    'ICRD': 'date',
+    'ICMT': 'comment',
+    'ILNG': 'language',
+    'IKEY': 'keywords',
+    'IPRT': 'trackno',
+    'IFRM': 'trackof',
+    'IPRO': 'producer',
+    'IWRI': 'writer',
+    'IGNR': 'genre',
+    'ICOP': 'copyright'
+}
 
-PIXEL_ASPECT = {  # Taken from libavcodec/mpeg4data.h (pixel_aspect struct)
+# Taken from libavcodec/mpeg4data.h (pixel_aspect struct)
+PIXEL_ASPECT = {
     1: (1, 1),
     2: (12, 11),
     3: (10, 11),
@@ -96,7 +98,7 @@ class RiffInfo(mediainfo.AVInfo):
         elif self.type == 'WAVE':
             self.mime = 'application/x-wave'
         try:
-            while self.parseRIFFChunk(file):
+            while self._parseRIFFChunk(file):
                 pass
         except IOError:
             log.exception('error in file, stop parsing')
@@ -106,10 +108,6 @@ class RiffInfo(mediainfo.AVInfo):
         if not self.has_idx:
             log.debug('WARNING: avi has no index')
             self._set('corrupt', True)
-
-
-    def _extractHeaderString(self,h,offset,len):
-        return h[offset:offset+len]
 
 
     def _find_subtitles(self, filename):
@@ -130,7 +128,7 @@ class RiffInfo(mediainfo.AVInfo):
             file.close()
 
 
-    def parseAVIH(self,t):
+    def _parseAVIH(self,t):
         retval = {}
         v = struct.unpack('<IIIIIIIIIIIIII',t[0:56])
         ( retval['dwMicroSecPerFrame'],
@@ -154,10 +152,10 @@ class RiffInfo(mediainfo.AVInfo):
         return retval
 
 
-    def parseSTRH(self,t):
+    def _parseSTRH(self,t):
         retval = {}
         retval['fccType'] = t[0:4]
-        log.debug("parseSTRH(%s) : %d bytes" % ( retval['fccType'], len(t)))
+        log.debug("_parseSTRH(%s) : %d bytes" % ( retval['fccType'], len(t)))
         if retval['fccType'] != 'auds':
             retval['fccHandler'] = t[4:8]
             v = struct.unpack('<IHHIIIIIIIII',t[8:52])
@@ -196,7 +194,7 @@ class RiffInfo(mediainfo.AVInfo):
         return retval
 
 
-    def parseSTRF(self,t,strh):
+    def _parseSTRF(self,t,strh):
         fccType = strh['fccType']
         retval = {}
         if fccType == 'auds':
@@ -242,7 +240,7 @@ class RiffInfo(mediainfo.AVInfo):
         return retval
 
 
-    def parseSTRL(self,t):
+    def _parseSTRL(self,t):
         retval = {}
         size = len(t)
         i = 0
@@ -252,22 +250,22 @@ class RiffInfo(mediainfo.AVInfo):
         value = t[i:]
 
         if key == 'strh':
-            retval[key] = self.parseSTRH(value)
+            retval[key] = self._parseSTRH(value)
             i += sz
         else:
-            log.debug("parseSTRL: Error")
+            log.debug("_parseSTRL: Error")
         key = t[i:i+4]
         sz = struct.unpack('<I',t[i+4:i+8])[0]
         i+=8
         value = t[i:]
 
         if key == 'strf':
-            retval[key] = self.parseSTRF(value, retval['strh'])
+            retval[key] = self._parseSTRF(value, retval['strh'])
             i += sz
         return ( retval, i )
 
 
-    def parseODML(self,t):
+    def _parseODML(self,t):
         retval = {}
         size = len(t)
         i = 0
@@ -276,13 +274,13 @@ class RiffInfo(mediainfo.AVInfo):
         i += 8
         value = t[i:]
         if key != 'dmlh':
-            log.debug("parseODML: Error")
+            log.debug("_parseODML: Error")
 
         i += sz - 8
         return ( retval, i )
 
 
-    def parseVPRP(self,t):
+    def _parseVPRP(self,t):
         retval = {}
         v = struct.unpack('<IIIIIIIIII',t[:4*10])
 
@@ -309,7 +307,7 @@ class RiffInfo(mediainfo.AVInfo):
         return ( retval, v[0] )
 
 
-    def parseLISTmovi(self, size, file):
+    def _parseLISTmovi(self, size, file):
         """
         Digs into movi list, looking for a Video Object Layer header in an
         mpeg4 stream in order to determine aspect ratio.
@@ -400,7 +398,7 @@ class RiffInfo(mediainfo.AVInfo):
 
 
 
-    def parseLIST(self,t):
+    def _parseLIST(self,t):
         retval = {}
         i = 0
         size = len(t)
@@ -415,7 +413,7 @@ class RiffInfo(mediainfo.AVInfo):
                 sz = struct.unpack('<I',t[i+4:i+8])[0]
                 i+=8
                 key = "LIST:"+t[i:i+4]
-                value = self.parseLIST(t[i:i+sz])
+                value = self._parseLIST(t[i:i+sz])
                 if key == 'strl':
                     for k in value.keys():
                         retval[k] = value[k]
@@ -425,22 +423,22 @@ class RiffInfo(mediainfo.AVInfo):
             elif key == 'avih':
                 sz = struct.unpack('<I',t[i+4:i+8])[0]
                 i += 8
-                value = self.parseAVIH(t[i:i+sz])
+                value = self._parseAVIH(t[i:i+sz])
                 i += sz
                 retval[key] = value
             elif key == 'strl':
                 i += 4
-                (value, sz) = self.parseSTRL(t[i:])
+                (value, sz) = self._parseSTRL(t[i:])
                 key = value['strh']['fccType']
                 i += sz
                 retval[key] = value
             elif key == 'odml':
                 i += 4
-                (value, sz) = self.parseODML(t[i:])
+                (value, sz) = self._parseODML(t[i:])
                 i += sz
             elif key == 'vprp':
                 i += 4
-                (value, sz) = self.parseVPRP(t[i:])
+                (value, sz) = self._parseVPRP(t[i:])
                 retval[key] = value
                 i += sz
             elif key == 'JUNK':
@@ -449,16 +447,16 @@ class RiffInfo(mediainfo.AVInfo):
             else:
                 sz = struct.unpack('<I',t[i+4:i+8])[0]
                 i+=8
-                if key not in ('IDIT', 'ISFT'):
+                # in most cases this is some info stuff
+                if not key in AVIINFO.keys() and key != 'IDIT':
                     log.debug("Unknown Key: %s, len: %d" % (key,sz))
-                value = self._extractHeaderString(t,i,sz)
+                value = t[i:i+sz]
                 if key == 'ISFT':
+                    # product information
                     if value.find('\0') > 0:
                         # works for Casio S500 camera videos
                         value = value[:value.find('\0')]
                     value = value.replace('\0', '').lstrip().rstrip()
-                    if value:
-                        self.product = value
                 value = value.replace('\0', '').lstrip().rstrip()
                 if value:
                     retval[key] = value
@@ -485,7 +483,7 @@ class RiffInfo(mediainfo.AVInfo):
         return retval
 
 
-    def parseRIFFChunk(self,file):
+    def _parseRIFFChunk(self,file):
         h = file.read(8)
         if len(h) < 4:
             return False
@@ -502,7 +500,7 @@ class RiffInfo(mediainfo.AVInfo):
                 # header), but we do know the video's dimensions, and
                 # we're dealing with an mpeg4 stream, try to get the aspect
                 # from the VOL header in the mpeg4 stream.
-                self.parseLISTmovi(size-4, file)
+                self._parseLISTmovi(size-4, file)
                 return True
             elif size > 80000:
                 log.debug('RIFF LIST "%s" to long to parse: %s bytes' % (key, size))
@@ -511,7 +509,7 @@ class RiffInfo(mediainfo.AVInfo):
 
             t = file.read(size-4)
             log.debug('parse RIFF LIST "%s": %d bytes' % (key, size))
-            value = self.parseLIST(t)
+            value = self._parseLIST(t)
             self.header[key] = value
             if key == 'INFO':
                 self.infoStart = pos
@@ -551,44 +549,5 @@ class RiffInfo(mediainfo.AVInfo):
             log.debug("Bad or broken avi")
             return False
         return True
-
-    def buildTag(self,key,value):
-        text = value + '\0'
-        l = len(text)
-        return struct.pack('<4sI%ds'%l, key[:4], l, text[:l])
-
-
-    def setInfo(self,file,hash):
-        if self.junkStart == None:
-            raise "junkstart missing"
-        tags = []
-        size = 4 # Length of 'INFO'
-        # Build String List and compute req. size
-        for key in hash.keys():
-            tag = self.buildTag( key, hash[key] )
-            if (len(tag))%2 == 1: tag += '\0'
-            tags.append(tag)
-            size += len(tag)
-            log.debug("Tag [%i]: %s" % (len(tag),tag))
-        if self.infoStart != None:
-            log.debug("Infostart found. %i" % (self.infoStart))
-            # Read current info size
-            file.seek(self.infoStart,0)
-            s = file.read(12)
-            (list, oldsize, info) = struct.unpack('<4sI4s',s)
-            self.junkSize += oldsize + 8
-        else:
-            self.infoStart = self.junkStart
-            log.debug("Infostart computed. %i" % (self.infoStart))
-        file.seek(self.infoStart,0)
-        if ( size > self.junkSize - 8 ):
-            raise "Too large"
-        file.write( "LIST" + struct.pack('<I',size) + "INFO" )
-        for tag in tags:
-            file.write( tag )
-        log.debug("Junksize %i" % (self.junkSize-size-8))
-        file.write( "JUNK" + struct.pack('<I',self.junkSize-size-8) )
-
-
 
 factory.register( 'video/avi', ('avi',), mediainfo.TYPE_AV, RiffInfo )
