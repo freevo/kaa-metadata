@@ -156,8 +156,8 @@ class _Factory:
         import audio.webradioinfo
         import audio.flacinfo
 
-	import games.gameboyinfo
-	import games.snesinfo
+        import games.gameboyinfo
+        import games.snesinfo
 
         import misc.dirinfo
 
