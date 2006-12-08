@@ -58,7 +58,7 @@ MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'date',
              'keywords', 'country', 'language', 'url', 'media', 'artist', 'mime']
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
-             'samplebits', 'bitrate', 'fourcc' ]
+             'samplebits', 'bitrate', 'fourcc', 'trackno' ]
 
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
              'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno', 'fourcc' ]
@@ -132,7 +132,7 @@ class MediaInfo(object):
         for key, l in lists:
             for n, item in enumerate(l):
                 label = '+-- ' + key.rstrip('s').capitalize()
-                if key != 'tracks':
+                if key not in ('tracks', 'subtitles', 'chapters'):
                     label += ' Track'
                 result += u'%s #%d\n' % (label, n+1)
                 result += '|    ' + re.sub(r'\n(.)', r'\n|    \1', unicode(item))
@@ -337,7 +337,7 @@ class ChapterInfo(MediaInfo):
     """
     _keys = ['name', 'pos', 'enabled']
 
-    def __init__(self, name="", pos=0):
+    def __init__(self, name=None, pos=0):
         MediaInfo.__init__(self)
         self.name = name
         self.pos = pos

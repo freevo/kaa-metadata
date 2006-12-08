@@ -48,6 +48,22 @@
 #include <dvdread/ifo_types.h>
 #include <dvdread/ifo_read.h>
 
+int dvdtime2msec(dvd_time_t *dt)
+{
+    static double frames_per_s[4] = {-1.0, 25.00, -1.0, 29.97};
+    double fps = frames_per_s[(dt->frame_u & 0xc0) >> 6];
+    long  ms;
+    ms = (((dt->hour &   0xf0) >> 3) * 5 + (dt->hour   & 0x0f)) * 3600000;
+    ms += (((dt->minute & 0xf0) >> 3) * 5 + (dt->minute & 0x0f)) * 60000;
+    ms += (((dt->second & 0xf0) >> 3) * 5 + (dt->second & 0x0f)) * 1000;
+
+    if(fps > 0)
+        ms += ((dt->frame_u & 0x30) >> 3) * 5 + (dt->frame_u & 0x0f) * 1000.0 / fps;
+
+    return ms;
+}
+
+
 static PyObject * ifoinfo_get_audio_tracks(ifo_handle_t *vtsfile, int id) {
     char audioformat[7];
     char audiolang[5];
@@ -166,6 +182,7 @@ static PyObject *ifoinfo_read_title(dvd_reader_t *dvd, ifo_handle_t *ifofile,
     PyObject *ret;
     PyObject *audio;
     PyObject *subtitles;
+    PyObject *chapters;
     PyObject *tmp;
     int i;
 
@@ -181,14 +198,32 @@ static PyObject *ifoinfo_read_title(dvd_reader_t *dvd, ifo_handle_t *ifofile,
 
     playtime = 0;
     fps = 0;
+    chapters = PyList_New(0);
+
     if (vtsfile->vts_pgcit) {
         dvd_time_t *time;
+        pgc_t *pgc;
         i = vtsfile->vts_ptt_srpt->title[tt_srpt->title[id].vts_ttn - 1].ptt[0].pgcn - 1;
         time = &vtsfile->vts_pgcit->pgci_srp[i].pgc->playback_time;
-        playtime = (((time->hour &   0xf0) >> 3) * 5 + (time->hour   & 0x0f)) * 3600 +
-            (((time->minute & 0xf0) >> 3) * 5 + (time->minute & 0x0f)) * 60 +
-            ((time->second & 0xf0) >> 3) * 5 + (time->second & 0x0f);
         fps = (time->frame_u & 0xc0) >> 6;
+        playtime = dvdtime2msec(time);
+
+        pgc = vtsfile->vts_pgcit->pgci_srp[i].pgc;
+        int cell = 0;
+        for (i = 0; i < pgc->nr_of_programs; i++) {
+            int next = pgc->program_map[i + 1];
+            int ms = 0;
+            if (i == pgc->nr_of_programs - 1)
+                next = pgc->nr_of_cells + 1;
+
+            while (cell < next - 1) {
+                ms += dvdtime2msec(&pgc->cell_playback[cell].playback_time);
+                cell++;
+            }
+            tmp = PyFloat_FromDouble(ms / 1000.0);
+            PyList_Append(chapters, tmp);
+            Py_DECREF(tmp);
+        }
     }
 
     audio = PyList_New(0);
@@ -197,6 +232,7 @@ static PyObject *ifoinfo_read_title(dvd_reader_t *dvd, ifo_handle_t *ifofile,
         if (!tmp)
             break;
         PyList_Append(audio, tmp);
+        Py_DECREF(tmp);
     }
 
     subtitles = PyList_New(0);
@@ -205,16 +241,17 @@ static PyObject *ifoinfo_read_title(dvd_reader_t *dvd, ifo_handle_t *ifofile,
         if (!tmp)
             break;
         PyList_Append(subtitles, tmp);
+        Py_DECREF(tmp);
     }
 
     video_attr = &vtsfile->vtsi_mat->vts_video_attr;
 
     /* chapters, angles, playtime, fps, format, aspect, width, height, audio,
        subtitles */
-    ret = Py_BuildValue("(iiiiiiiiOO)",
-                        tt_srpt->title[id].nr_of_ptts,
+    ret = Py_BuildValue("(OidiiiiiOO)",
+                        chapters,
                         tt_srpt->title[id].nr_of_angles,
-                        playtime,
+                        playtime / 1000.0,
 
                         fps,
                         video_attr->video_format,
@@ -265,6 +302,7 @@ static PyObject *ifoinfo_parse(PyObject *self, PyObject *args) {
         if (!title)
             break;
         PyList_Append(ret, title);
+        Py_DECREF(title);
     }
 
     /* close */

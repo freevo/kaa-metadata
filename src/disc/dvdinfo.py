@@ -80,7 +80,14 @@ class DVDTitle(mediainfo.AVInfo):
 
     def __init__(self, info):
         mediainfo.AVInfo.__init__(self)
-        self.chapters = info[0]
+        self.chapters = []
+        pos = 0
+        for length in info[0]:
+            chapter = mediainfo.ChapterInfo()
+            chapter.pos = pos
+            pos += length
+            self.chapters.append(chapter)
+
         self.angles = info[1]
 
         self.mime = 'video/mpeg'
