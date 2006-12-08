@@ -854,5 +854,4 @@ class MpegInfo(mediainfo.AVInfo):
         log.debug('done scanning file')
 
 
-factory.register( 'video/mpeg', ('mpeg','mpg','mp4', 'ts'),
-                  mediainfo.TYPE_AV, MpegInfo )
+factory.register( 'video/mpeg', ('mpeg','mpg','mp4', 'ts'), MpegInfo )

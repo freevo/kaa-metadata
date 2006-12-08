@@ -103,4 +103,4 @@ class Mpeg4(mediainfo.MusicInfo):
         return struct.unpack('>I', self.read(4, file))[0]
 
 
-factory.register( 'application/m4a', ('m4a',), mediainfo.TYPE_MUSIC, Mpeg4)
+factory.register( 'application/m4a', ('m4a',), Mpeg4)

@@ -45,5 +45,4 @@ class DataDiscInfo(DiscInfo):
         self.subtype = 'data'
 
 
-factory.register( 'cd/unknown', mediainfo.EXTENSION_DEVICE,
-                  mediainfo.TYPE_NONE, DataDiscInfo )
+factory.register( 'cd/unknown', mediainfo.EXTENSION_DEVICE, DataDiscInfo )

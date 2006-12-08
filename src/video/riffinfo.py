@@ -550,4 +550,4 @@ class RiffInfo(mediainfo.AVInfo):
             return False
         return True
 
-factory.register( 'video/avi', ('avi',), mediainfo.TYPE_AV, RiffInfo )
+factory.register( 'video/avi', ('avi',), RiffInfo )

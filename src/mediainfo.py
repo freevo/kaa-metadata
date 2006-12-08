@@ -44,15 +44,14 @@ import fourcc
 
 UNPRINTABLE_KEYS = [ 'thumbnail']
 
-# type definitions
-TYPE_NONE      = 0
-TYPE_AUDIO     = 1
-TYPE_VIDEO     = 2
-TYPE_IMAGE     = 4
-TYPE_AV        = 5
-TYPE_MUSIC     = 6
-TYPE_HYPERTEXT = 8
-TYPE_MISC      = 10
+# media type definitions
+MEDIA_AUDIO     = 'MEDIA_AUDIO'
+MEDIA_VIDEO     = 'MEDIA_VIDEO'
+MEDIA_IMAGE     = 'MEDIA_IMAGE'
+MEDIA_AV        = 'MEDIA_AV'
+MEDIA_SUBTITLE  = 'MEDIA_SUBTITLE'
+MEDIA_CONTAINER = 'MEDIA_CONTAINER'
+MEDIA_DIRECTORY = 'MEDIA_DIRECTORY'
 
 MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'date',
              'keywords', 'country', 'language', 'url', 'media', 'artist', 'mime']
@@ -289,7 +288,7 @@ class AudioInfo(MediaInfo):
     Audio Tracks in a Multiplexed Container.
     """
     _keys = MediaInfo._keys + AUDIOCORE
-    media = 'audio'
+    media = MEDIA_AUDIO
 
     def _finalize(self):
         if self.codec is not None:
@@ -301,7 +300,6 @@ class MusicInfo(AudioInfo):
     Digital Music.
     """
     _keys = AudioInfo._keys + MUSICCORE
-    media = 'audio'
 
     def _finalize(self):
         """
@@ -324,7 +322,7 @@ class VideoInfo(MediaInfo):
     Video Tracks in a Multiplexed Container.
     """
     _keys = MediaInfo._keys + VIDEOCORE
-    media = 'video'
+    media = MEDIA_VIDEO
 
     def _finalize(self):
         if self.codec is not None:
@@ -349,7 +347,7 @@ class SubtitleInfo(MediaInfo):
     Subtitle Tracks in a Multiplexed Container.
     """
     _keys = ['language', 'trackno', 'title']
-    media = 'subtitle'
+    media = MEDIA_SUBTITLE
 
     def __init__(self, language=None):
         MediaInfo.__init__(self)
@@ -362,7 +360,7 @@ class AVInfo(MediaInfo):
     all media, that contain more than one stream.
     """
     _keys = MediaInfo._keys + AVCORE
-    media = 'a/v container'
+    media = MEDIA_AV
 
     def __init__(self):
         MediaInfo.__init__(self)
@@ -389,7 +387,7 @@ class CollectionInfo(MediaInfo):
     Collection of Digial Media like CD, DVD, Directory, Playlist
     """
     _keys = MediaInfo._keys + [ 'id', 'tracks' ]
-    media = 'container'
+    media = MEDIA_CONTAINER
 
     def __init__(self):
         MediaInfo.__init__(self)

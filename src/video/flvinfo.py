@@ -115,4 +115,4 @@ class FlashInfo(mediainfo.AVInfo):
 
             file.seek(4, 1)
 
-factory.register( 'video/flv', ('flv',), mediainfo.TYPE_AV, FlashInfo )
+factory.register( 'video/flv', ('flv',), FlashInfo )

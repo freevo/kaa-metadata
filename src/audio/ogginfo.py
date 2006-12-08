@@ -138,4 +138,4 @@ class OggInfo(mediainfo.MusicInfo):
         return (granule_position / self.samplerate)
 
 
-factory.register( 'application/ogg', ('ogg',), mediainfo.TYPE_MUSIC, OggInfo)
+factory.register( 'application/ogg', ('ogg',), OggInfo)

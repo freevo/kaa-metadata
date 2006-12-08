@@ -93,4 +93,4 @@ class VCDInfo(mediainfo.CollectionInfo):
                     self.tracks.append(vi)
 
 
-factory.register( 'video/vcd', ('cue',), mediainfo.TYPE_AV, VCDInfo )
+factory.register( 'video/vcd', ('cue',), VCDInfo )

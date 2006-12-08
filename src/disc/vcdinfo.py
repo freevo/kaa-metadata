@@ -97,5 +97,4 @@ class VCDInfo(DiscInfo):
         device.close()
 
 
-factory.register( 'video/vcd', mediainfo.EXTENSION_DEVICE,
-                  mediainfo.TYPE_AV, VCDInfo )
+factory.register( 'video/vcd', mediainfo.EXTENSION_DEVICE, VCDInfo )

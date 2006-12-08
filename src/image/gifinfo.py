@@ -60,4 +60,4 @@ class GIFInfo(core.ImageInfo):
         self.type = gifType.lower()
 
 
-factory.register( 'image/gif', ('gif', ), mediainfo.TYPE_IMAGE, GIFInfo )
+factory.register( 'image/gif', ('gif', ), GIFInfo )

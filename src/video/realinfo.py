@@ -109,5 +109,4 @@ class RealInfo(mediainfo.AVInfo):
             self.comment = s[pos+2:pos+comment_len+2]
 
 
-factory.register( 'video/real', ('rm', 'ra', 'ram'),
-                  mediainfo.TYPE_AV, RealInfo )
+factory.register( 'video/real', ('rm', 'ra', 'ram'), RealInfo )

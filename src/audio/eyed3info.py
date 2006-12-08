@@ -300,4 +300,4 @@ class eyeD3Info(mediainfo.MusicInfo):
       self._set('mode', _modes[mode])
 
 
-factory.register( 'audio/mp3', ('mp3',), mediainfo.TYPE_MUSIC, eyeD3Info )
+factory.register( 'audio/mp3', ('mp3',), eyeD3Info )

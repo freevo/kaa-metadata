@@ -54,7 +54,8 @@ class ImageInfo(mediainfo.MediaInfo):
     """
 
     _keys = ATTRIBUTES
-
+    media = mediainfo.MEDIA_IMAGE
+    
     def _finalize(self):
         """
         Add additional information and correct data.

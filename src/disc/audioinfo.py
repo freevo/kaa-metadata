@@ -174,5 +174,4 @@ class AudioDiscInfo(discinfo.DiscInfo):
         cdromfd.close()
 
 
-factory.register( 'audio/cd', mediainfo.EXTENSION_DEVICE,
-                  mediainfo.TYPE_AUDIO, AudioDiscInfo )
+factory.register( 'audio/cd', mediainfo.EXTENSION_DEVICE, AudioDiscInfo )

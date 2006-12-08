@@ -200,10 +200,8 @@ class DVDInfo(DiscInfo):
         self._parse(f.name)
 
 
-factory.register( 'video/dvd', mediainfo.EXTENSION_DEVICE,
-                  mediainfo.TYPE_AV, DVDInfo )
+factory.register( 'video/dvd', mediainfo.EXTENSION_DEVICE, DVDInfo )
 
-factory.register('video/dvd', mediainfo.EXTENSION_DIRECTORY,
-                 mediainfo.TYPE_AV, DVDInfo)
+factory.register('video/dvd', mediainfo.EXTENSION_DIRECTORY, DVDInfo)
 
-factory.register('video/dvd', ['iso'], mediainfo.TYPE_AV, DVDInfo)
+factory.register('video/dvd', ['iso'], DVDInfo)

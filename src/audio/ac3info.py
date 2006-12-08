@@ -157,4 +157,5 @@ class AC3Info(mediainfo.MusicInfo):
         self.codec = 0x2000 # fourcc code of ac3
         self.mime = 'audio/ac3'
 
-factory.register( 'audio/ac3', ('ac3',), mediainfo.TYPE_MUSIC, AC3Info )
+
+factory.register( 'audio/ac3', ('ac3',), AC3Info )

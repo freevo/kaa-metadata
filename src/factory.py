@@ -52,6 +52,10 @@ _factory = None
 # some timing debug
 TIME_DEBUG = False
 
+R_MIMETYPE  = 0
+R_EXTENTION = 1
+R_CLASS     = 2
+
 def Factory():
     """
     Create or return global unique factory object.
@@ -65,11 +69,11 @@ def Factory():
     return _factory
 
 
-def register(mimetype, extensions, type, c):
+def register(mimetype, extensions, c):
     """
     Register a parser to the factory.
     """
-    return Factory().register(mimetype,extensions,type,c)
+    return Factory().register(mimetype, extensions, c)
 
 
 def gettype(mimetype, extensions):
@@ -173,7 +177,7 @@ class _Factory:
             log.debug("trying ext %s" % e[1:])
             file.seek(0,0)
             try:
-                parser = self.extmap[e[1:]][3]
+                parser = self.extmap[e[1:]][R_CLASS]
                 return parser(file)
             except mediainfo.KaaMetadataParseError:
                 pass
@@ -189,13 +193,13 @@ class _Factory:
         log.info('No Type found by Extension. Trying all')
 
         for e in self.types:
-            if e[3] == parser:
+            if e[R_CLASS] == parser:
                 # We already tried this parser, don't bother again.
                 continue
-            log.debug('trying %s' % e[0])
+            log.debug('trying %s' % e[R_MIMETYPE])
             file.seek(0,0)
             try:
-                return e[3](file)
+                return e[R_CLASS](file)
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(0)
             except:
@@ -226,9 +230,9 @@ class _Factory:
             # method for this. Perhaps move file.open stuff into __init__
             # instead of doing it here...
             for e in self.stream_types:
-                log.debug('Trying %s' % e[0])
+                log.debug('Trying %s' % e[R_MIMETYPE])
                 try:
-                    return e[3](url)
+                    return e[R_CLASS](url)
                 except mediainfo.KaaMetadataParseError:
                     pass
                 except (KeyboardInterrupt, SystemExit):
@@ -240,7 +244,7 @@ class _Factory:
             log.debug("Trying %s" % mime)
             if self.mimemap.has_key(mime):
                 try:
-                    return self.mimemap[mime][3](file)
+                    return self.mimemap[mime][R_CLASS](file)
                 except mediainfo.KaaMetadataParseError:
                     pass
                 except (KeyboardInterrupt, SystemExit):
@@ -277,9 +281,9 @@ class _Factory:
         are supported.
         """
         for e in self.device_types:
-            log.debug('Trying %s' % e[0])
+            log.debug('Trying %s' % e[R_MIMETYPE])
             try:
-                t = e[3](devicename)
+                t = e[R_CLASS](devicename)
                 t.url = 'file://%s' % os.path.abspath(devicename)
                 return t
             except mediainfo.KaaMetadataParseError:
@@ -294,9 +298,9 @@ class _Factory:
         Create information from the directory.
         """
         for e in self.directory_types:
-            log.debug('Trying %s' % e[0])
+            log.debug('Trying %s' % e[R_MIMETYPE])
             try:
-                return e[3](dirname)
+                return e[R_CLASS](dirname)
             except mediainfo.KaaMetadataParseError:
                 pass
             except (KeyboardInterrupt, SystemExit):
@@ -333,12 +337,12 @@ class _Factory:
 
 
 
-    def register(self,mimetype,extensions,type,c):
+    def register(self, mimetype, extensions, c):
         """
         register the parser to kaa.metadata
         """
         log.debug('%s registered' % mimetype)
-        tuple = (mimetype,extensions,type,c)
+        tuple = (mimetype, extensions, c)
 
         if extensions == mediainfo.EXTENSION_DEVICE:
             self.device_types.append(tuple)
@@ -367,7 +371,6 @@ class _Factory:
             l = self.types
 
         for info in l:
-            if info[0] == mimetype and info[1] == extensions:
-                return info[3]
-
+            if info[R_MIMETYPE] == mimetype and info[R_EXTENSION] == extensions:
+                return info[R_CLASS]
         return None

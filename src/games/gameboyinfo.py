@@ -95,5 +95,4 @@ class GameboyInfo(mediainfo.MediaInfo):
             if file.read(1) != '\x96':
                 raise mediainfo.KaaMetadataParseError()
 
-factory.register( 'games/gameboy', ('gba', 'gb', 'gbc', ),
-                  mediainfo.TYPE_MISC, GameboyInfo )
+factory.register( 'games/gameboy', ('gba', 'gb', 'gbc', ), GameboyInfo )

@@ -85,5 +85,4 @@ class XMLInfo(mediainfo.MediaInfo):
         doc.freeDoc()
 
 
-factory.register( 'text/xml', ('xml', 'fxd', 'html', 'htm'),
-                  mediainfo.TYPE_MISC, XMLInfo )
+factory.register( 'text/xml', ('xml', 'fxd', 'html', 'htm'), XMLInfo )

@@ -117,4 +117,4 @@ class TIFFInfo(core.ImageInfo):
             self._appendtable('IPTC', iptc)
 
 
-factory.register( 'image/tiff', ('tif','tiff'), mediainfo.TYPE_IMAGE, TIFFInfo)
+factory.register( 'image/tiff', ('tif','tiff'), TIFFInfo)

@@ -176,4 +176,4 @@ class JPGInfo(core.ImageInfo):
             if key.startswith('Thumb:') or key == 'Software':
                 self._set(key, value)
 
-factory.register( 'image/jpeg', ('jpg','jpeg'), mediainfo.TYPE_IMAGE, JPGInfo )
+factory.register( 'image/jpeg', ('jpg','jpeg'), JPGInfo )

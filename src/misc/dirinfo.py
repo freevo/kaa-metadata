@@ -40,7 +40,7 @@ import sys
 from kaa.strutils import unicode_to_str
 from kaa import xml
 from kaa.metadata.mediainfo import MediaInfo, MEDIACORE, \
-     EXTENSION_DIRECTORY, TYPE_MISC
+     EXTENSION_DIRECTORY, MEDIA_DIRECTORY
 from kaa.metadata.factory import register
 
 # get logging object
@@ -51,10 +51,10 @@ class DirInfo(MediaInfo):
     """
     Simple parser for reading a .directory file.
     """
+    media = MEDIA_DIRECTORY
+    
     def __init__(self, directory):
         MediaInfo.__init__(self)
-
-        self.media = 'directory'
         for func in (self.parse_dot_directory, self.parse_bins):
             try:
                 func(directory)
@@ -107,4 +107,4 @@ class DirInfo(MediaInfo):
             self._set(key, child.content)
 
 # register to kaa.metadata core
-register('directory', EXTENSION_DIRECTORY, TYPE_MISC, DirInfo)
+register('directory', EXTENSION_DIRECTORY, DirInfo)

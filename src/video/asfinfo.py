@@ -376,4 +376,4 @@ class AsfInfo(mediainfo.AVInfo):
 
 
 
-factory.register( 'video/asf', ('asf','wmv','wma'), mediainfo.TYPE_AV, AsfInfo)
+factory.register( 'video/asf', ('asf','wmv','wma'), AsfInfo)

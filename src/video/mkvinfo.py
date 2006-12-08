@@ -265,10 +265,11 @@ class MkvInfo(mediainfo.AVInfo):
     """
     This is the main Matroska object
     """
+    media = mediainfo.MEDIA_AUDIO
+    
     def __init__(self, file):
         mediainfo.AVInfo.__init__(self)
         self.samplerate = 1
-        self.media = 'audio'
 
         self.file = file
         # Read enough that we're likely to get the full seekhead (FIXME: kludge)
@@ -471,7 +472,7 @@ class MkvInfo(mediainfo.AVInfo):
             # FIXME: add more video codecs here
             track.codec = track.codec[2:]
 
-        self.media = 'video'
+        self.media = mediainfo.MEDIA_AV
         self.video.append(track)
         return track
 
@@ -573,4 +574,4 @@ class MkvInfo(mediainfo.AVInfo):
 
         log.debug('Attachment "%s" found' % name)
 
-factory.register( 'application/mkv', ('mkv', 'mka',), mediainfo.TYPE_AV, MkvInfo )
+factory.register( 'application/mkv', ('mkv', 'mka',), MkvInfo )

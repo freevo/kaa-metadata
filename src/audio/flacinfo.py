@@ -116,5 +116,4 @@ class FlacInfo(mediainfo.MusicInfo):
         return (len+4,unicode(header[4:4+len], 'utf-8'))
 
 
-factory.register( 'application/flac', ('flac',), mediainfo.TYPE_MUSIC,
-                  FlacInfo )
+factory.register( 'application/flac', ('flac',), FlacInfo )

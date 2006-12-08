@@ -59,5 +59,4 @@ class PCMInfo(mediainfo.AudioInfo):
         return None
 
 
-factory.register( 'application/pcm', ('wav','aif','voc','au'),
-                  mediainfo.TYPE_AUDIO, PCMInfo )
+factory.register( 'application/pcm', ('wav','aif','voc','au'), PCMInfo )

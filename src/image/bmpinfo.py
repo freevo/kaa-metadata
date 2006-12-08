@@ -61,4 +61,4 @@ class BMPInfo(core.ImageInfo):
             raise mediainfo.KaaMetadataParseError()
 
 
-factory.register( 'image/bmp', ('bmp', ), mediainfo.TYPE_IMAGE, BMPInfo )
+factory.register( 'image/bmp', ('bmp', ), BMPInfo )

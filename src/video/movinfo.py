@@ -360,4 +360,4 @@ class MovInfo(mediainfo.AVInfo):
 
 
 exts = ('mov', 'qt', 'mp4', 'mp4a', '3gp', '3gp2', 'mk2')
-factory.register( 'video/quicktime', exts, mediainfo.TYPE_AV, MovInfo)
+factory.register( 'video/quicktime', exts, MovInfo)

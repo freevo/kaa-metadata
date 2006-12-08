@@ -321,5 +321,4 @@ class OgmInfo(mediainfo.AVInfo):
 
 
 
-factory.register( 'application/ogg', ('ogm', 'ogg',),
-                  mediainfo.TYPE_AV, OgmInfo )
+factory.register( 'application/ogg', ('ogm', 'ogg',), OgmInfo )

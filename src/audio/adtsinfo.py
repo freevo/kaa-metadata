@@ -77,4 +77,4 @@ class ADTSInfo(mediainfo.AudioInfo):
        self.mime = 'audio/aac'
        
        
-factory.register( 'application/adts', ('aac',), mediainfo.TYPE_AUDIO, ADTSInfo )
+factory.register( 'application/adts', ('aac',), ADTSInfo )

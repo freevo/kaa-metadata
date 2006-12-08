@@ -128,4 +128,4 @@ class PNGInfo(core.ImageInfo):
             self.comment = self.meta[key]
         return 1
 
-factory.register( 'image/png', ('png',), mediainfo.TYPE_IMAGE, PNGInfo )
+factory.register( 'image/png', ('png',), PNGInfo )

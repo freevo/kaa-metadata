@@ -98,5 +98,4 @@ class SNESInfo(mediainfo.MediaInfo):
         self.title = romName.strip()
 
 
-factory.register( 'games/snes', ('smc', 'sfc', 'fig', ),
-                  mediainfo.TYPE_MISC, SNESInfo )
+factory.register( 'games/snes', ('smc', 'sfc', 'fig', ), SNESInfo )

@@ -99,5 +99,4 @@ class WebRadioInfo(mediainfo.MusicInfo):
         self.bitrate = string.atoi(self.bitrate)*1000
 
 
-factory.register( 'text/plain', mediainfo.EXTENSION_STREAM,
-                  mediainfo.TYPE_MUSIC, WebRadioInfo )
+factory.register( 'text/plain', mediainfo.EXTENSION_STREAM, WebRadioInfo )
