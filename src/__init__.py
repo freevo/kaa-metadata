@@ -40,7 +40,7 @@ except ImportError:
 from factory import *
 from disc.discinfo import cdrom_disc_id as getid
 from mediainfo import MediaInfo, MEDIA_AUDIO, MEDIA_VIDEO, MEDIA_IMAGE, \
-     MEDIA_AV, MEDIA_SUBTITLE, MEDIA_CONTAINER, MEDIA_DIRECTORY
+     MEDIA_AV, MEDIA_SUBTITLE, MEDIA_CONTAINER, MEDIA_DIRECTORY, MEDIA_DISC
 
 
 # use network functions

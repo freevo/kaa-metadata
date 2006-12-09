@@ -52,6 +52,8 @@ MEDIA_AV        = 'MEDIA_AV'
 MEDIA_SUBTITLE  = 'MEDIA_SUBTITLE'
 MEDIA_CONTAINER = 'MEDIA_CONTAINER'
 MEDIA_DIRECTORY = 'MEDIA_DIRECTORY'
+MEDIA_DISC      = 'MEDIA_DISC'
+
 
 MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'date',
              'keywords', 'country', 'language', 'url', 'media', 'artist', 'mime']
@@ -103,7 +105,8 @@ class MediaInfo(object):
         self._keys = self._keys[:]
         self._tables = {}
         for key in self._keys:
-            setattr(self, key, None)
+            if not key == 'media':
+                setattr(self, key, None)
 
 
     #
