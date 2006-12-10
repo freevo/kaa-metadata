@@ -294,6 +294,7 @@ class AudioInfo(MediaInfo):
     media = MEDIA_AUDIO
 
     def _finalize(self):
+        MediaInfo._finalize(self)
         if self.codec is not None:
             self.fourcc, self.codec = fourcc.resolve(self.codec)
 
@@ -313,7 +314,7 @@ class MusicInfo(AudioInfo):
             try:
                 # XXX Why is this needed anyway?
                 if int(self.trackno) < 10:
-                    self.trackno = '0%s' % int(self.trackno)
+                    self.trackno = u'0%s' % int(self.trackno)
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(0)
             except:
@@ -328,6 +329,7 @@ class VideoInfo(MediaInfo):
     media = MEDIA_VIDEO
 
     def _finalize(self):
+        MediaInfo._finalize(self)
         if self.codec is not None:
             self.fourcc, self.codec = fourcc.resolve(self.codec)
 
