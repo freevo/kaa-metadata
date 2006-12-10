@@ -53,7 +53,7 @@ class ImageInfo(mediainfo.MediaInfo):
     Digital Images, Photos, Pictures.
     """
 
-    _keys = ATTRIBUTES
+    _keys = mediainfo.MediaInfo._keys + ATTRIBUTES
     media = mediainfo.MEDIA_IMAGE
     
     def _finalize(self):
