@@ -83,6 +83,8 @@ class KaaMetadataParseError:
 
 
 class MediaInfo(object):
+    media = None
+    
     """
     MediaInfo is the base class to all Media Metadata Containers. It defines
     the basic structures that handle metadata. MediaInfo and its derivates
