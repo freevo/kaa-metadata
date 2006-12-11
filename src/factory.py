@@ -237,6 +237,13 @@ class _Factory:
                     pass
                 except (KeyboardInterrupt, SystemExit):
                     sys.exit(0)
+
+        elif scheme == 'dvd':
+            path = split[2]
+            if not path.replace('/', ''):
+                return self.create_from_device('/dev/dvd')
+            return self.create_from_filename(split[2])
+
         else:
             (scheme, location, path, query, fragment) = split
             uhandle = urllib.urlopen(url)
