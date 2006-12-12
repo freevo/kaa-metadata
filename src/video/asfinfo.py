@@ -370,8 +370,8 @@ class AsfInfo(mediainfo.AVInfo):
                     log.debug("Unparsed %s [%d]" % (h,objsize))
                     break
             else:
-                r = "%.8X-%.4X-%.4X-%.2X%.2X-%s" % guid
-                log.debug("unknown: %s [%d]" % (r, objsize))
+                u = "%.8X-%.4X-%.4X-%.2X%.2X-%s" % guid
+                log.debug("unknown: %s [%d]" % (u, objsize))
         return r
 
 
