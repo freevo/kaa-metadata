@@ -154,6 +154,8 @@ class MpegInfo(mediainfo.AVInfo):
             self.video.append(mediainfo.VideoInfo())
 
         if self.sequence_header_offset <= 0:
+            if self.length <= 0:
+                self.length = None
             return
 
         self.progressive(file)
@@ -177,6 +179,10 @@ class MpegInfo(mediainfo.AVInfo):
         for a in self.audio:
             if not a.codec:
                 a.codec = ac
+
+        if self.length <= 0:
+            self.length = None
+
 
     def dxy(self,file):
         """
