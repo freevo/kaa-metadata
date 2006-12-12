@@ -787,7 +787,7 @@ class MpegInfo(mediainfo.AVInfo):
             pos = self.__search__(buffer)
             if pos == None:
                 break
-            end    = self.get_time(buffer[pos:])
+            end = self.get_time(buffer[pos:]) or end
             buffer = buffer[pos+100:]
 
         file.close()
