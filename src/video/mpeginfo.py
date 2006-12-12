@@ -154,8 +154,6 @@ class MpegInfo(mediainfo.AVInfo):
             self.video.append(mediainfo.VideoInfo())
 
         if self.sequence_header_offset <= 0:
-            if self.length <= 0:
-                self.length = None
             return
 
         self.progressive(file)
@@ -179,9 +177,6 @@ class MpegInfo(mediainfo.AVInfo):
         for a in self.audio:
             if not a.codec:
                 a.codec = ac
-
-        if self.length <= 0:
-            self.length = None
 
 
     def dxy(self,file):
@@ -301,7 +296,7 @@ class MpegInfo(mediainfo.AVInfo):
         read SCR (timestamp) for MPEG2 at the buffer beginning (6 Bytes)
         """
         if len(buffer) < 6:
-            return -1
+            return None
 
         highbit = (ord(buffer[0])&0x20)>>5
 
@@ -324,7 +319,7 @@ class MpegInfo(mediainfo.AVInfo):
         read SCR (timestamp) for MPEG1 at the buffer beginning (5 Bytes)
         """
         if len(buffer) < 5:
-            return -1
+            return None
 
         highbit = (ord(buffer[0]) >> 3) & 0x01
 
@@ -350,10 +345,10 @@ class MpegInfo(mediainfo.AVInfo):
     def ReadHeader(self, buffer, offset):
         """
         Handle MPEG header in buffer on position offset
-        Return -1 on error, new offset or 0 if the new offset can't be scanned
+        Return None on error, new offset or 0 if the new offset can't be scanned
         """
         if buffer[offset:offset+3] != '\x00\x00\x01':
-            return -1
+            return None
 
         id = ord(buffer[offset+3])
 
@@ -373,7 +368,7 @@ class MpegInfo(mediainfo.AVInfo):
                 return offset + (ord(buffer[offset+13]) & 0x07) + 14
             else:
                 # WTF? Very strange
-                return -1
+                return None
 
         if 0xC0 <= id <= 0xDF:
             # code for audio stream
@@ -460,7 +455,7 @@ class MpegInfo(mediainfo.AVInfo):
             new_offset = self.ReadHeader(buffer, offset)
 
             # header scanning detected error, this is no mpeg
-            if new_offset == -1:
+            if new_offset == None:
                 return 0
 
             if new_offset:
@@ -489,12 +484,12 @@ class MpegInfo(mediainfo.AVInfo):
 
     def _find_timer_(self, buffer):
         """
-        Return position of timer in buffer or -1 if not found.
+        Return position of timer in buffer or None if not found.
         This function is valid for 'normal' mpeg files
         """
         pos = buffer.find('\x00\x00\x01%s' % chr(PACK_PKT))
         if pos == -1:
-            return -1
+            return None
         return pos + 4
 
 
@@ -506,13 +501,13 @@ class MpegInfo(mediainfo.AVInfo):
         """
         Parse a PES header.
         Since it starts with 0x00 0x00 0x01 like 'normal' mpegs, this
-        function will return (0, -1) when it is no PES header or
-        (packet length, timestamp position (maybe -1))
+        function will return (0, None) when it is no PES header or
+        (packet length, timestamp position (maybe None))
 
         http://dvd.sourceforge.net/dvdinfo/pes-hdr.html
         """
         if not buffer[0:3] == '\x00\x00\x01':
-            return 0, -1
+            return 0, None
 
         packet_length = (ord(buffer[4]) << 8) + ord(buffer[5]) + 6
         align         = ord(buffer[6]) & 4
@@ -565,7 +560,7 @@ class MpegInfo(mediainfo.AVInfo):
         if ptsdts and ptsdts == ord(buffer[9]) >> 4:
             if ord(buffer[9]) >> 4 != ptsdts:
                 log.warning('WARNING: bad PTS/DTS, please contact us')
-                return packet_length, -1
+                return packet_length, None
 
             # timestamp = self.ReadPTS(buffer[9:14])
             high = ((ord(buffer[9]) & 0xF) >> 1)
@@ -573,7 +568,7 @@ class MpegInfo(mediainfo.AVInfo):
             low  = (ord(buffer[12]) << 7) + (ord(buffer[13]) >> 1)
             return packet_length, 9
 
-        return packet_length, -1
+        return packet_length, None
 
 
 
@@ -594,7 +589,7 @@ class MpegInfo(mediainfo.AVInfo):
             pos, timestamp = self.ReadPESHeader(offset, buffer[offset:])
             if not pos:
                 return 0
-            if timestamp != -1 and not hasattr(self, 'start'):
+            if timestamp != None and not hasattr(self, 'start'):
                 self.get_time = self.ReadPTS
                 bpos = buffer[offset+timestamp:offset+timestamp+5]
                 self.start = self.get_time(bpos)
@@ -632,13 +627,13 @@ class MpegInfo(mediainfo.AVInfo):
         pos    = buffer.find('\x00\x00\x01')
         offset = 0
         if pos == -1 or offset + 1000 >= len(buffer):
-            return -1
+            return None
 
         retpos   = -1
         ackcount = 0
         while offset + 1000 < len(buffer):
             pos, timestamp = self.ReadPESHeader(offset, buffer[offset:])
-            if timestamp != -1 and retpos == -1:
+            if timestamp != None and retpos == -1:
                 retpos = offset + timestamp
             if pos == 0:
                 # Oops, that was a mpeg header, no PES header
@@ -652,7 +647,7 @@ class MpegInfo(mediainfo.AVInfo):
             if ackcount > 10:
                 # looks ok to me
                 return retpos
-        return -1
+        return None
 
 
     # Transport Stream ===============================================
@@ -700,16 +695,16 @@ class MpegInfo(mediainfo.AVInfo):
                 # PES
                 timestamp = self.ReadPESHeader(c+offset, buffer[c+offset:],
                                                tsid)[1]
-                if timestamp != -1:
+                if timestamp != None:
                     if not hasattr(self, 'start'):
                         self.get_time = self.ReadPTS
                         timestamp = c + offset + timestamp
-                        self.start = \
-                                   self.get_time(buffer[timestamp:timestamp+5])
+                        self.start = self.get_time(buffer[timestamp:timestamp+5])
                     elif not hasattr(self, 'audio_ok'):
                         timestamp = c + offset + timestamp
                         start = self.get_time(buffer[timestamp:timestamp+5])
-                        if abs(start - self.start) < 10:
+                        if start is not None and self.start is not None and \
+                               abs(start - self.start) < 10:
                             # looks ok
                             self.audio_ok = True
                         else:
@@ -746,7 +741,7 @@ class MpegInfo(mediainfo.AVInfo):
                 break
             c += 1
         else:
-            return -1
+            return None
 
         while c + TS_PACKET_LENGTH < len(buffer):
             start = ord(buffer[c+1]) & 0x40
@@ -763,11 +758,14 @@ class MpegInfo(mediainfo.AVInfo):
                 offset += ord(buffer[c+offset]) + 1
 
             if adapt & 0x01:
-                timestamp = self.ReadPESHeader(c+offset, buffer[c+offset:],
-                                               tsid)[1]
+                timestamp = self.ReadPESHeader(c+offset, buffer[c+offset:], tsid)[1]
+                if timestamp is None:
+                    # this should not happen
+                    log.error('bad TS')
+                    return None
                 return c + offset + timestamp
             c += TS_PACKET_LENGTH
-        return -1
+        return None
 
 
 
@@ -778,16 +776,16 @@ class MpegInfo(mediainfo.AVInfo):
         get the last timestamp of the mpeg, return -1 if this is not possible
         """
         if not hasattr(self, 'filename') or not hasattr(self, 'start'):
-            return -1
+            return None
 
         file = open(self.filename)
         file.seek(os.stat(self.filename)[stat.ST_SIZE]-self.__sample_size__)
         buffer = file.read(self.__sample_size__)
 
-        end = -1
+        end = None
         while 1:
             pos = self.__search__(buffer)
-            if pos == -1:
+            if pos == None:
                 break
             end    = self.get_time(buffer[pos:])
             buffer = buffer[pos+100:]
@@ -801,8 +799,8 @@ class MpegInfo(mediainfo.AVInfo):
         get the length in seconds, return -1 if this is not possible
         """
         end = self.get_endpos()
-        if end == -1:
-            return -1
+        if end == None or self.start == None:
+            return None
         if self.start > end:
             return int(((long(1) << 33) - 1 ) / 90000) - self.start + end
         return end - self.start
@@ -825,9 +823,10 @@ class MpegInfo(mediainfo.AVInfo):
             if len(buffer) < 10000:
                 break
             pos = self.__search__(buffer)
-            if pos != -1:
+            if pos != None:
                 # found something
-                if self.get_time(buffer[pos:]) >= end_time:
+                nt = self.get_time(buffer[pos:])
+                if nt is not None and nt >= end_time:
                     # too much, break
                     break
             # that wasn't enough
@@ -852,7 +851,7 @@ class MpegInfo(mediainfo.AVInfo):
             if len(buffer) < 10000:
                 break
             pos = self.__search__(buffer)
-            if pos == -1:
+            if pos == None:
                 continue
             log.debug('buffer position: %s' % self.get_time(buffer[pos:]))
 
