@@ -64,7 +64,7 @@ AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
              'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno', 'fourcc' ]
 
-MUSICCORE = ['trackno', 'trackof', 'album', 'genre', 'discs', 'thumbnail' ]
+MUSICCORE = ['trackof', 'album', 'genre', 'discs', 'thumbnail' ]
 
 AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'genre', 'writer', 'producer', 'studio', 'rating', 'starring',
