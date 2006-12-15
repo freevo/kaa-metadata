@@ -40,8 +40,8 @@ import traceback
 import urllib
 import logging
 
-# kaa imports
-import mediainfo as core
+# kaa.metadata imports
+import core
 
 # get logging object
 log = logging.getLogger('metadata')

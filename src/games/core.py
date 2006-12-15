@@ -29,10 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
-from kaa.metadata import mediainfo
+from kaa.metadata.core import ParseError, Media, MEDIA_GAME
 from kaa.metadata.factory import register
 
-ParseError = mediainfo.ParseError
-
-class Game(mediainfo.Media):
-    media = mediainfo.MEDIA_GAME
+class Game(Media):
+    media = MEDIA_GAME

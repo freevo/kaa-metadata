@@ -39,8 +39,8 @@ from kaa.strutils import unicode_to_str
 from kaa import xml
 
 # kaa.metadata imports
-import kaa.metadata.mediainfo as core
-from kaa.metadata.factory import register
+import kaa.metadata.core as core
+import kaa.metadata.factory as factory
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -106,4 +106,4 @@ class Directory(core.Media):
             self._set(key, child.content)
 
 # register to kaa.metadata core
-register('directory', core.EXTENSION_DIRECTORY, Directory)
+factory.register('directory', core.EXTENSION_DIRECTORY, Directory)

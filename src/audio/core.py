@@ -29,7 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
-from kaa.metadata import mediainfo
+from kaa.metadata.core import ParseError, Media, MEDIA_AUDIO, \
+     EXTENSION_STREAM
 from kaa.metadata.factory import register
 
 # fourcc list
@@ -42,19 +43,15 @@ AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
 MUSICCORE = ['trackof', 'album', 'genre', 'discs', 'thumbnail' ]
 
 
-ParseError = mediainfo.ParseError
-EXTENSION_STREAM = mediainfo.EXTENSION_STREAM
-
-
-class Audio(mediainfo.Media):
+class Audio(Media):
     """
     Audio Tracks in a Multiplexed Container.
     """
-    _keys = mediainfo.Media._keys + AUDIOCORE
-    media = mediainfo.MEDIA_AUDIO
+    _keys = Media._keys + AUDIOCORE
+    media = MEDIA_AUDIO
 
     def _finalize(self):
-        mediainfo.Media._finalize(self)
+        Media._finalize(self)
         if self.codec is not None:
             self.fourcc, self.codec = fourcc.resolve(self.codec)
 

@@ -34,26 +34,23 @@ import md5
 import logging
 
 # kaa imports
-from kaa.metadata import mediainfo
+from kaa.metadata.core import ParseError, Collection, EXTENSION_DEVICE, \
+     EXTENSION_DIRECTORY, MEDIA_DISC
 from kaa.metadata.factory import register
 from kaa.metadata.video.core import VideoStream
 
 # extra cdrom parser
 import cdrom
 
-EXTENSION_DEVICE = mediainfo.EXTENSION_DEVICE
-EXTENSION_DIRECTORY = mediainfo.EXTENSION_DIRECTORY
-ParseError = mediainfo.ParseError
-
 # get logging object
 log = logging.getLogger('metadata')
 
 CREATE_MD5_ID = 0
 
-class Disc(mediainfo.Collection):
+class Disc(Collection):
 
-    _keys = mediainfo.Collection._keys + [ 'mixed', 'label' ]
-    media = mediainfo.MEDIA_DISC
+    _keys = Collection._keys + [ 'mixed', 'label' ]
+    media = MEDIA_DISC
     
     def is_disc(self, device):
         (type, self.id) = cdrom.get_id(device, handle_mix=1)

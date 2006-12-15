@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# mediainfo.py
+# core.py
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -83,7 +83,7 @@ class Media(object):
 
     def __init__(self, hash=None):
         if hash is not None:
-            # create mediainfo based on dict
+            # create Media based on dict
             for key, value in hash.items():
                 if isinstance(value, list) and value and isinstance(value[0], dict):
                     value = [ Media(x) for x in value ]
@@ -256,7 +256,7 @@ class Media(object):
 
     def convert(self):
         """
-        Convert mediainfo to dict.
+        Convert Media to dict.
         """
         result = {}
         for k in self._keys:

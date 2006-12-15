@@ -29,14 +29,14 @@
 #
 # -----------------------------------------------------------------------------
 
-from kaa.metadata import mediainfo
+from kaa.metadata.core import ParseError, Media, MEDIA_VIDEO, \
+     MEDIA_SUBTITLE, MEDIA_AV, MEDIA_AUDIO, MEDIA_AV, Collection
+
 from kaa.metadata.factory import register
 from kaa.metadata.audio.core import Audio as AudioStream
 
 # fourcc list
 import kaa.metadata.fourcc as fourcc
-
-ParseError = mediainfo.ParseError
 
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
              'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno', 'fourcc' ]
@@ -45,54 +45,54 @@ AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'genre', 'writer', 'producer', 'studio', 'rating', 'starring',
              'delay', 'image', 'video', 'audio', 'subtitles', 'chapters', 'software' ]
 
-class VideoStream(mediainfo.Media):
+class VideoStream(Media):
     """
     Video Tracks in a Multiplexed Container.
     """
-    _keys = mediainfo.Media._keys + VIDEOCORE
-    media = mediainfo.MEDIA_VIDEO
+    _keys = Media._keys + VIDEOCORE
+    media = MEDIA_VIDEO
 
     def _finalize(self):
-        mediainfo.Media._finalize(self)
+        Media._finalize(self)
         if self.codec is not None:
             self.fourcc, self.codec = fourcc.resolve(self.codec)
 
 
-class Chapter(mediainfo.Media):
+class Chapter(Media):
     """
     Chapter in a Multiplexed Container.
     """
     _keys = ['name', 'pos', 'enabled']
 
     def __init__(self, name=None, pos=0):
-        mediainfo.Media.__init__(self)
+        Media.__init__(self)
         self.name = name
         self.pos = pos
         self.enabled = True
 
 
-class Subtitle(mediainfo.Media):
+class Subtitle(Media):
     """
     Subtitle Tracks in a Multiplexed Container.
     """
     _keys = ['language', 'trackno', 'title']
-    media = mediainfo.MEDIA_SUBTITLE
+    media = MEDIA_SUBTITLE
 
     def __init__(self, language=None):
-        mediainfo.Media.__init__(self)
+        Media.__init__(self)
         self.language = language
 
         
-class AVContainer(mediainfo.Media):
+class AVContainer(Media):
     """
     Container for Audio and Video streams. This is the Container Type for
     all media, that contain more than one stream.
     """
-    _keys = mediainfo.Media._keys + AVCORE
-    media = mediainfo.MEDIA_AV
+    _keys = Media._keys + AVCORE
+    media = MEDIA_AV
 
     def __init__(self):
-        mediainfo.Media.__init__(self)
+        Media.__init__(self)
         self.audio = []
         self.video = []
         self.subtitles = []
@@ -103,16 +103,9 @@ class AVContainer(mediainfo.Media):
         """
         Correct same data based on specific rules
         """
-        mediainfo.Media._finalize(self)
+        Media._finalize(self)
         if not self.length and len(self.video) and self.video[0].length:
             self.length = self.video[0].length
         for container in [ self ] + self.video + self.audio:
             if container.length:
                 container.length = int(container.length)
-
-
-# TODO: copy stuff to this file
-
-MEDIA_AUDIO = mediainfo.MEDIA_AUDIO
-MEDIA_AV = mediainfo.MEDIA_AV
-Collection = mediainfo.Collection
