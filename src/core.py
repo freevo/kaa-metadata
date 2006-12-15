@@ -39,6 +39,8 @@ import sys
 # kaa imports
 from kaa.strutils import str_to_unicode, unicode_to_str
 
+import fourcc
+
 UNPRINTABLE_KEYS = [ 'thumbnail']
 
 # media type definitions
@@ -214,6 +216,12 @@ class Media(object):
                     value = value.strip().rstrip().replace(u'\0', u'')
                     setattr(self, attr, value)
 
+        if 'fourcc'  in self._keys and 'codec' in self._keys and \
+               self.codec is not None:
+            # resolve fourcc
+            self.fourcc, self.codec = fourcc.resolve(self.codec)
+
+            
     #
     # data access
     #

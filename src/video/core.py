@@ -35,8 +35,6 @@ from kaa.metadata.core import ParseError, Media, MEDIA_VIDEO, \
 from kaa.metadata.factory import register
 from kaa.metadata.audio.core import Audio as AudioStream
 
-# fourcc list
-import kaa.metadata.fourcc as fourcc
 
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
              'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno', 'fourcc' ]
@@ -51,11 +49,6 @@ class VideoStream(Media):
     """
     _keys = Media._keys + VIDEOCORE
     media = MEDIA_VIDEO
-
-    def _finalize(self):
-        Media._finalize(self)
-        if self.codec is not None:
-            self.fourcc, self.codec = fourcc.resolve(self.codec)
 
 
 class Chapter(Media):

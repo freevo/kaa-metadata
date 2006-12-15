@@ -33,10 +33,6 @@ from kaa.metadata.core import ParseError, Media, MEDIA_AUDIO, \
      EXTENSION_STREAM
 from kaa.metadata.factory import register
 
-# fourcc list
-import kaa.metadata.fourcc as fourcc
-
-
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
              'samplebits', 'bitrate', 'fourcc', 'trackno' ]
 
@@ -49,11 +45,6 @@ class Audio(Media):
     """
     _keys = Media._keys + AUDIOCORE
     media = MEDIA_AUDIO
-
-    def _finalize(self):
-        Media._finalize(self)
-        if self.codec is not None:
-            self.fourcc, self.codec = fourcc.resolve(self.codec)
 
 
 class Music(Audio):
