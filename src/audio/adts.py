@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# pcminfo.py - pcm file parser
+# adts.py - pcm file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -33,9 +33,8 @@
 
 import struct
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# import kaa.metadata.audio core
+import core
 
 # ADTS Fixed header: these don't change from frame to frame
 #
@@ -64,17 +63,17 @@ from kaa.metadata import factory
 #
 # crc_check                      16  only if protection_absent == 0
 #
-class ADTSInfo(mediainfo.AudioInfo):
+class ADTS(core.Music):
     def __init__(self,file):
-       mediainfo.AudioInfo.__init__(self)
+       core.Music.__init__(self)
        if not file.name.endswith('aac'):
            # we have a bad detection here, so if the filename does
            # not match, we skip.
-           raise mediainfo.KaaMetadataParseError()
+           raise core.ParseError()
        header = struct.unpack('>7B', file.read(7))
        if header[0] != 255 or (header[1] >> 4) != 15:
-           raise mediainfo.KaaMetadataParseError()
+           raise core.ParseError()
        self.mime = 'audio/aac'
        
        
-factory.register( 'application/adts', ('aac',), ADTSInfo )
+core.register( 'application/adts', ('aac',), ADTS )

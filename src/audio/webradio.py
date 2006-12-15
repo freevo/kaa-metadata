@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# webradioinfo.py - read webradio attributes
+# webradio.py - read webradio attributes
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -34,9 +34,9 @@ import urlparse
 import string
 import urllib
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# import kaa.metadata.audio core
+import core
+
 
 # http://205.188.209.193:80/stream/1006
 
@@ -46,16 +46,16 @@ ICY = { 'icy-name': 'title',
         'icy-url': 'caption'
       }
 
-class WebRadioInfo(mediainfo.MusicInfo):
+class WebRadio(core.Music):
 
     table_mapping = { 'ICY' : ICY }
 
     def __init__(self, url):
-        mediainfo.MusicInfo.__init__(self)
+        core.Music.__init__(self)
         tup = urlparse.urlsplit(url)
         scheme, location, path, query, fragment = tup
         if scheme != 'http':
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         # Open an URL Connection
         fi = urllib.urlopen(url)
@@ -71,7 +71,7 @@ class WebRadioInfo(mediainfo.MusicInfo):
         if statuslist[1] != "200":
             if fi:
                 fi.close()
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         self.type = 'audio'
         self.subtype = 'mp3'
@@ -95,8 +95,8 @@ class WebRadioInfo(mediainfo.MusicInfo):
 
 
     def _finalize(self):
-        mediainfo.MusicInfo._finalize(self)
+        core.Music._finalize(self)
         self.bitrate = string.atoi(self.bitrate)*1000
 
 
-factory.register( 'text/plain', mediainfo.EXTENSION_STREAM, WebRadioInfo )
+core.register( 'text/plain', core.EXTENSION_STREAM, WebRadio )

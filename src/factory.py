@@ -112,11 +112,11 @@ class _Factory:
         This functions imports all known parser.
         """
         import mediainfo
-        import audio.ogginfo
-        import audio.m4ainfo
-        import audio.ac3info
-        import audio.pcminfo
-        import audio.adtsinfo
+        import audio.ogg
+        import audio.m4a
+        import audio.ac3
+        import audio.pcm
+        import audio.adts
         import video.riffinfo
         import video.mpeginfo
         import video.asfinfo
@@ -156,9 +156,9 @@ class _Factory:
             if log.level < 30:
                 log.error(e)
 
-        import audio.eyed3info
-        import audio.webradioinfo
-        import audio.flacinfo
+        import audio.mp3
+        import audio.webradio
+        import audio.flac
 
         import games.gameboy
         import games.snes

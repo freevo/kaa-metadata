@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# m4ainfo.py - m4a file parser
+# m4a.py - m4a file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -36,20 +36,23 @@
 import struct
 import logging
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# import kaa.metadata.audio core
+import core
 
 # get logging object
 log = logging.getLogger('metadata')
 
-class Mpeg4(mediainfo.MusicInfo):
-    def __init__(self, file):
-        self.containerTags = ('moov', 'udta', 'trak', 'mdia', 'minf', 'dinf',
-                              'stbl', 'meta', 'ilst', '----')
-        self.skipTags = {'meta':4 }
 
-        mediainfo.MusicInfo.__init__(self)
+CONTAINER_TAGS = ('moov', 'udta', 'trak', 'mdia', 'minf',
+                  'dinf', 'stbl', 'meta', 'ilst', '----')
+
+SKIP_TAGS = {'meta':4 }
+
+
+class Mpeg4Audio(core.Music):
+
+    def __init__(self, file):
+        core.Music.__init__(self)
         self.valid = 0
         returnval = 0
         while returnval == 0:
@@ -58,7 +61,7 @@ class Mpeg4(mediainfo.MusicInfo):
             except ValueError:
                 returnval = 1
         if not self.valid:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
 
     def readNextTag(self, file):
@@ -67,8 +70,8 @@ class Mpeg4(mediainfo.MusicInfo):
         if length < 0 or length > 1000:
             raise ValueError, "Oops?"
 
-        if name in self.containerTags:
-            self.read(self.skipTags.get(name, 0), file)
+        if name in CONTAINER_TAGS:
+            self.read(SKIP_TAGS.get(name, 0), file)
             data = '[container tag]'
         else:
             data = self.read(length, file)
@@ -103,4 +106,4 @@ class Mpeg4(mediainfo.MusicInfo):
         return struct.unpack('>I', self.read(4, file))[0]
 
 
-factory.register( 'application/m4a', ('m4a',), Mpeg4)
+core.register( 'application/m4a', ('m4a',), Mpeg4Audio)

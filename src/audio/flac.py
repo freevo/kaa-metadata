@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# flacinfo.py - flac file parser
+# flac.py - flac file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -34,21 +34,19 @@ import struct
 import re
 import logging
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
-import ogginfo
+# import kaa.metadata.audio core
+import core
 
 # get logging object
 log = logging.getLogger('metadata')
 
 # See: http://flac.sourceforge.net/format.html
 
-class FlacInfo(mediainfo.MusicInfo):
+class Flac(core.Music):
     def __init__(self,file):
-        mediainfo.MusicInfo.__init__(self)
+        core.Music.__init__(self)
         if file.read(4) != 'fLaC':
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         while 1:
             (blockheader,) = struct.unpack('>I',file.read(4))
@@ -116,4 +114,4 @@ class FlacInfo(mediainfo.MusicInfo):
         return (len+4,unicode(header[4:4+len], 'utf-8'))
 
 
-factory.register( 'application/flac', ('flac',), FlacInfo )
+core.register( 'application/flac', ('flac',), Flac )

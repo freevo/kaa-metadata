@@ -37,6 +37,7 @@ import logging
 import kaa.metadata
 from kaa.metadata import mediainfo
 from kaa.metadata import factory
+from kaa.audio.core import Music as MusicInfo
 
 # disc imports
 import discinfo
@@ -104,7 +105,7 @@ class AudioDiscInfo(discinfo.DiscInfo):
 
             if read_stat == 210:
                 for i in range(0, disc_id[1]):
-                    mi = mediainfo.MusicInfo()
+                    mi = MusicInfo()
                     mi.title = read_info['TTITLE' + `i`]
                     mi.album = self.title
                     mi.artist = self.artist
@@ -129,7 +130,7 @@ class AudioDiscInfo(discinfo.DiscInfo):
             log.error("failure getting disc info, status %i" % query_stat)
             self.no_caching = 1
             for i in range(0, disc_id[1]):
-                mi = mediainfo.MusicInfo()
+                mi = MusicInfo()
                 mi.title = 'Track %s' % (i+1)
                 mi.codec = 'PCM'
                 mi.samplerate = 44.1

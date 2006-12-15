@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# ogginfo.py - ogg file parser
+# ogg.py - ogg file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -36,9 +36,8 @@ import stat
 import struct
 import logging
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# import kaa.metadata.audio core
+import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -47,13 +46,13 @@ VORBIS_PACKET_INFO = '\01vorbis'
 VORBIS_PACKET_HEADER = '\03vorbis'
 VORBIS_PACKET_SETUP = '\05vorbis'
 
-class OggInfo(mediainfo.MusicInfo):
+class Ogg(core.Music):
     def __init__(self,file):
-        mediainfo.MusicInfo.__init__(self)
+        core.Music.__init__(self)
         h = file.read(4+1+1+20+1)
         if h[:5] != "OggS\00":
             log.info("Invalid header")
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
         if ord(h[5]) != 2:
             log.info("Invalid header type flag (trying to go ahead anyway)")
         self.pageSegCount = ord(h[-1])
@@ -62,7 +61,7 @@ class OggInfo(mediainfo.MusicInfo):
         h = file.read(7)
         if h != VORBIS_PACKET_INFO:
             log.info("Wrong vorbis header type, giving up.")
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         self.mime = 'application/ogg'
         header = {}
@@ -138,4 +137,4 @@ class OggInfo(mediainfo.MusicInfo):
         return (granule_position / self.samplerate)
 
 
-factory.register( 'application/ogg', ('ogg',), OggInfo)
+core.register( 'application/ogg', ('ogg',), Ogg)

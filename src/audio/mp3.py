@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# eyed3info.py - mp3 file parser using eyeD3
+# mp3.py - mp3 file parser using eyeD3
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -36,15 +36,14 @@ import sys
 import logging
 import struct
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# import kaa.metadata.audio core
+import core
+import ID3 as ID3
 
 # eyeD3 imports
 from eyeD3 import tag as eyeD3_tag
 from eyeD3 import frames as eyeD3_frames
 
-import id3 as id3info
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -92,19 +91,19 @@ _modes = [ "stereo", "joint stereo", "dual channel", "mono" ]
 
 _MP3_HEADER_SEEK_LIMIT = 4096
 
-class eyeD3Info(mediainfo.MusicInfo):
+class MP3(core.Music):
 
    fileName       = str();
    fileSize       = int();
 
    def __init__(self, file, tagVersion = eyeD3_tag.ID3_ANY_VERSION):
-      mediainfo.MusicInfo.__init__(self)
+      core.Music.__init__(self)
       self.fileName = file.name;
       self.codec = 0x0055 # fourcc code of mp3
       self.mime = 'audio/mp3'
 
       if not eyeD3_tag.isMp3File(file.name):
-         raise mediainfo.KaaMetadataParseError()
+         raise core.ParseError()
 
       id3 = None
       try:
@@ -114,7 +113,7 @@ class eyeD3Info(mediainfo.MusicInfo):
             id3 = eyeD3_tag.Mp3AudioFile(file.name)
          except eyeD3_tag.InvalidAudioFormatException:
             # File is not an MP3
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
          except (KeyboardInterrupt, SystemExit):
             sys.exit(0)
          except:
@@ -139,7 +138,7 @@ class eyeD3Info(mediainfo.MusicInfo):
                # again, not good
                if not re.compile(r'0*\xFF\xFA\xB0\x04$').search(s):
                   # that's it, it is no mp3 at all
-                  raise mediainfo.KaaMetadataParseError()
+                  raise core.ParseError()
 
       try:
          if id3 and id3.tag:
@@ -200,7 +199,7 @@ class eyeD3Info(mediainfo.MusicInfo):
                      genre = tcon
                if genre is not None:
                   try:
-                     self.genre = id3info.GENRE_LIST[genre]
+                     self.genre = ID3.GENRE_LIST[genre]
                   except KeyError:
                      self.genre = str(genre)
             # and some tools store it as trackno/trackof in TRCK
@@ -300,4 +299,4 @@ class eyeD3Info(mediainfo.MusicInfo):
       self._set('mode', _modes[mode])
 
 
-factory.register( 'audio/mp3', ('mp3',), eyeD3Info )
+core.register( 'audio/mp3', ('mp3',), MP3 )

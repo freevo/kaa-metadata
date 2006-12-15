@@ -302,28 +302,6 @@ class AudioInfo(MediaInfo):
             self.fourcc, self.codec = fourcc.resolve(self.codec)
 
 
-class MusicInfo(AudioInfo):
-    """
-    Digital Music.
-    """
-    _keys = AudioInfo._keys + MUSICCORE
-
-    def _finalize(self):
-        """
-        Correct same data based on specific rules
-        """
-        AudioInfo._finalize(self)
-        if self.trackof:
-            try:
-                # XXX Why is this needed anyway?
-                if int(self.trackno) < 10:
-                    self.trackno = u'0%s' % int(self.trackno)
-            except (KeyboardInterrupt, SystemExit):
-                sys.exit(0)
-            except:
-                pass
-
-
 class VideoInfo(MediaInfo):
     """
     Video Tracks in a Multiplexed Container.

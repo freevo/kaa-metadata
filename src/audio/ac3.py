@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# ac3info.py - AC3 file parser
+# ac3.py - AC3 file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -32,9 +32,8 @@
 # python imports
 import struct
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# import kaa.metadata.audio core
+import core
 
 # http://www.atsc.org/standards/a_52a.pdf
 # fscod: Sample rate code, 2 bits
@@ -111,9 +110,9 @@ ACMOD = [ ( '1+1', 2, 'Ch1, Ch2' ),
 FRMSIZCOD = [ 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192,
               224, 256, 320, 384, 448, 512, 576, 640 ]
 
-class AC3Info(mediainfo.MusicInfo):
+class AC3(core.Music):
     def __init__(self,file):
-        mediainfo.MusicInfo.__init__(self)
+        core.Music.__init__(self)
         if file.name.endswith('.ac3'):
             # when the ending is ac3, force the detection. It may not be
             # necessary the the header is at the beginning but in the first
@@ -125,7 +124,7 @@ class AC3Info(mediainfo.MusicInfo):
             if file.read(2) == '\x0b\x77':
                 break
         else:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         info = struct.unpack('<HBBBB',file.read(6))
         self.samplerate = FSCOD[info[1] >> 6]
@@ -158,4 +157,4 @@ class AC3Info(mediainfo.MusicInfo):
         self.mime = 'audio/ac3'
 
 
-factory.register( 'audio/ac3', ('ac3',), AC3Info )
+core.register( 'audio/ac3', ('ac3',), AC3 )

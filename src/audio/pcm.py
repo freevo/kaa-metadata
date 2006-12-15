@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# pcminfo.py - pcm file parser
+# pcm.py - pcm file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -32,21 +32,20 @@
 # python imports
 import sndhdr
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# import kaa.metadata.audio core
+import core
 
-class PCMInfo(mediainfo.AudioInfo):
+class PCM(core.Music):
     def __init__(self,file):
-       mediainfo.AudioInfo.__init__(self)
+       core.Music.__init__(self)
        t = self._what(file)
        if not t:
-           raise mediainfo.KaaMetadataParseError()
+           raise core.ParseError()
        (self.type, self.samplerate, self.channels, self.bitrate, \
         self.samplebits) = t
        if self.bitrate == -1:
            # doesn't look right
-           raise mediainfo.KaaMetadataParseError()
+           raise core.ParseError()
        self.mime = "audio/%s" % self.type
 
     def _what(self,f):
@@ -59,4 +58,4 @@ class PCMInfo(mediainfo.AudioInfo):
         return None
 
 
-factory.register( 'application/pcm', ('wav','aif','voc','au'), PCMInfo )
+core.register( 'application/pcm', ('wav','aif','voc','au'), PCM )
