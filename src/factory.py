@@ -117,41 +117,39 @@ class _Factory:
         import audio.ac3
         import audio.pcm
         import audio.adts
-        import video.riffinfo
-        import video.mpeginfo
-        import video.asfinfo
-        import video.movinfo
-        import video.flvinfo
+        import video.riff
+        import video.mpeg
+        import video.asf
+        import video.mov
+        import video.flv
         import image.jpg
         import image.png
         import image.tiff
         import image.bmp
         import image.gif
-        import video.vcdinfo
-        import video.realinfo
-        import video.ogminfo
-        import video.mkvinfo
-        import misc.xmlinfo
+        import video.vcd
+        import video.real
+        import video.ogm
+        import video.mkv
+        import misc.xml
 
         # import some disc modules (may fail)
         try:
-            import disc.discinfo
-            import disc.vcdinfo
-            import disc.audioinfo
+            import disc.vcd
+            import disc.audio
         except ImportError, e:
             # looks like cdrom.so was not created
             if log.level < 30:
                 log.error(e)
 
         try:
-            import disc.dvdinfo
+            import disc.dvd
         except ImportError, e:
             if log.level < 30:
                 log.error(e)
 
-        # use fallback disc module
         try:
-            import disc.datainfo
+            import disc.data
         except ImportError, e:
             if log.level < 30:
                 log.error(e)
@@ -163,7 +161,7 @@ class _Factory:
         import games.gameboy
         import games.snes
 
-        import misc.dirinfo
+        import misc.directory
 
 
     def create_from_file(self, file, force=True):

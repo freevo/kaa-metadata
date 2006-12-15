@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# audioinfo.py - support for audio cds
+# audio.py - support for audio cds
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -33,27 +33,25 @@
 import cdrom
 import logging
 
-# kaa imports
+# kaa.metadata imports
 import kaa.metadata
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
-from kaa.audio.core import Music as MusicInfo
+from kaa.metadata.audio.core import Music as AudioTrack
 
-# disc imports
-import discinfo
+# kaa.metadata.disc imports
+import core
 import DiscID
 import CDDB
 
 # get logging object
 log = logging.getLogger('metadata')
 
-class AudioDiscInfo(discinfo.DiscInfo):
+class AudioDisc(core.Disc):
     def __init__(self,device):
-        discinfo.DiscInfo.__init__(self)
+        core.Disc.__init__(self)
         self.offset = 0
         # check disc
-        if discinfo.DiscInfo.isDisc(self, device) != 1:
-            raise mediainfo.KaaMetadataParseError()
+        if self.is_disc(self, device) != 1:
+            raise core.ParseError()
 
         self.query(device)
         self.mime = 'audio/cd'
@@ -105,7 +103,7 @@ class AudioDiscInfo(discinfo.DiscInfo):
 
             if read_stat == 210:
                 for i in range(0, disc_id[1]):
-                    mi = MusicInfo()
+                    mi = AudioTrack()
                     mi.title = read_info['TTITLE' + `i`]
                     mi.album = self.title
                     mi.artist = self.artist
@@ -130,7 +128,7 @@ class AudioDiscInfo(discinfo.DiscInfo):
             log.error("failure getting disc info, status %i" % query_stat)
             self.no_caching = 1
             for i in range(0, disc_id[1]):
-                mi = MusicInfo()
+                mi = AudioTrack()
                 mi.title = 'Track %s' % (i+1)
                 mi.codec = 'PCM'
                 mi.samplerate = 44.1
@@ -175,4 +173,4 @@ class AudioDiscInfo(discinfo.DiscInfo):
         cdromfd.close()
 
 
-factory.register( 'audio/cd', mediainfo.EXTENSION_DEVICE, AudioDiscInfo )
+core.register( 'audio/cd', core.EXTENSION_DEVICE, AudioDisc )

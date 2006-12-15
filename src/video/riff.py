@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# riffinfo.py - riff (avi) file parser
+# riff.py - riff (avi) file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -37,9 +37,8 @@ import string
 import logging
 import time
 
-# kaa imports
-from kaa.metadata import factory
-from kaa.metadata import mediainfo
+# import kaa.metadata.video core
+import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -76,16 +75,16 @@ PIXEL_ASPECT = {
 }
 
 
-class RiffInfo(mediainfo.AVInfo):
+class Riff(core.AVContainer):
 
     table_mapping = { 'AVIINFO' : AVIINFO }
 
     def __init__(self,file):
-        mediainfo.AVInfo.__init__(self)
+        core.AVContainer.__init__(self)
         # read the header
         h = file.read(12)
         if h[:4] != "RIFF" and h[:4] != 'SDSS':
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         self.mime = 'application/x-wave'
         self.has_idx = False
@@ -121,7 +120,7 @@ class RiffInfo(mediainfo.AVInfo):
             if file.readline().find('VobSub index file') > 0:
                 for line in file.readlines():
                     if line.find('id') == 0:
-                        sub = mediainfo.SubtitleInfo()
+                        sub = core.Subtitle()
                         sub.language = line[4:6]
                         sub.trackno = base + '.idx'  # Maybe not?
                         self.subtitles.append(sub)
@@ -147,7 +146,7 @@ class RiffInfo(mediainfo.AVInfo):
           retval['dwLength'] ) = v
         if retval['dwMicroSecPerFrame'] == 0:
             log.warning("ERROR: Corrupt AVI")
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         return retval
 
@@ -205,7 +204,7 @@ class RiffInfo(mediainfo.AVInfo):
               retval['nBlockAlign'],
               retval['nBitsPerSample'],
             ) = struct.unpack('<HHHHHH',t[0:12])
-            ai = mediainfo.AudioInfo()
+            ai = core.AudioStream()
             ai.samplerate = retval['nSamplesPerSec']
             ai.channels = retval['nChannels']
             ai.samplebits = retval['nBitsPerSample']
@@ -229,7 +228,7 @@ class RiffInfo(mediainfo.AVInfo):
               retval['biYPelsPerMeter'],
               retval['biClrUsed'],
               retval['biClrImportant'], ) = v
-            vi = mediainfo.VideoInfo()
+            vi = core.VideoStream()
             vi.codec = t[16:20]
             vi.width = retval['biWidth']
             vi.height = retval['biHeight']
@@ -550,4 +549,4 @@ class RiffInfo(mediainfo.AVInfo):
             return False
         return True
 
-factory.register( 'video/avi', ('avi',), RiffInfo )
+core.register( 'video/avi', ('avi',), Riff )

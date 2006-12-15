@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# mpginfo.py - mpeg 1/2 file parser
+# mpeg.py - mpeg 1/2 file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -37,9 +37,8 @@ import string
 import logging
 import stat
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# import kaa.metadata.video core
+import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -134,12 +133,12 @@ ASPECT_RATIO = ( None,     # Forbidden
                )
 
 
-class MpegInfo(mediainfo.AVInfo):
+class MPEG(core.AVContainer):
     def __init__(self,file):
-        mediainfo.AVInfo.__init__(self)
+        core.AVContainer.__init__(self)
         self.sequence_header_offset = 0
         self.mpeg_version = 2
-        
+
         # detect TS (fast scan)
         if not self.isTS(file):
             # detect system mpeg (many infos)
@@ -147,11 +146,11 @@ class MpegInfo(mediainfo.AVInfo):
                 # detect PES
                 if not self.isPES(file):
                     # no mpeg at all
-                    raise mediainfo.KaaMetadataParseError()
+                    raise core.ParseError()
 
         self.mime = 'video/mpeg'
         if not self.video:
-            self.video.append(mediainfo.VideoInfo())
+            self.video.append(core.VideoStream())
 
         if self.sequence_header_offset <= 0:
             return
@@ -376,7 +375,7 @@ class MpegInfo(mediainfo.AVInfo):
                 if a.id == id:
                     break
             else:
-                self.audio.append(mediainfo.AudioInfo())
+                self.audio.append(core.AudioStream())
                 self.audio[-1]._set('id', id)
             return 0
 
@@ -386,7 +385,7 @@ class MpegInfo(mediainfo.AVInfo):
                 if v.id == id:
                     break
             else:
-                self.video.append(mediainfo.VideoInfo())
+                self.video.append(core.VideoStream())
                 self.video[-1]._set('id', id)
             return 0
 
@@ -406,7 +405,7 @@ class MpegInfo(mediainfo.AVInfo):
                     if a.id == id:
                         break
                 else:
-                    self.audio.append(mediainfo.AudioInfo())
+                    self.audio.append(core.AudioStream())
                     self.audio[-1]._set('id', id)
                     self.audio[-1].codec = 0x2000 # AC3
             return 0
@@ -520,7 +519,7 @@ class MpegInfo(mediainfo.AVInfo):
                 if a.id == id:
                     break
             else:
-                self.audio.append(mediainfo.AudioInfo())
+                self.audio.append(core.AudioStream())
                 self.audio[-1]._set('id', id)
 
         elif ord(buffer[3]) & 0xF0 == 0xE0:
@@ -529,7 +528,7 @@ class MpegInfo(mediainfo.AVInfo):
                 if v.id == id:
                     break
             else:
-                self.video.append(mediainfo.VideoInfo())
+                self.video.append(core.VideoStream())
                 self.video[-1]._set('id', id)
 
             # new mpeg starting
@@ -547,7 +546,7 @@ class MpegInfo(mediainfo.AVInfo):
                     if a.id == id:
                         break
                 else:
-                    self.audio.append(mediainfo.AudioInfo())
+                    self.audio.append(core.AudioStream())
                     self.audio[-1]._set('id', id)
                     self.audio[-1].codec = 0x2000 # AC3
 
@@ -859,4 +858,4 @@ class MpegInfo(mediainfo.AVInfo):
         log.debug('done scanning file')
 
 
-factory.register( 'video/mpeg', ('mpeg','mpg','mp4', 'ts'), MpegInfo )
+core.register( 'video/mpeg', ('mpeg','mpg','mp4', 'ts'), MPEG )

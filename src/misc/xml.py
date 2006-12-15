@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# xmlinfo.py - detect xml and fxd files
+# xml.py - detect xml and fxd files
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -34,9 +34,9 @@ import os
 import logging
 import libxml2
 
-# kaa imports
-from kaa.metadata import factory
-from kaa.metadata import mediainfo
+# kaa.metadata imports
+import kaa.metadata.mediainfo as core
+import kaa.metadata.factory as factory
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -46,14 +46,14 @@ XML_TAG_INFO = {
     'freevo': 'Freevo XML Definition'
     }
 
-class XMLInfo(mediainfo.MediaInfo):
+class XML(core.MediaInfo):
 
     def __init__(self,file):
         ext = os.path.splitext(file.name)[1].lower()
         if not ext in ('.xml', '.fxd', '.html', '.htm'):
-            raise mediainfo.KaaMetadataParseError()
+            raise core.KaaMetadataParseError()
 
-        mediainfo.MediaInfo.__init__(self)
+        core.MediaInfo.__init__(self)
 
         self.mime  = 'text/xml'
         self.type  = ''
@@ -72,10 +72,10 @@ class XMLInfo(mediainfo.MediaInfo):
         try:
             doc = ctxt.doc()
         except libxml2.parserError:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.KaaMetadataParseError()
 
         if not doc or not doc.children or not doc.children.name:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.KaaMetadataParseError()
 
         tag = doc.children.name
         if tag in XML_TAG_INFO:
@@ -85,4 +85,4 @@ class XMLInfo(mediainfo.MediaInfo):
         doc.freeDoc()
 
 
-factory.register( 'text/xml', ('xml', 'fxd', 'html', 'htm'), XMLInfo )
+factory.register( 'text/xml', ('xml', 'fxd', 'html', 'htm'), XML )

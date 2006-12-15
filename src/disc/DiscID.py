@@ -23,37 +23,6 @@ def cddb_sum(n):
 
     return ret
 
-def open(device=None, flags=None):
-    # Allow this function to be called with no arguments,
-    # specifying that we should call cdrom.open() with
-    # no arguments.
-    if device == None:
-        return cdrom.open()
-    elif flags == None:
-        return cdrom.open(device)
-    else:
-        return cdrom.open(device, flags)
-
-def disc_id(device):
-    (first, last) = cdrom.toc_header(device)
-
-    track_frames = []
-    checksum = 0
-    
-    for i in range(first, last + 1):
-	(min, sec, frame) = cdrom.toc_entry(device, i)
-	checksum = checksum + cddb_sum(min*60 + sec)
-	track_frames.append(min*60*75 + sec*75 + frame)
-
-    (min, sec, frame) = cdrom.leadout(device)
-    track_frames.append(min*60*75 + sec*75 + frame)
-
-    total_time = (track_frames[-1] / 75) - (track_frames[0] / 75)
-	       
-    discid = ((checksum % 0xff) << 24 | total_time << 8 | last)
-
-    return [discid, last] + track_frames[:-1] + [ track_frames[-1] / 75 ]
-
 if __name__ == '__main__':
 
     dev_name = None

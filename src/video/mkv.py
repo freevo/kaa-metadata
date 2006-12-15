@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# mkvinfo.py - Matroska Streaming Video Files
+# mkv.py - Matroska Streaming Video Files
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -39,9 +39,8 @@ from struct import *
 from string import *
 import logging
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# import kaa.metadata.video core
+import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -148,7 +147,7 @@ class EbmlEntity:
 
         if self.id_len == 0:
             log.debug("EBML entity not found, bad file format")
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         self.entity_len, self.len_size = self.compute_len(inbuf[self.id_len:])
         self.entity_data = inbuf[self.get_header_len() : self.get_total_len()]
@@ -261,14 +260,14 @@ class EbmlEntity:
 
 
 
-class MkvInfo(mediainfo.AVInfo):
+class Matroska(core.AVContainer):
     """
     This is the main Matroska object
     """
-    media = mediainfo.MEDIA_AUDIO
-    
+    media = core.MEDIA_AUDIO
+
     def __init__(self, file):
-        mediainfo.AVInfo.__init__(self)
+        core.AVContainer.__init__(self)
         self.samplerate = 1
 
         self.file = file
@@ -276,12 +275,12 @@ class MkvInfo(mediainfo.AVInfo):
         buffer = file.read(2000)
         if len(buffer) == 0:
             # Regular File end
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         # Check the Matroska header
         header = EbmlEntity(buffer)
         if header.get_id() != MATROSKA_HEADER_ID:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         log.debug("HEADER ID found %08X" % header.get_id() )
         self.mime = 'application/mkv'
@@ -334,7 +333,7 @@ class MkvInfo(mediainfo.AVInfo):
 
         elif elem_id == MATROSKA_SEEKHEAD_ID:
             self.process_seekhead(elem)
-            
+
         log.debug('END: process element %s' % hex(elem_id))
         return True
 
@@ -380,7 +379,7 @@ class MkvInfo(mediainfo.AVInfo):
 
 
     def process_track(self, track):
-        # Collapse generator into a list since we need to iterate over it 
+        # Collapse generator into a list since we need to iterate over it
         # twice.
         elements = [ x for x in self.process_one_level(track) ]
         track_type = [ x.get_value() for x in elements if x.get_id() == MATROSKA_TRACK_TYPE_ID ]
@@ -399,7 +398,7 @@ class MkvInfo(mediainfo.AVInfo):
             track = self.process_audio_track(elements)
         elif track_type == MATROSKA_SUBTITLES_TRACK:
             log.debug("Subtitle track found")
-            track = mediainfo.SubtitleInfo()
+            track = core.Subtitle()
             self.subtitles.append(track)
             for elem in elements:
                 self.process_track_common(elem, track)
@@ -418,7 +417,7 @@ class MkvInfo(mediainfo.AVInfo):
 
 
     def process_video_track(self, elements):
-        track = mediainfo.VideoInfo()
+        track = core.VideoStream()
         codec_private_id = ''
         # Defaults
         track.codec = u'Unknown'
@@ -472,13 +471,13 @@ class MkvInfo(mediainfo.AVInfo):
             # FIXME: add more video codecs here
             track.codec = track.codec[2:]
 
-        self.media = mediainfo.MEDIA_AV
+        self.media = core.MEDIA_AV
         self.video.append(track)
         return track
 
 
     def process_audio_track(self, elements):
-        track = mediainfo.AudioInfo()
+        track = core.AudioStream()
         track.codec = u'Unknown'
 
         for elem in elements:
@@ -520,7 +519,7 @@ class MkvInfo(mediainfo.AVInfo):
 
     def process_chapter_atom(self, atom):
         elements = self.process_one_level(atom)
-        chap = mediainfo.ChapterInfo()
+        chap = core.Chapter()
 
         for elem in elements:
             elem_id = elem.get_id()
@@ -574,4 +573,4 @@ class MkvInfo(mediainfo.AVInfo):
 
         log.debug('Attachment "%s" found' % name)
 
-factory.register( 'application/mkv', ('mkv', 'mka',), MkvInfo )
+core.register( 'application/mkv', ('mkv', 'mka',), Matroska )

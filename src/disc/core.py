@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# discinfo.py - basic class for any discs containing collections of media.
+# core.py - basic class for any discs containing collections of media.
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -41,6 +41,10 @@ from fcntl import ioctl
 
 # kaa imports
 from kaa.metadata import mediainfo
+from kaa.metadata.factory import register
+
+EXTENSION_DEVICE = mediainfo.EXTENSION_DEVICE
+VideoTrack = mediainfo.VideoInfo
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -208,12 +212,12 @@ def cdrom_disc_id(device, handle_mix=0):
     return disc_type, id
 
 
-class DiscInfo(mediainfo.CollectionInfo):
+class Disc(mediainfo.CollectionInfo):
 
     _keys = mediainfo.CollectionInfo._keys + [ 'mixed', 'label' ]
     media = mediainfo.MEDIA_DISC
     
-    def isDisc(self, device):
+    def is_disc(self, device):
         (type, self.id) = cdrom_disc_id(device, handle_mix=1)
         if type != 2:
             if type == 4:

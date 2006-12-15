@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# ogminfo.py - ogm/ogg file parser
+# ogm.py - ogm/ogg file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -36,9 +36,8 @@ import stat
 import os
 import logging
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# import kaa.metadata.video core
+import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -67,12 +66,12 @@ VORBISCOMMENT = { 'TITLE': 'title',
 
 MAXITERATIONS = 10
 
-class OgmInfo(mediainfo.AVInfo):
+class Ogm(core.AVContainer):
 
     table_mapping = { 'VORBISCOMMENT' : VORBISCOMMENT }
 
     def __init__(self, file):
-        mediainfo.AVInfo.__init__(self)
+        core.AVContainer.__init__(self)
         self.samplerate  = 1
         self.all_streams = []           # used to add meta data to streams
         self.all_header  = []
@@ -82,7 +81,7 @@ class OgmInfo(mediainfo.AVInfo):
             if granule == None:
                 if i == 0:
                     # oops, bad file
-                    raise mediainfo.KaaMetadataParseError()
+                    raise core.ParseError()
                 break
             elif granule > 0:
                 # ok, file started
@@ -146,7 +145,7 @@ class OgmInfo(mediainfo.AVInfo):
                                 pos = int(new_pos)
 
                             c = self.all_header[i][s + 'NAME']
-                            c = mediainfo.ChapterInfo(c, pos)
+                            c = core.Chapter(c, pos)
                             del self.all_header[i][s + 'NAME']
                             del self.all_header[i][s]
                             self.chapters.append(c)
@@ -159,9 +158,9 @@ class OgmInfo(mediainfo.AVInfo):
 
         # If there are no video streams in this ogg container, it
         # must be an audio file.  Raise an exception to cause the
-        # factory to fall back to audio.ogginfo.
+        # factory to fall back to audio.ogg.
         if len(self.video) == 0:
-            raise mediainfo.KaaMetadataParseError
+            raise core.ParseError
 
         # Copy Metadata from tables into the main set of attributes
         for header in self.all_header:
@@ -178,7 +177,7 @@ class OgmInfo(mediainfo.AVInfo):
             return None, None
         if h[:4] != "OggS":
             log.debug("Invalid Ogg")
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         version = ord(h[4])
         if version != 0:
@@ -243,7 +242,7 @@ class OgmInfo(mediainfo.AVInfo):
         flags = ord(header[0])
 
         if headerlen >= 30 and header[1:7] == 'vorbis':
-            ai = mediainfo.AudioInfo()
+            ai = core.AudioStream()
             ai.version, ai.channels, ai.samplerate, bitrate_max, ai.bitrate, \
                         bitrate_min, blocksize, framing = \
                         struct.unpack('<IBIiiiBB',header[7:7+23])
@@ -256,7 +255,7 @@ class OgmInfo(mediainfo.AVInfo):
         elif headerlen >= 7 and header[1:7] == 'theora':
             # Theora Header
             # XXX Finish Me
-            vi = mediainfo.VideoInfo()
+            vi = core.VideoStream()
             vi.codec = 'theora'
             self.video.append(vi)
             self.all_streams.append(vi)
@@ -265,7 +264,7 @@ class OgmInfo(mediainfo.AVInfo):
                  header[1:36] == 'Direct Show Samples embedded in Ogg':
             # Old Directshow format
             # XXX Finish Me
-            vi = mediainfo.VideoInfo()
+            vi = core.VideoStream()
             vi.codec = 'dshow'
             self.video.append(vi)
             self.all_streams.append(vi)
@@ -278,7 +277,7 @@ class OgmInfo(mediainfo.AVInfo):
             if htype[:5] == 'video':
                 sh = header[9:struct.calcsize(STREAM_HEADER_VIDEO)+9]
                 streamheader = struct.unpack( STREAM_HEADER_VIDEO, sh )
-                vi = mediainfo.VideoInfo()
+                vi = core.VideoStream()
                 (type, ssize, timeunit, samplerate, vi.length, buffersize, \
                  vi.bitrate, vi.width, vi.height) = streamheader
 
@@ -293,7 +292,7 @@ class OgmInfo(mediainfo.AVInfo):
             elif htype[:5] == 'audio':
                 sha = header[9:struct.calcsize(STREAM_HEADER_AUDIO)+9]
                 streamheader = struct.unpack( STREAM_HEADER_AUDIO, sha )
-                ai = mediainfo.AudioInfo()
+                ai = core.AudioStream()
                 (type, ssize, timeunit, ai.samplerate, ai.length, buffersize, \
                  ai.bitrate, ai.channels, bloc, ai.bitrate) = streamheader
                 self.samplerate = ai.samplerate
@@ -302,10 +301,8 @@ class OgmInfo(mediainfo.AVInfo):
                 self.all_streams.append(ai)
 
             elif htype[:4] == 'text':
-                subtitle = mediainfo.MediaInfo()
-                subtitle._set('language', None)
-                subtitle.type = 'subtitle'
-                subtitle.length = 0
+                subtitle = core.Subtitle()
+                # FIXME: add more info
                 self.all_streams.append(subtitle)
 
         else:
@@ -321,4 +318,4 @@ class OgmInfo(mediainfo.AVInfo):
 
 
 
-factory.register( 'application/ogg', ('ogm', 'ogg',), OgmInfo )
+core.register( 'application/ogg', ('ogm', 'ogg',), Ogm )

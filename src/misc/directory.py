@@ -1,10 +1,8 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# dvdinfo.py - parse dvd title structure
+# directory.py - parse directory information
 # -----------------------------------------------------------------------------
 # $Id$
-#
-# TODO: update the ifomodule and remove the lsdvd parser
 #
 # -----------------------------------------------------------------------------
 # kaa-Metadata - Media Metadata for Python
@@ -39,22 +37,23 @@ import sys
 # kaa imports
 from kaa.strutils import unicode_to_str
 from kaa import xml
-from kaa.metadata.mediainfo import MediaInfo, MEDIACORE, \
-     EXTENSION_DIRECTORY, MEDIA_DIRECTORY
+
+# kaa.metadata imports
+import kaa.metadata.mediainfo as core
 from kaa.metadata.factory import register
 
 # get logging object
 log = logging.getLogger('metadata')
 
 
-class DirInfo(MediaInfo):
+class Directory(core.MediaInfo):
     """
     Simple parser for reading a .directory file.
     """
-    media = MEDIA_DIRECTORY
-    
+    media = core.MEDIA_DIRECTORY
+
     def __init__(self, directory):
-        MediaInfo.__init__(self)
+        core.MediaInfo.__init__(self)
         for func in (self.parse_dot_directory, self.parse_bins):
             try:
                 func(directory)
@@ -107,4 +106,4 @@ class DirInfo(MediaInfo):
             self._set(key, child.content)
 
 # register to kaa.metadata core
-register('directory', EXTENSION_DIRECTORY, DirInfo)
+register('directory', core.EXTENSION_DIRECTORY, Directory)

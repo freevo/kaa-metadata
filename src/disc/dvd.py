@@ -35,11 +35,12 @@
 import os
 import logging
 
-# kaa imports
-import ifoparser
+# kaa.metadata imports
 from kaa.metadata import mediainfo
-from kaa.metadata import factory
-from discinfo import DiscInfo
+
+# kaa.metadata.disc imports
+import core
+import ifoparser
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -60,7 +61,8 @@ class DVDVideo(mediainfo.VideoInfo):
         self.width  = _video_width[data[4]]
         self.height = _video_height[data[5]]
         self.codec  = 'MP2V'
-        
+
+
 class DVDAudio(mediainfo.AudioInfo):
 
     _keys = mediainfo.AudioInfo._keys + [ 'id' ]
@@ -101,12 +103,12 @@ class DVDTitle(mediainfo.AVInfo):
             self.subtitles.append(mediainfo.SubtitleInfo(s))
 
 
-class DVDInfo(DiscInfo):
+class DVDInfo(core.Disc):
 
-    _keys = DiscInfo._keys + [ 'length' ]
+    _keys = core.Disc._keys + [ 'length' ]
 
     def __init__(self, device):
-        DiscInfo.__init__(self)
+        core.Disc.__init__(self)
         self.offset = 0
 
         if isinstance(device, file):
@@ -136,7 +138,7 @@ class DVDInfo(DiscInfo):
     def _parse(self, device):
         info = ifoparser.parse(device)
         if not info:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
         for pos, title in enumerate(info):
             ti = DVDTitle(title)
             ti.trackno = pos + 1
@@ -148,15 +150,15 @@ class DVDInfo(DiscInfo):
         if not (os.path.isdir(dirname+'/VIDEO_TS') or \
                 os.path.isdir(dirname+'/video_ts') or \
                 os.path.isdir(dirname+'/Video_ts')):
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
         # OK, try libdvdread
         self._parse(dirname)
         return 1
 
 
     def parseDisc(self, device):
-        if DiscInfo.isDisc(self, device) != 2:
-            raise mediainfo.KaaMetadataParseError()
+        if self.is_disc(self, device) != 2:
+            raise core.ParseError()
 
         # brute force reading of the device to find out if it is a DVD
         f = open(device,'rb')
@@ -165,7 +167,7 @@ class DVDInfo(DiscInfo):
 
         if buffer.find('UDF') == -1:
             f.close()
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         # seems to be a DVD, read a little bit more
         buffer += f.read(550000)
@@ -174,7 +176,7 @@ class DVDInfo(DiscInfo):
         if buffer.find('VIDEO_TS') == -1 and \
                buffer.find('VIDEO_TS.IFO') == -1 and \
                buffer.find('OSTA UDF Compliant') == -1:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         # OK, try libdvdread
         self._parse(device)
@@ -186,7 +188,7 @@ class DVDInfo(DiscInfo):
         buffer = f.read(60000)
 
         if buffer.find('UDF') == -1:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         # seems to be a DVD, read a little bit more
         buffer += f.read(550000)
@@ -194,14 +196,12 @@ class DVDInfo(DiscInfo):
         if buffer.find('VIDEO_TS') == -1 and \
                buffer.find('VIDEO_TS.IFO') == -1 and \
                buffer.find('OSTA UDF Compliant') == -1:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         # OK, try libdvdread
         self._parse(f.name)
 
 
-factory.register( 'video/dvd', mediainfo.EXTENSION_DEVICE, DVDInfo )
-
-factory.register('video/dvd', mediainfo.EXTENSION_DIRECTORY, DVDInfo)
-
-factory.register('video/dvd', ['iso'], DVDInfo)
+core.register( 'video/dvd', mediainfo.EXTENSION_DEVICE, DVDInfo )
+core.register('video/dvd', mediainfo.EXTENSION_DIRECTORY, DVDInfo)
+core.register('video/dvd', ['iso'], DVDInfo)

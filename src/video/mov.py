@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# movinfo.py - mov file parser
+# mov.py - mov file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -39,9 +39,10 @@ import logging
 import StringIO
 from struct import unpack
 
-# kaa imports
-from kaa.metadata import factory
-from kaa.metadata import mediainfo
+# import kaa.metadata.video core
+import core
+
+# mov language codes
 from movlanguages import *
 
 # get logging object
@@ -59,12 +60,12 @@ QTUDTA = {
     'cpy': 'copyright'
 }
 
-class MovInfo(mediainfo.AVInfo):
+class MPEG4(core.AVContainer):
 
     table_mapping = { 'QTUDTA': QTUDTA }
 
     def __init__(self,file):
-        mediainfo.AVInfo.__init__(self)
+        core.AVContainer.__init__(self)
         self._references = []
 
         self.mime = 'video/quicktime'
@@ -93,7 +94,7 @@ class MovInfo(mediainfo.AVInfo):
 
         if not type in ('moov', 'wide', 'free'):
             log.debug('invalid header: %s' % type)
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         # Extended size
         if size == 1:
@@ -164,7 +165,7 @@ class MovInfo(mediainfo.AVInfo):
                     trackinfo['width'] = tkhd[10] >> 16
                     trackinfo['height'] = tkhd[11] >> 16
                     trackinfo['id'] = tkhd[3]
-                    
+
                     try:
                         # XXX Date number of Seconds is since January 1st 1904!
                         # XXX 2082844800 is the difference between Unix and
@@ -252,10 +253,10 @@ class MovInfo(mediainfo.AVInfo):
 
             info = None
             if tracktype == 'video':
-                info = mediainfo.VideoInfo()
+                info = core.VideoStream()
                 self.video.append(info)
             if tracktype == 'audio':
-                info = mediainfo.AudioInfo()
+                info = core.AudioStream()
                 self.audio.append(info)
             if info:
                 for key, value in trackinfo.items():
@@ -360,4 +361,4 @@ class MovInfo(mediainfo.AVInfo):
 
 
 exts = ('mov', 'qt', 'mp4', 'mp4a', '3gp', '3gp2', 'mk2')
-factory.register( 'video/quicktime', exts, MovInfo)
+core.register( 'video/quicktime', exts, MPEG4)

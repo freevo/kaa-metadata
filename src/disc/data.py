@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# datainfo.py - info about a normal data disc
+# data.py - info about a normal data disc
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -29,20 +29,18 @@
 #
 # -----------------------------------------------------------------------------
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
-from discinfo import DiscInfo
+# kaa.metadata.disc imports
+import core
 
-class DataDiscInfo(DiscInfo):
+class DataDisc(core.Disc):
     def __init__(self,device):
-        DiscInfo.__init__(self)
-        if DiscInfo.isDisc(self, device) != 2:
-            raise mediainfo.KaaMetadataParseError()
+        core.Disc.__init__(self)
+        if self.is_disc(self, device) != 2:
+            raise core.ParseError()
         self.offset = 0
         self.mime = 'unknown/unknown'
         self.type = 'CD'
         self.subtype = 'data'
 
 
-factory.register( 'cd/unknown', mediainfo.EXTENSION_DEVICE, DataDiscInfo )
+core.register( 'cd/unknown', core.EXTENSION_DEVICE, DataDisc )

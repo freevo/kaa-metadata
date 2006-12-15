@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# flvinfo.py - parser for flash video files
+# flv.py - parser for flash video files
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -34,9 +34,8 @@ import struct
 import string
 import logging
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# import kaa.metadata.video core
+import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -59,14 +58,14 @@ FLV_VIDEO_CODECID_MASK = 0x0f
 FLV_VIDEO_CODECID = ( 'FLV1', 'MSS1', 'VP60') # wild guess
 
 
-class FlashInfo(mediainfo.AVInfo):
+class FlashVideo(core.AVContainer):
     def __init__(self,file):
-        mediainfo.AVInfo.__init__(self)
+        core.AVContainer.__init__(self)
         self.mime = 'video/flv'
         self.type = 'Flash Video'
         header = struct.unpack('>3sBBII', file.read(13))
         if not header[0] == 'FLV':
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         for i in range(10):
             if self.audio and self.video:
@@ -80,7 +79,7 @@ class FlashInfo(mediainfo.AVInfo):
             if chunk[0] == FLV_TAG_TYPE_AUDIO:
                 flags = ord(file.read(1))
                 if not self.audio:
-                    a = mediainfo.AudioInfo()
+                    a = core.AudioStream()
                     a.channels = (flags & FLV_AUDIO_CHANNEL_MASK) + 1
                     srate = (flags & FLV_AUDIO_SAMPLERATE_MASK)
                     a.samplerate = (44100 << (srate >> FLV_AUDIO_SAMPLERATE_OFFSET) >> 3)
@@ -94,7 +93,7 @@ class FlashInfo(mediainfo.AVInfo):
             elif chunk[0] == FLV_TAG_TYPE_VIDEO:
                 flags = ord(file.read(1))
                 if not self.video:
-                    v = mediainfo.VideoInfo()
+                    v = core.VideoStream()
                     codec = (flags & FLV_VIDEO_CODECID_MASK) - 2
                     if codec < len(FLV_VIDEO_CODECID):
                         v.codec = FLV_VIDEO_CODECID[codec]
@@ -115,4 +114,4 @@ class FlashInfo(mediainfo.AVInfo):
 
             file.seek(4, 1)
 
-factory.register( 'video/flv', ('flv',), FlashInfo )
+core.register( 'video/flv', ('flv',), FlashVideo )

@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# vcdinfo.py - parse vcd track informations
+# vcd.py - parse vcd track informations
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -29,15 +29,13 @@
 #
 # -----------------------------------------------------------------------------
 
-# kaa imports
-from kaa.metadata import factory
-from kaa.metadata import mediainfo
-from discinfo import DiscInfo
+# kaa.metadata.disc imports
+import core
 import cdrom
 
-class VCDInfo(DiscInfo):
+class VCD(core.Disc):
     def __init__(self,device):
-        DiscInfo.__init__(self)
+        core.Disc.__init__(self)
         self.offset = 0
         self.mime = 'video/vcd'
         self.type = 'CD'
@@ -48,8 +46,8 @@ class VCDInfo(DiscInfo):
 
     def parseDisc(self, device):
         type = None
-        if DiscInfo.isDisc(self, device) != 2:
-            raise mediainfo.KaaMetadataParseError()
+        if self.is_disc(self, device) != 2:
+            raise core.ParseError()
 
         # brute force reading of the device to find out if it is a VCD
         f = open(device,'rb')
@@ -65,7 +63,7 @@ class VCDInfo(DiscInfo):
             type = 'VCD'
 
         else:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         # read the tracks to generate the title list
         device = open(device)
@@ -81,7 +79,7 @@ class VCDInfo(DiscInfo):
             else:
                 min, sec, frames = cdrom.toc_entry(device, i)
             if num:
-                vi = mediainfo.VideoInfo()
+                vi = core.VideoTrack()
                 # XXX add more static information here, it's also possible
                 # XXX to scan for more informations like fps
                 # XXX Settings to MPEG1/2 is a wild guess, maybe the track
@@ -97,4 +95,4 @@ class VCDInfo(DiscInfo):
         device.close()
 
 
-factory.register( 'video/vcd', mediainfo.EXTENSION_DEVICE, VCDInfo )
+core.register( 'video/vcd', core.EXTENSION_DEVICE, VCD )

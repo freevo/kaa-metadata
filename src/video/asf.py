@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# asfinfo.py - asf file parser
+# asf.py - asf file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -38,9 +38,8 @@ import struct
 import string
 import logging
 
-# kaa imports
-from kaa.metadata import factory
-from kaa.metadata import mediainfo
+# import kaa.metadata.video core
+import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -139,24 +138,24 @@ GUIDS = {
     }
 
 
-class AsfInfo(mediainfo.AVInfo):
+class Asf(core.AVContainer):
     def __init__(self, file):
-        mediainfo.AVInfo.__init__(self)
+        core.AVContainer.__init__(self)
         self.mime = 'video/x-ms-asf'
         self.type = 'asf format'
 
         h = file.read(30)
         if len(h) < 30:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         (guidstr, objsize, objnum, reserved1, \
          reserved2) = struct.unpack('<16sQIBB',h)
         guid = self._parseguid(guidstr)
 
         if (guid != GUIDS['ASF_Header_Object']):
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
         if reserved1 != 0x01 or reserved2 != 0x02:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         log.debug("asf header size: %d / %d objects" % (objsize,objnum))
         header = file.read(objsize-30)
@@ -261,14 +260,14 @@ class AsfInfo(mediainfo.AVInfo):
             if encrypted:
                 self._set('encrypted', True)
             if streamtype == GUIDS['ASF_Video_Media']:
-                vi = mediainfo.VideoInfo()
+                vi = core.VideoStream()
                 vi.width, vi.height, depth, \
                           codec, = struct.unpack('<4xII2xH4s', s[89:89+20])
                 vi.codec = codec
                 vi.id = strno
                 self.video.append(vi)
             elif streamtype == GUIDS['ASF_Audio_Media']:
-                ai = mediainfo.AudioInfo()
+                ai = core.AudioStream()
                 twocc, ai.channels, ai.samplerate, bitrate, block, \
                        ai.samplebits, = struct.unpack('<HHIIHH', s[78:78+16])
                 ai.bitrate = 8*bitrate  # XXX Is this right?
@@ -376,4 +375,4 @@ class AsfInfo(mediainfo.AVInfo):
 
 
 
-factory.register( 'video/asf', ('asf','wmv','wma'), AsfInfo)
+core.register( 'video/asf', ('asf','wmv','wma'), Asf)

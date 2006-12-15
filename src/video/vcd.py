@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# vcdinfo.py - parse vcd track informations from cue/bin files
+# vcd.py - parse vcd track informations from cue/bin files
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -32,13 +32,12 @@
 # python imports
 import os
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# import kaa.metadata.video core
+import core
 
-class VCDInfo(mediainfo.CollectionInfo):
+class VCDFile(core.Collection):
     def __init__(self, file):
-        mediainfo.CollectionInfo.__init__(self)
+        core.Collection.__init__(self)
         self.offset = 0
         self.mime = 'video/vcd'
         self.type = 'vcd video'
@@ -51,12 +50,12 @@ class VCDInfo(mediainfo.CollectionInfo):
         buffer = file.readline(300)
 
         if not buffer[:6] == 'FILE "':
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         bin = os.path.join(os.path.dirname(file.name),
                            buffer[6:buffer[6:].find('"')+6])
         if not os.path.isfile(bin):
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         # At this point this really is a cue/bin disc
 
@@ -74,7 +73,7 @@ class VCDInfo(mediainfo.CollectionInfo):
             type = 'VCD'
 
         else:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         counter = 0
         while 1:
@@ -85,7 +84,7 @@ class VCDInfo(mediainfo.CollectionInfo):
                 counter += 1
                 # the first track is the directory, that doesn't count
                 if counter > 1:
-                    vi = mediainfo.VideoInfo()
+                    vi = core.VideoStream()
                     if type == 'VCD':
                         vi.codec = 'MPEG1'
                     else:
@@ -93,4 +92,4 @@ class VCDInfo(mediainfo.CollectionInfo):
                     self.tracks.append(vi)
 
 
-factory.register( 'video/vcd', ('cue',), VCDInfo )
+core.register( 'video/vcd', ('cue',), VCDFile )
