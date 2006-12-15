@@ -61,7 +61,7 @@ except AttributeError:
     ext_modules = [ cdrom ]
     
 setup (module      = 'metadata',
-       version     = '0.5',
+       version     = '0.6',
        license     = 'GPL',
        description = 'Module for retrieving information about media files',
        author      = "Thomas Schueppel, Dirk Meyer",
