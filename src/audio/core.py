@@ -32,20 +32,44 @@
 from kaa.metadata import mediainfo
 from kaa.metadata.factory import register
 
-ParseError = mediainfo.KaaMetadataParseError
+# fourcc list
+import kaa.metadata.fourcc as fourcc
+
+
+AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
+             'samplebits', 'bitrate', 'fourcc', 'trackno' ]
+
+MUSICCORE = ['trackof', 'album', 'genre', 'discs', 'thumbnail' ]
+
+
+ParseError = mediainfo.ParseError
 EXTENSION_STREAM = mediainfo.EXTENSION_STREAM
 
-class Music(mediainfo.AudioInfo):
+
+class Audio(mediainfo.Media):
+    """
+    Audio Tracks in a Multiplexed Container.
+    """
+    _keys = mediainfo.Media._keys + AUDIOCORE
+    media = mediainfo.MEDIA_AUDIO
+
+    def _finalize(self):
+        mediainfo.Media._finalize(self)
+        if self.codec is not None:
+            self.fourcc, self.codec = fourcc.resolve(self.codec)
+
+
+class Music(Audio):
     """
     Digital Music.
     """
-    _keys = mediainfo.AudioInfo._keys + mediainfo.MUSICCORE
+    _keys = Audio._keys + MUSICCORE
 
     def _finalize(self):
         """
         Correct same data based on specific rules
         """
-        mediainfo.AudioInfo._finalize(self)
+        Audio._finalize(self)
         if self.trackof:
             try:
                 # XXX Why is this needed anyway?

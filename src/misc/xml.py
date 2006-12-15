@@ -46,14 +46,14 @@ XML_TAG_INFO = {
     'freevo': 'Freevo XML Definition'
     }
 
-class XML(core.MediaInfo):
+class XML(core.Media):
 
     def __init__(self,file):
         ext = os.path.splitext(file.name)[1].lower()
         if not ext in ('.xml', '.fxd', '.html', '.htm'):
-            raise core.KaaMetadataParseError()
+            raise core.ParseError()
 
-        core.MediaInfo.__init__(self)
+        core.Media.__init__(self)
 
         self.mime  = 'text/xml'
         self.type  = ''
@@ -72,10 +72,10 @@ class XML(core.MediaInfo):
         try:
             doc = ctxt.doc()
         except libxml2.parserError:
-            raise core.KaaMetadataParseError()
+            raise core.ParseError()
 
         if not doc or not doc.children or not doc.children.name:
-            raise core.KaaMetadataParseError()
+            raise core.ParseError()
 
         tag = doc.children.name
         if tag in XML_TAG_INFO:

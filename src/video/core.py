@@ -31,16 +31,88 @@
 
 from kaa.metadata import mediainfo
 from kaa.metadata.factory import register
+from kaa.metadata.audio.core import Audio as AudioStream
 
-ParseError = mediainfo.KaaMetadataParseError
+# fourcc list
+import kaa.metadata.fourcc as fourcc
+
+ParseError = mediainfo.ParseError
+
+VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
+             'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno', 'fourcc' ]
+
+AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
+             'genre', 'writer', 'producer', 'studio', 'rating', 'starring',
+             'delay', 'image', 'video', 'audio', 'subtitles', 'chapters', 'software' ]
+
+class VideoStream(mediainfo.Media):
+    """
+    Video Tracks in a Multiplexed Container.
+    """
+    _keys = mediainfo.Media._keys + VIDEOCORE
+    media = mediainfo.MEDIA_VIDEO
+
+    def _finalize(self):
+        mediainfo.Media._finalize(self)
+        if self.codec is not None:
+            self.fourcc, self.codec = fourcc.resolve(self.codec)
+
+
+class Chapter(mediainfo.Media):
+    """
+    Chapter in a Multiplexed Container.
+    """
+    _keys = ['name', 'pos', 'enabled']
+
+    def __init__(self, name=None, pos=0):
+        mediainfo.Media.__init__(self)
+        self.name = name
+        self.pos = pos
+        self.enabled = True
+
+
+class Subtitle(mediainfo.Media):
+    """
+    Subtitle Tracks in a Multiplexed Container.
+    """
+    _keys = ['language', 'trackno', 'title']
+    media = mediainfo.MEDIA_SUBTITLE
+
+    def __init__(self, language=None):
+        mediainfo.Media.__init__(self)
+        self.language = language
+
+        
+class AVContainer(mediainfo.Media):
+    """
+    Container for Audio and Video streams. This is the Container Type for
+    all media, that contain more than one stream.
+    """
+    _keys = mediainfo.Media._keys + AVCORE
+    media = mediainfo.MEDIA_AV
+
+    def __init__(self):
+        mediainfo.Media.__init__(self)
+        self.audio = []
+        self.video = []
+        self.subtitles = []
+        self.chapters  = []
+
+
+    def _finalize(self):
+        """
+        Correct same data based on specific rules
+        """
+        mediainfo.Media._finalize(self)
+        if not self.length and len(self.video) and self.video[0].length:
+            self.length = self.video[0].length
+        for container in [ self ] + self.video + self.audio:
+            if container.length:
+                container.length = int(container.length)
+
 
 # TODO: copy stuff to this file
 
-VideoStream  = mediainfo.VideoInfo
-AudioStream  = mediainfo.AudioInfo
-AVContainer = mediainfo.AVInfo
 MEDIA_AUDIO = mediainfo.MEDIA_AUDIO
 MEDIA_AV = mediainfo.MEDIA_AV
-Subtitle = mediainfo.SubtitleInfo
-Chapter = mediainfo.ChapterInfo
-Collection = mediainfo.CollectionInfo
+Collection = mediainfo.Collection

@@ -30,7 +30,6 @@
 # -----------------------------------------------------------------------------
 
 # python imports
-import cdrom
 import logging
 
 # kaa.metadata imports
@@ -39,11 +38,12 @@ from kaa.metadata.audio.core import Music as AudioTrack
 
 # kaa.metadata.disc imports
 import core
-import DiscID
+import cdinfo
 import CDDB
 
 # get logging object
 log = logging.getLogger('metadata')
+
 
 class AudioDisc(core.Disc):
     def __init__(self,device):
@@ -61,8 +61,8 @@ class AudioDisc(core.Disc):
 
     def query(self, device):
 
-        cdromfd = DiscID.open(device)
-        disc_id = DiscID.disc_id(cdromfd)
+        cdromfd = cdinfo.audiocd_id(device)
+        disc_id = cdinfo.audiocd_id(cdromfd)
 
         if kaa.metadata.USE_NETWORK:
             try:
@@ -138,7 +138,7 @@ class AudioDisc(core.Disc):
 
 
         # read the tracks to generate the title list
-        (first, last) = cdrom.toc_header(cdromfd)
+        (first, last) = cdinfo.audiocd_toc_header(cdromfd)
 
         lmin = 0
         lsec = 0
@@ -146,9 +146,9 @@ class AudioDisc(core.Disc):
         num = 0
         for i in range(first, last + 2):
             if i == last + 1:
-                min, sec, frames = cdrom.leadout(cdromfd)
+                min, sec, frames = cdinfo.audiocd_leadout(cdromfd)
             else:
-                min, sec, frames = cdrom.toc_entry(cdromfd, i)
+                min, sec, frames = cdinfo.audiocd_toc_entry(cdromfd, i)
             if num:
                 self.tracks[num-1].length = (min-lmin)*60 + (sec-lsec)
             num += 1

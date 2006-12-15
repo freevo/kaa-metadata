@@ -40,10 +40,10 @@ except ImportError:
     sys.exit(1)
 
 # cdrom extension, FIXME: check if it will compile
-cdrom = Extension('kaa/metadata/disc/cdrom', ['src/disc/cdrommodule.c'])
+cdrom = Extension('kaa/metadata/disc/_cdrom', ['src/disc/cdrommodule.c'])
 
 # check for libdvdread
-ifoparser = Extension('kaa/metadata/disc/ifoparser', ['src/disc/ifomodule.c'],
+ifoparser = Extension('kaa/metadata/disc/_ifoparser', ['src/disc/ifomodule.c'],
                       libraries=[ 'dvdread' ])
 
 try:

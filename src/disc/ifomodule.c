@@ -319,7 +319,7 @@ static PyMethodDef IfoMethods[] = {
 };
 
 
-void initifoparser(void) {
-    (void) Py_InitModule("ifoparser", IfoMethods);
+void init_ifoparser(void) {
+    (void) Py_InitModule("_ifoparser", IfoMethods);
     PyEval_InitThreads();
 }

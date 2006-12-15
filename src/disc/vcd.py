@@ -79,7 +79,7 @@ class VCD(core.Disc):
             else:
                 min, sec, frames = cdrom.toc_entry(device, i)
             if num:
-                vi = core.VideoTrack()
+                vi = core.VideoStream()
                 # XXX add more static information here, it's also possible
                 # XXX to scan for more informations like fps
                 # XXX Settings to MPEG1/2 is a wild guess, maybe the track

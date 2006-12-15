@@ -42,7 +42,7 @@ from kaa import xml
 from kaa.metadata.factory import register
 from kaa.metadata import mediainfo
 
-ParseError = mediainfo.KaaMetadataParseError
+ParseError = mediainfo.ParseError
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -52,12 +52,12 @@ ATTRIBUTES = ['description', 'people', 'location', 'event', 'width', 'height',
               'thumbnail','software','hardware', 'dpi', 'city', 'rotation' ]
 
 
-class Image(mediainfo.MediaInfo):
+class Image(mediainfo.Media):
     """
     Digital Images, Photos, Pictures.
     """
 
-    _keys = mediainfo.MediaInfo._keys + ATTRIBUTES
+    _keys = mediainfo.Media._keys + ATTRIBUTES
     media = mediainfo.MEDIA_IMAGE
     
     def _finalize(self):
@@ -67,7 +67,7 @@ class Image(mediainfo.MediaInfo):
         """
         if self.url and self.url.startswith('file://'):
             self.parse_external_files(self.url[7:])
-        mediainfo.MediaInfo._finalize(self)
+        mediainfo.Media._finalize(self)
 
 
     def parse_external_files(self, filename):

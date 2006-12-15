@@ -36,11 +36,12 @@ import os
 import logging
 
 # kaa.metadata imports
-from kaa.metadata import mediainfo
+import kaa.metadata.video.core as video
+import kaa.metadata.audio.core as audio
 
 # kaa.metadata.disc imports
 import core
-import ifoparser
+import _ifoparser
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -51,9 +52,9 @@ _video_fps    = (0, 25.00, 0, 29.97)
 _video_format = ('NTSC', 'PAL')
 _video_aspect = (4.0 / 3, 16.0 / 9, 1.0, 16.0 / 9)
 
-class DVDVideo(mediainfo.VideoInfo):
+class DVDVideo(video.VideoStream):
     def __init__(self, data):
-        mediainfo.VideoInfo.__init__(self)
+        video.VideoStream.__init__(self)
         self.length = data[0]
         self.fps    = _video_fps[data[1]]
         self.format = _video_format[data[2]]
@@ -63,12 +64,12 @@ class DVDVideo(mediainfo.VideoInfo):
         self.codec  = 'MP2V'
 
 
-class DVDAudio(mediainfo.AudioInfo):
+class DVDAudio(audio.Audio):
 
-    _keys = mediainfo.AudioInfo._keys + [ 'id' ]
+    _keys = audio.Audio._keys + [ 'id' ]
 
     def __init__(self, pos, info):
-        mediainfo.AudioInfo.__init__(self)
+        audio.Audio.__init__(self)
         self.id = 128 + pos
         self.language, self.codec, self.channels, self.samplerate = info
         if self.codec == '0x2001':      # DTS
@@ -76,16 +77,16 @@ class DVDAudio(mediainfo.AudioInfo):
             self.id += 8
 
 
-class DVDTitle(mediainfo.AVInfo):
+class DVDTitle(video.AVContainer):
 
-    _keys = mediainfo.AVInfo._keys + [ 'angles' ]
+    _keys = video.AVContainer._keys + [ 'angles' ]
 
     def __init__(self, info):
-        mediainfo.AVInfo.__init__(self)
+        video.AVContainer.__init__(self)
         self.chapters = []
         pos = 0
         for length in info[0]:
-            chapter = mediainfo.ChapterInfo()
+            chapter = video.Chapter()
             chapter.pos = pos
             pos += length
             self.chapters.append(chapter)
@@ -100,7 +101,7 @@ class DVDTitle(mediainfo.AVInfo):
             self.audio.append(DVDAudio(pos, a))
 
         for pos, s in enumerate(info[-1]):
-            self.subtitles.append(mediainfo.SubtitleInfo(s))
+            self.subtitles.append(video.Subtitle(s))
 
 
 class DVDInfo(core.Disc):
@@ -136,7 +137,7 @@ class DVDInfo(core.Disc):
 
 
     def _parse(self, device):
-        info = ifoparser.parse(device)
+        info = _ifoparser.parse(device)
         if not info:
             raise core.ParseError()
         for pos, title in enumerate(info):
@@ -202,6 +203,6 @@ class DVDInfo(core.Disc):
         self._parse(f.name)
 
 
-core.register( 'video/dvd', mediainfo.EXTENSION_DEVICE, DVDInfo )
-core.register('video/dvd', mediainfo.EXTENSION_DIRECTORY, DVDInfo)
+core.register( 'video/dvd', core.EXTENSION_DEVICE, DVDInfo )
+core.register('video/dvd', core.EXTENSION_DIRECTORY, DVDInfo)
 core.register('video/dvd', ['iso'], DVDInfo)

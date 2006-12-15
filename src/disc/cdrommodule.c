@@ -233,12 +233,12 @@ static PyMethodDef cdrom_methods[] = {
     { NULL, NULL }
 };
 
-void initcdrom(void)
+void init_cdrom(void)
 {
     PyObject *module, *dict;
 
-    module = Py_InitModule("cdrom", cdrom_methods);
+    module = Py_InitModule("_cdrom", cdrom_methods);
     dict = PyModule_GetDict(module);
-    cdrom_error = PyErr_NewException("cdrom.error", NULL, NULL);
+    cdrom_error = PyErr_NewException("_cdrom.error", NULL, NULL);
     PyDict_SetItemString(dict, "error", cdrom_error);
 }

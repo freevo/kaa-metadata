@@ -46,14 +46,14 @@ from kaa.metadata.factory import register
 log = logging.getLogger('metadata')
 
 
-class Directory(core.MediaInfo):
+class Directory(core.Media):
     """
     Simple parser for reading a .directory file.
     """
     media = core.MEDIA_DIRECTORY
 
     def __init__(self, directory):
-        core.MediaInfo.__init__(self)
+        core.Media.__init__(self)
         for func in (self.parse_dot_directory, self.parse_bins):
             try:
                 func(directory)

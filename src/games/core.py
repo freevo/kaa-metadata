@@ -32,7 +32,7 @@
 from kaa.metadata import mediainfo
 from kaa.metadata.factory import register
 
-ParseError = mediainfo.KaaMetadataParseError
+ParseError = mediainfo.ParseError
 
-class Game(mediainfo.MediaInfo):
+class Game(mediainfo.Media):
     media = mediainfo.MEDIA_GAME

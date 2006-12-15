@@ -38,11 +38,11 @@ except ImportError:
 
 # import factory code for kaa.metadata access
 from factory import *
-from disc.discinfo import cdrom_disc_id as getid
-from mediainfo import MediaInfo, MEDIA_AUDIO, MEDIA_VIDEO, MEDIA_IMAGE, \
+from disc.cdinfo import getid
+from mediainfo import Media, MEDIA_AUDIO, MEDIA_VIDEO, MEDIA_IMAGE, \
      MEDIA_AV, MEDIA_SUBTITLE, MEDIA_CONTAINER, MEDIA_DIRECTORY, MEDIA_DISC, \
      MEDIA_GAME
 
 
 # use network functions
-USE_NETWORK     = 1
+USE_NETWORK = 1

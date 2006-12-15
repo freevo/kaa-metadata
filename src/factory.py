@@ -41,7 +41,7 @@ import urllib
 import logging
 
 # kaa imports
-import mediainfo
+import mediainfo as core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -95,8 +95,8 @@ def parse(filename, force=True):
 
 class _Factory:
     """
-    Abstract Factory for the creation of MediaInfo instances. The different
-    Methods create MediaInfo objects by parsing the given medium.
+    Abstract Factory for the creation of Media instances. The different
+    Methods create Media objects by parsing the given medium.
     """
     def __init__(self):
         self.extmap = {}
@@ -111,7 +111,6 @@ class _Factory:
         """
         This functions imports all known parser.
         """
-        import mediainfo
         import audio.ogg
         import audio.m4a
         import audio.ac3
@@ -177,7 +176,7 @@ class _Factory:
             try:
                 parser = self.extmap[e[1:]][R_CLASS]
                 return parser(file)
-            except mediainfo.KaaMetadataParseError:
+            except core.ParseError:
                 pass
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(0)
@@ -231,7 +230,7 @@ class _Factory:
                 log.debug('Trying %s' % e[R_MIMETYPE])
                 try:
                     return e[R_CLASS](url)
-                except mediainfo.KaaMetadataParseError:
+                except core.ParseError:
                     pass
                 except (KeyboardInterrupt, SystemExit):
                     sys.exit(0)
@@ -250,7 +249,7 @@ class _Factory:
             if self.mimemap.has_key(mime):
                 try:
                     return self.mimemap[mime][R_CLASS](file)
-                except mediainfo.KaaMetadataParseError:
+                except core.ParseError:
                     pass
                 except (KeyboardInterrupt, SystemExit):
                     sys.exit(0)
@@ -291,7 +290,7 @@ class _Factory:
                 t = e[R_CLASS](devicename)
                 t.url = 'file://%s' % os.path.abspath(devicename)
                 return t
-            except mediainfo.KaaMetadataParseError:
+            except core.ParseError:
                 pass
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(0)
@@ -306,7 +305,7 @@ class _Factory:
             log.debug('Trying %s' % e[R_MIMETYPE])
             try:
                 return e[R_CLASS](dirname)
-            except mediainfo.KaaMetadataParseError:
+            except core.ParseError:
                 pass
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(0)
@@ -349,11 +348,11 @@ class _Factory:
         log.debug('%s registered' % mimetype)
         tuple = (mimetype, extensions, c)
 
-        if extensions == mediainfo.EXTENSION_DEVICE:
+        if extensions == core.EXTENSION_DEVICE:
             self.device_types.append(tuple)
-        elif extensions == mediainfo.EXTENSION_DIRECTORY:
+        elif extensions == core.EXTENSION_DIRECTORY:
             self.directory_types.append(tuple)
-        elif extensions == mediainfo.EXTENSION_STREAM:
+        elif extensions == core.EXTENSION_STREAM:
             self.stream_types.append(tuple)
         else:
             self.types.append(tuple)
@@ -366,11 +365,11 @@ class _Factory:
         """
         return the object for mimetype/extensions or None
         """
-        if extensions == mediainfo.EXTENSION_DEVICE:
+        if extensions == core.EXTENSION_DEVICE:
             l = self.device_types
-        elif extensions == mediainfo.EXTENSION_DIRECTORY:
+        elif extensions == core.EXTENSION_DIRECTORY:
             l = self.directory_types
-        elif extensions == mediainfo.EXTENSION_STREAM:
+        elif extensions == core.EXTENSION_STREAM:
             l = self.stream_types
         else:
             l = self.types

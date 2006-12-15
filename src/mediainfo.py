@@ -39,9 +39,6 @@ import sys
 # kaa imports
 from kaa.strutils import str_to_unicode, unicode_to_str
 
-# fourcc list for debugging
-import fourcc
-
 UNPRINTABLE_KEYS = [ 'thumbnail']
 
 # media type definitions
@@ -59,18 +56,6 @@ MEDIA_GAME      = 'MEDIA_GAME'
 MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'date',
              'keywords', 'country', 'language', 'url', 'media', 'artist', 'mime']
 
-AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
-             'samplebits', 'bitrate', 'fourcc', 'trackno' ]
-
-VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
-             'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno', 'fourcc' ]
-
-MUSICCORE = ['trackof', 'album', 'genre', 'discs', 'thumbnail' ]
-
-AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
-             'genre', 'writer', 'producer', 'studio', 'rating', 'starring',
-             'delay', 'image', 'video', 'audio', 'subtitles', 'chapters', 'software' ]
-
 EXTENSION_DEVICE    = 'device'
 EXTENSION_DIRECTORY = 'directory'
 EXTENSION_STREAM    = 'stream'
@@ -79,19 +64,19 @@ EXTENSION_STREAM    = 'stream'
 log = logging.getLogger('metadata')
 
 
-class KaaMetadataParseError:
+class ParseError:
     pass
 
 
-class MediaInfo(object):
+class Media(object):
     media = None
     
     """
-    MediaInfo is the base class to all Media Metadata Containers. It defines
-    the basic structures that handle metadata. MediaInfo and its derivates
+    Media is the base class to all Media Metadata Containers. It defines
+    the basic structures that handle metadata. Media and its derivates
     contain a common set of metadata attributes that is listed in keys.
     Specific derivates contain additional keys to the dublin core set that is
-    defined in MediaInfo.
+    defined in Media.
     """
     _keys = MEDIACORE
     table_mapping = {}
@@ -101,7 +86,7 @@ class MediaInfo(object):
             # create mediainfo based on dict
             for key, value in hash.items():
                 if isinstance(value, list) and value and isinstance(value[0], dict):
-                    value = [ MediaInfo(x) for x in value ]
+                    value = [ Media(x) for x in value ]
                 self._set(key, value)
             return
         
@@ -212,7 +197,7 @@ class MediaInfo(object):
                 setattr(self, key, str_to_unicode(value))
             if isinstance(value, unicode):
                 setattr(self, key, value.strip().rstrip().replace(u'\0', u''))
-            if isinstance(value, list) and value and isinstance(value[0], MediaInfo):
+            if isinstance(value, list) and value and isinstance(value[0], Media):
                 for submenu in value:
                     submenu._finalize()
 
@@ -276,7 +261,7 @@ class MediaInfo(object):
         result = {}
         for k in self._keys:
             value = getattr(self, k, None)
-            if isinstance(value, list) and value and isinstance(value[0], MediaInfo):
+            if isinstance(value, list) and value and isinstance(value[0], Media):
                 value = [ x.convert() for x in value ]
             result[k] = value
         return result
@@ -289,92 +274,13 @@ class MediaInfo(object):
         return self._keys
 
 
-class AudioInfo(MediaInfo):
-    """
-    Audio Tracks in a Multiplexed Container.
-    """
-    _keys = MediaInfo._keys + AUDIOCORE
-    media = MEDIA_AUDIO
-
-    def _finalize(self):
-        MediaInfo._finalize(self)
-        if self.codec is not None:
-            self.fourcc, self.codec = fourcc.resolve(self.codec)
-
-
-class VideoInfo(MediaInfo):
-    """
-    Video Tracks in a Multiplexed Container.
-    """
-    _keys = MediaInfo._keys + VIDEOCORE
-    media = MEDIA_VIDEO
-
-    def _finalize(self):
-        MediaInfo._finalize(self)
-        if self.codec is not None:
-            self.fourcc, self.codec = fourcc.resolve(self.codec)
-
-
-class ChapterInfo(MediaInfo):
-    """
-    Chapter in a Multiplexed Container.
-    """
-    _keys = ['name', 'pos', 'enabled']
-
-    def __init__(self, name=None, pos=0):
-        MediaInfo.__init__(self)
-        self.name = name
-        self.pos = pos
-        self.enabled = True
-
-
-class SubtitleInfo(MediaInfo):
-    """
-    Subtitle Tracks in a Multiplexed Container.
-    """
-    _keys = ['language', 'trackno', 'title']
-    media = MEDIA_SUBTITLE
-
-    def __init__(self, language=None):
-        MediaInfo.__init__(self)
-        self.language = language
-
-        
-class AVInfo(MediaInfo):
-    """
-    Container for Audio and Video streams. This is the Container Type for
-    all media, that contain more than one stream.
-    """
-    _keys = MediaInfo._keys + AVCORE
-    media = MEDIA_AV
-
-    def __init__(self):
-        MediaInfo.__init__(self)
-        self.audio = []
-        self.video = []
-        self.subtitles = []
-        self.chapters  = []
-
-
-    def _finalize(self):
-        """
-        Correct same data based on specific rules
-        """
-        MediaInfo._finalize(self)
-        if not self.length and len(self.video) and self.video[0].length:
-            self.length = self.video[0].length
-        for container in [ self ] + self.video + self.audio:
-            if container.length:
-                container.length = int(container.length)
-
-
-class CollectionInfo(MediaInfo):
+class Collection(Media):
     """
     Collection of Digial Media like CD, DVD, Directory, Playlist
     """
-    _keys = MediaInfo._keys + [ 'id', 'tracks' ]
+    _keys = Media._keys + [ 'id', 'tracks' ]
     media = MEDIA_CONTAINER
 
     def __init__(self):
-        MediaInfo.__init__(self)
+        Media.__init__(self)
         self.tracks = []
