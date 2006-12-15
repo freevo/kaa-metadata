@@ -38,8 +38,8 @@ from kaa.metadata import mediainfo
 from kaa.metadata.factory import register
 from kaa.metadata.video.core import VideoStream
 
-# extra cdinfo parser
-import cdinfo
+# extra cdrom parser
+import cdrom
 
 EXTENSION_DEVICE = mediainfo.EXTENSION_DEVICE
 EXTENSION_DIRECTORY = mediainfo.EXTENSION_DIRECTORY
@@ -56,7 +56,7 @@ class Disc(mediainfo.Collection):
     media = mediainfo.MEDIA_DISC
     
     def is_disc(self, device):
-        (type, self.id) = cdinfo.get_id(device, handle_mix=1)
+        (type, self.id) = cdrom.get_id(device, handle_mix=1)
         if type != 2:
             if type == 4:
                 self.mixed = 1
