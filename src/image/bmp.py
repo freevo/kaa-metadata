@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# gifinfo.py - gif file parsing
+# bmp.py - bmp file parsing
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -33,31 +33,29 @@
 import struct
 import logging
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
-
+# import kaa.metadata.image core
 import core
 
 # get logging object
 log = logging.getLogger('metadata')
 
 # interesting file format info:
-# http://www.danbbs.dk/~dino/whirlgif/gif87.html
+# http://www.fortunecity.com/skyscraper/windows/364/bmpffrmt.html
 
-class GIFInfo(core.ImageInfo):
+class BMP(core.Image):
 
     def __init__(self,file):
-        core.ImageInfo.__init__(self)
-        self.mime = 'image/gif'
+        core.Image.__init__(self)
+        self.mime = 'image/bmp'
+        self.type = 'windows bitmap image'
 
-        (gifType, self.width, self.height) = \
-                  struct.unpack('<6sHH', file.read(10))
+        (bfType, bfSize, bfZero, bfOffset, biSize, self.width, self.height) = \
+                 struct.unpack('<2sIIIIII', file.read(26))
+        # seek to the end to test length
+        file.seek(0, 2)
 
-        if not gifType.startswith('GIF'):
-            raise mediainfo.KaaMetadataParseError()
-
-        self.type = gifType.lower()
+        if bfType != 'BM' or bfSize != file.tell():
+            raise core.ParseError()
 
 
-factory.register( 'image/gif', ('gif', ), GIFInfo )
+core.register( 'image/bmp', ('bmp', ), BMP )

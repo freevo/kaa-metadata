@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# gameboyinfo.py - Gameboy ROM parsing
+# gameboy.py - Gameboy ROM parsing
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -33,9 +33,8 @@
 import struct
 import logging
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
+# kaa.metadata.games core import
+import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -47,10 +46,10 @@ GBA_LOGOCODE = '\x24\xff\xae\x51\x69\x9a\xa2\x21\x3d\x84\x82\x0a\x84\xe4\x09\xad
 
 GB_LOGOCODE = '\xCE\xED\x66\x66\xCC\x0D\x00\x0B\x03\x73\x00\x83\x00\x0C\x00\x0D\x00\x08\x11\x1F\x88\x89\x00\x0E\xDC\xCC\x6E\xE6\xDD\xDD\xD9\x99\xBB\xBB\x67\x63\x6E\x0E\xEC\xCC\xDD\xDC\x99\x9F\xBB\xB9\x33\x3E'
 
-class GameboyInfo(mediainfo.MediaInfo):
+class Gameboy(core.Game):
 
     def __init__(self,file):
-        mediainfo.MediaInfo.__init__(self)
+        core.Game.__init__(self)
 
 	# Determine if the ROM is a Gameboy Advance ROM.
 	# Compare the Logo Code. All GBA Roms have this code.
@@ -61,7 +60,7 @@ class GameboyInfo(mediainfo.MediaInfo):
             # Compare the Logo Code. All GB Roms have this code.
             file.seek (260)
             if file.read(len(GB_LOGOCODE)) != GB_LOGOCODE:
-                raise mediainfo.KaaMetadataParseError()
+                raise core.ParseError()
 
             # Retrieve the ROM Title
             game_title = file.read(15)
@@ -93,6 +92,6 @@ class GameboyInfo(mediainfo.MediaInfo):
 
             # Check that the Fized Value is 0x96, if not then error.
             if file.read(1) != '\x96':
-                raise mediainfo.KaaMetadataParseError()
+                raise core.ParseError()
 
-factory.register( 'games/gameboy', ('gba', 'gb', 'gbc', ), GameboyInfo )
+core.register( 'games/gameboy', ('gba', 'gb', 'gbc', ), Gameboy )

@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# core.py - basic image parsing using Imaging
+# core.py - basic image class
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -36,9 +36,13 @@ import gzip
 import logging
 
 # kaa imports
-from kaa.metadata import factory
-from kaa.metadata import mediainfo
 from kaa import xml
+
+# kaa.metadata imports
+from kaa.metadata.factory import register
+from kaa.metadata import mediainfo
+
+ParseError = mediainfo.KaaMetadataParseError
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -48,7 +52,7 @@ ATTRIBUTES = ['description', 'people', 'location', 'event', 'width', 'height',
               'thumbnail','software','hardware', 'dpi', 'city', 'rotation' ]
 
 
-class ImageInfo(mediainfo.MediaInfo):
+class Image(mediainfo.MediaInfo):
     """
     Digital Images, Photos, Pictures.
     """

@@ -53,6 +53,7 @@ MEDIA_SUBTITLE  = 'MEDIA_SUBTITLE'
 MEDIA_CONTAINER = 'MEDIA_CONTAINER'
 MEDIA_DIRECTORY = 'MEDIA_DIRECTORY'
 MEDIA_DISC      = 'MEDIA_DISC'
+MEDIA_GAME      = 'MEDIA_GAME'
 
 
 MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'date',

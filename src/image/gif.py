@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# kaa.metadata.__init__.py
+# gif.py - gif file parsing
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -8,7 +8,7 @@
 # kaa-Metadata - Media Metadata for Python
 # Copyright (C) 2003-2006 Thomas Schueppel, Dirk Meyer
 #
-# First Edition: Thomas Schueppel <stain@acm.org>
+# First Edition: Dirk Meyer <dischi@freevo.org>
 # Maintainer:    Dirk Meyer <dischi@freevo.org>
 #
 # Please see the file AUTHORS for a complete list of authors.
@@ -29,20 +29,32 @@
 #
 # -----------------------------------------------------------------------------
 
-try:
-    # check deps
-    import libxml2
-except ImportError:
-    print 'libxml2 python bindings not installed'
-    raise ImportError('libxml2 python bindings not installed')
+# python imports
+import struct
+import logging
 
-# import factory code for kaa.metadata access
-from factory import *
-from disc.discinfo import cdrom_disc_id as getid
-from mediainfo import MediaInfo, MEDIA_AUDIO, MEDIA_VIDEO, MEDIA_IMAGE, \
-     MEDIA_AV, MEDIA_SUBTITLE, MEDIA_CONTAINER, MEDIA_DIRECTORY, MEDIA_DISC, \
-     MEDIA_GAME
+# import kaa.metadata.image core
+import core
+
+# get logging object
+log = logging.getLogger('metadata')
+
+# interesting file format info:
+# http://www.danbbs.dk/~dino/whirlgif/gif87.html
+
+class GIF(core.Image):
+
+    def __init__(self,file):
+        core.Image.__init__(self)
+        self.mime = 'image/gif'
+
+        header = struct.unpack('<6sHH', file.read(10))
+        gifType, self.width, self.height = header
+
+        if not gifType.startswith('GIF'):
+            raise core.ParseError()
+
+        self.type = gifType.lower()
 
 
-# use network functions
-USE_NETWORK     = 1
+core.register( 'image/gif', ('gif', ), GIF )

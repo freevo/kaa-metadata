@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# pnginfo.py - png file parsing
+# png.py - png file parsing
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -35,13 +35,9 @@ import zlib
 import logging
 
 # kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
 from kaa.strutils import str_to_unicode
 
-# image imports
-import IPTC
-import EXIF
+# import kaa.metadata.image core
 import core
 
 # get logging object
@@ -55,17 +51,16 @@ log = logging.getLogger('metadata')
 PNGSIGNATURE = "\211PNG\r\n\032\n"
 
 
-class PNGInfo(core.ImageInfo):
+class PNG(core.Image):
 
     def __init__(self,file):
-        core.ImageInfo.__init__(self)
-        self.iptc = None
+        core.Image.__init__(self)
         self.mime = 'image/png'
         self.type = 'PNG image'
 
         signature = file.read(8)
         if ( signature != PNGSIGNATURE ):
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         self.meta = {}
         while self._readChunk(file):
@@ -128,4 +123,4 @@ class PNGInfo(core.ImageInfo):
             self.comment = self.meta[key]
         return 1
 
-factory.register( 'image/png', ('png',), PNGInfo )
+core.register( 'image/png', ('png',), PNG )

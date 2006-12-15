@@ -122,11 +122,11 @@ class _Factory:
         import video.asfinfo
         import video.movinfo
         import video.flvinfo
-        import image.jpginfo
-        import image.pnginfo
-        import image.tiffinfo
-        import image.bmpinfo
-        import image.gifinfo
+        import image.jpg
+        import image.png
+        import image.tiff
+        import image.bmp
+        import image.gif
         import video.vcdinfo
         import video.realinfo
         import video.ogminfo
@@ -160,8 +160,8 @@ class _Factory:
         import audio.webradioinfo
         import audio.flacinfo
 
-        import games.gameboyinfo
-        import games.snesinfo
+        import games.gameboy
+        import games.snes
 
         import misc.dirinfo
 

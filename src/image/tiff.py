@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# tiffinfo.py - tiff file parsing
+# tiff.py - tiff file parsing
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -34,14 +34,9 @@ import struct
 import zlib
 import logging
 
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
-
-# image imports
-import IPTC
-import EXIF
+# import kaa.metadata.image core
 import core
+import IPTC
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -52,12 +47,12 @@ INTELSIGNATURE = 'II\x2a\x00'
 
 # http://partners.adobe.com/asn/developer/pdfs/tn/TIFF6.pdf
 
-class TIFFInfo(core.ImageInfo):
+class TIFF(core.Image):
 
     table_mapping = { 'IPTC': IPTC.mapping }
 
     def __init__(self,file):
-        core.ImageInfo.__init__(self)
+        core.Image.__init__(self)
         self.iptc = None
         self.mime = 'image/tiff'
         self.type = 'TIFF image'
@@ -111,10 +106,10 @@ class TIFFInfo(core.ImageInfo):
                     else:
                         self.height = offset
         else:
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         if iptc:
             self._appendtable('IPTC', iptc)
 
 
-factory.register( 'image/tiff', ('tif','tiff'), TIFFInfo)
+core.register( 'image/tiff', ('tif','tiff'), TIFF)

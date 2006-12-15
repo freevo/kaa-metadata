@@ -1,14 +1,14 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# bmpinfo.py - bmp file parsing
+# core.py - basic glames class
 # -----------------------------------------------------------------------------
-# $Id$
+# $Id: core.py 2216 2006-12-10 20:32:21Z dmeyer $
 #
 # -----------------------------------------------------------------------------
 # kaa-Metadata - Media Metadata for Python
 # Copyright (C) 2003-2006 Thomas Schueppel, Dirk Meyer
 #
-# First Edition: Dirk Meyer <dischi@freevo.org>
+# First Edition: Thomas Schueppel <stain@acm.org>
 # Maintainer:    Dirk Meyer <dischi@freevo.org>
 #
 # Please see the file AUTHORS for a complete list of authors.
@@ -29,36 +29,10 @@
 #
 # -----------------------------------------------------------------------------
 
-# python imports
-import struct
-import logging
-
-# kaa imports
 from kaa.metadata import mediainfo
-from kaa.metadata import factory
+from kaa.metadata.factory import register
 
-import core
+ParseError = mediainfo.KaaMetadataParseError
 
-# get logging object
-log = logging.getLogger('metadata')
-
-# interesting file format info:
-# http://www.fortunecity.com/skyscraper/windows/364/bmpffrmt.html
-
-class BMPInfo(core.ImageInfo):
-
-    def __init__(self,file):
-        core.ImageInfo.__init__(self)
-        self.mime = 'image/bmp'
-        self.type = 'windows bitmap image'
-
-        (bfType, bfSize, bfZero, bfOffset, biSize, self.width, self.height) = \
-                 struct.unpack('<2sIIIIII', file.read(26))
-        # seek to the end to test length
-        file.seek(0, 2)
-
-        if bfType != 'BM' or bfSize != file.tell():
-            raise mediainfo.KaaMetadataParseError()
-
-
-factory.register( 'image/bmp', ('bmp', ), BMPInfo )
+class Game(mediainfo.MediaInfo):
+    media = mediainfo.MEDIA_GAME

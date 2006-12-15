@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# jpginfo.py - jpg file parsing
+# jpg.py - jpg file parsing
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -33,15 +33,11 @@
 import struct
 import logging
 import cStringIO
-
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
 import libxml2
 
-# image imports
-import EXIF
+# import kaa.metadata.image core
 import core
+import EXIF
 import IPTC
 
 # get logging object
@@ -73,17 +69,17 @@ EXIFMap = {
     'Image Software': 'software',
 }
 
-class JPGInfo(core.ImageInfo):
+class JPG(core.Image):
 
     table_mapping = { 'EXIF': EXIFMap, 'IPTC': IPTC.mapping }
 
     def __init__(self,file):
-        core.ImageInfo.__init__(self)
+        core.Image.__init__(self)
         self.mime = 'image/jpeg'
         self.type = 'jpeg image'
 
         if file.read(2) != '\xff\xd8':
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
 
         file.seek(-2,2)
         if file.read(2) != '\xff\xd9':
@@ -176,4 +172,4 @@ class JPGInfo(core.ImageInfo):
             if key.startswith('Thumb:') or key == 'Software':
                 self._set(key, value)
 
-factory.register( 'image/jpeg', ('jpg','jpeg'), JPGInfo )
+core.register( 'image/jpeg', ('jpg','jpeg'), JPG )

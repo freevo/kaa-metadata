@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# snesinfo.py - Gameboy Advance ROM parsing
+# snes.py - Gameboy Advance ROM parsing
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -33,13 +33,11 @@
 import struct
 import logging
 import sys
-
-# kaa imports
-from kaa.metadata import mediainfo
-from kaa.metadata import factory
-
 from struct import *
 from re import *
+
+# kaa.metadata.games core import
+import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -53,10 +51,10 @@ snesromFileOffset = [33216, 32704, 65472, 65984]
 
 #most of the code is imported from the old snesitem.py.
 
-class SNESInfo(mediainfo.MediaInfo):
+class SNES(core.Game):
 
     def __init__(self,file):
-        mediainfo.MediaInfo.__init__(self)
+        core.Game.__init__(self)
 
         self.mime = 'games/snes'
         self.type = 'SuperNintendo game'
@@ -94,8 +92,8 @@ class SNESInfo(mediainfo.MediaInfo):
 
         else:
             # not detected as rom
-            raise mediainfo.KaaMetadataParseError()
+            raise core.ParseError()
         self.title = romName.strip()
 
 
-factory.register( 'games/snes', ('smc', 'sfc', 'fig', ), SNESInfo )
+core.register( 'games/snes', ('smc', 'sfc', 'fig', ), SNES )
