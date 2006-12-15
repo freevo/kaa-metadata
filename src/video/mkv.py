@@ -190,6 +190,8 @@ class EbmlEntity:
 
 
     def compute_len(self, inbuf):
+        if not inbuf:
+            return 0, 0
         i = num_ffs = 0
         len_mask = 0x80
         len = ord(inbuf[0])
