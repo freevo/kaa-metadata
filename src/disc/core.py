@@ -45,22 +45,20 @@ import cdrom
 # get logging object
 log = logging.getLogger('metadata')
 
-CREATE_MD5_ID = 0
-
 class Disc(Collection):
 
     _keys = Collection._keys + [ 'mixed', 'label' ]
     media = MEDIA_DISC
     
     def is_disc(self, device):
-        (type, self.id) = cdrom.get_id(device, handle_mix=1)
+        (type, self.id) = cdrom.status(device, handle_mix=1)
         if type != 2:
             if type == 4:
                 self.mixed = 1
                 type = 1
             return type
 
-        if CREATE_MD5_ID:
+        if cdrom.CREATE_MD5_ID:
             if len(self.id) == 32:
                 self.label = ''
             else:

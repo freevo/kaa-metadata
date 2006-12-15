@@ -39,6 +39,8 @@ from struct import *
 import logging
 from fcntl import ioctl
 
+CREATE_MD5_ID = 0
+
 # cdrom module
 try:
     import _cdrom
@@ -94,7 +96,7 @@ def audiocd_leadout(device):
     return _cdrom.leadout(device)
 
 
-def status(device, handle_mix = 0):
+def _drive_status(device, handle_mix = 0):
     """
     check the current disc in device
     return: no disc (0), audio cd (1), data cd (2), blank cd (3)
@@ -197,7 +199,7 @@ def status(device, handle_mix = 0):
 
 _id_cache = {}
 
-def get_id(device, handle_mix=0):
+def status(device, handle_mix=0):
     """
     return the disc id of the device or None if no disc is there
     """
@@ -212,7 +214,7 @@ def get_id(device, handle_mix=0):
     except (KeyError, IndexError):
         pass
 
-    disc_type = status(device, handle_mix=handle_mix)
+    disc_type = _drive_status(device, handle_mix=handle_mix)
     if disc_type == 0 or disc_type == 3:
         return 0, None
 
