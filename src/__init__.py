@@ -38,7 +38,7 @@ except ImportError:
 
 # import factory code for kaa.metadata access
 from factory import *
-from disc.cdinfo import getid
+from disc.cdinfo import get_id as get_discid
 from mediainfo import Media, MEDIA_AUDIO, MEDIA_VIDEO, MEDIA_IMAGE, \
      MEDIA_AV, MEDIA_SUBTITLE, MEDIA_CONTAINER, MEDIA_DIRECTORY, MEDIA_DISC, \
      MEDIA_GAME

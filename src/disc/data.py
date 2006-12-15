@@ -35,7 +35,7 @@ import core
 class DataDisc(core.Disc):
     def __init__(self,device):
         core.Disc.__init__(self)
-        if self.is_disc(self, device) != 2:
+        if self.is_disc(device) != 2:
             raise core.ParseError()
         self.offset = 0
         self.mime = 'unknown/unknown'

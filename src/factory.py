@@ -132,26 +132,10 @@ class _Factory:
         import video.mkv
         import misc.xml
 
-        # import some disc modules (may fail)
-        try:
-            import disc.vcd
-            import disc.audio
-        except ImportError, e:
-            # looks like cdrom.so was not created
-            if log.level < 30:
-                log.error(e)
-
-        try:
-            import disc.dvd
-        except ImportError, e:
-            if log.level < 30:
-                log.error(e)
-
-        try:
-            import disc.data
-        except ImportError, e:
-            if log.level < 30:
-                log.error(e)
+        import disc.vcd
+        import disc.audio
+        import disc.dvd
+        import disc.data
 
         import audio.mp3
         import audio.webradio
@@ -322,13 +306,10 @@ class _Factory:
                 return self.create_from_url(name)
             if not os.path.exists(name):
                 return None
-            try:
-                if (os.uname()[0] == 'FreeBSD' and \
-                    stat.S_ISCHR(os.stat(name)[stat.ST_MODE])) \
-                    or stat.S_ISBLK(os.stat(name)[stat.ST_MODE]):
-                    return self.create_from_device(name)
-            except AttributeError:
-                pass
+            if (os.uname()[0] == 'FreeBSD' and \
+                stat.S_ISCHR(os.stat(name)[stat.ST_MODE])) \
+                or stat.S_ISBLK(os.stat(name)[stat.ST_MODE]):
+                return self.create_from_device(name)
             if os.path.isdir(name):
                 return self.create_from_directory(name)
             return self.create_from_filename(name, force)

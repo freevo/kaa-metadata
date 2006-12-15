@@ -43,6 +43,7 @@ import cdinfo
 
 EXTENSION_DEVICE = mediainfo.EXTENSION_DEVICE
 EXTENSION_DIRECTORY = mediainfo.EXTENSION_DIRECTORY
+ParseError = mediainfo.ParseError
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -55,7 +56,7 @@ class Disc(mediainfo.Collection):
     media = mediainfo.MEDIA_DISC
     
     def is_disc(self, device):
-        (type, self.id) = cdinfo.cdrom_disc_id(device, handle_mix=1)
+        (type, self.id) = cdinfo.get_id(device, handle_mix=1)
         if type != 2:
             if type == 4:
                 self.mixed = 1

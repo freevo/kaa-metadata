@@ -9,8 +9,11 @@ import logging
 from fcntl import ioctl
 
 # cdrom module
-import _cdrom
-
+try:
+    import _cdrom
+except ImportError:
+    _cdrom = None
+    
 # get logging object
 log = logging.getLogger('metadata')
 
@@ -48,15 +51,15 @@ def audiocd_id(device):
     return [discid, last] + track_frames[:-1] + [ track_frames[-1] / 75 ]
 
 
-def audiocd_toc_header(self, device):
+def audiocd_toc_header(device):
     return _cdrom.toc_header(device)
 
 
-def audiocd_toc_entry(self, device):
-    return _cdrom.toc_entry(device)
+def audiocd_toc_entry(device, track):
+    return _cdrom.toc_entry(device, track)
 
 
-def audiocd_leadout(self, device):
+def audiocd_leadout(device):
     return _cdrom.leadout(device)
 
 
@@ -163,10 +166,14 @@ def status(device, handle_mix = 0):
 
 _id_cache = {}
 
-def getid(device, handle_mix=0):
+def get_id(device, handle_mix=0):
     """
     return the disc id of the device or None if no disc is there
     """
+    if not _cdrom:
+        log.debug("kaa.metadata not compiled with CDROM support")
+        return 0, None
+        
     global _id_cache
     try:
         if _id_cache[device][0] + 0.9 > time.time():

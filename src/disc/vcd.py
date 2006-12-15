@@ -31,7 +31,7 @@
 
 # kaa.metadata.disc imports
 import core
-import cdrom
+import cdinfo
 
 class VCD(core.Disc):
     def __init__(self,device):
@@ -46,7 +46,7 @@ class VCD(core.Disc):
 
     def parseDisc(self, device):
         type = None
-        if self.is_disc(self, device) != 2:
+        if self.is_disc(device) != 2:
             raise core.ParseError()
 
         # brute force reading of the device to find out if it is a VCD
@@ -67,7 +67,7 @@ class VCD(core.Disc):
 
         # read the tracks to generate the title list
         device = open(device)
-        (first, last) = cdrom.toc_header(device)
+        (first, last) = cdinfo.audio_toc_header(device)
 
         lmin = 0
         lsec = 0
@@ -75,9 +75,9 @@ class VCD(core.Disc):
         num = 0
         for i in range(first, last + 2):
             if i == last + 1:
-                min, sec, frames = cdrom.leadout(device)
+                min, sec, frames = cdinfo.audio_leadout(device)
             else:
-                min, sec, frames = cdrom.toc_entry(device, i)
+                min, sec, frames = cdinfo.audio_toc_entry(device, i)
             if num:
                 vi = core.VideoStream()
                 # XXX add more static information here, it's also possible

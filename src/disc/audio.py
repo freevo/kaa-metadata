@@ -50,7 +50,7 @@ class AudioDisc(core.Disc):
         core.Disc.__init__(self)
         self.offset = 0
         # check disc
-        if self.is_disc(self, device) != 1:
+        if self.is_disc(device) != 1:
             raise core.ParseError()
 
         self.query(device)
@@ -61,7 +61,7 @@ class AudioDisc(core.Disc):
 
     def query(self, device):
 
-        cdromfd = cdinfo.audiocd_id(device)
+        cdromfd = cdinfo.audiocd_open(device)
         disc_id = cdinfo.audiocd_id(cdromfd)
 
         if kaa.metadata.USE_NETWORK:
