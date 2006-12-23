@@ -170,19 +170,27 @@ class EbmlEntity:
 
 
     def compute_id(self, inbuf):
+        if len(inbuf) < 1:
+            return 0
         first = ord(inbuf[0])
         self.id_len = 0
         if first & 0x80:
             self.id_len = 1
             self.entity_id = first
         elif first & 0x40:
+            if len(inbuf) < 2:
+                return 0
             self.id_len = 2
             self.entity_id = ord(inbuf[0])<<8 | ord(inbuf[1])
         elif first & 0x20:
+            if len(inbuf) < 3:
+                return 0
             self.id_len = 3
             self.entity_id = (ord(inbuf[0])<<16) | (ord(inbuf[1])<<8) | \
                              (ord(inbuf[2]))
         elif first & 0x10:
+            if len(inbuf) < 4:
+                return 0
             self.id_len = 4
             self.entity_id = (ord(inbuf[0])<<24) | (ord(inbuf[1])<<16) | \
                              (ord(inbuf[2])<<8) | (ord(inbuf[3]))
