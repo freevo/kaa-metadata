@@ -69,7 +69,7 @@ class DVDVideo(video.VideoStream):
 
 class DVDAudio(audio.Audio):
 
-    _keys = audio.Audio._keys + [ 'id' ]
+    _keys = audio.Audio._keys
 
     def __init__(self, pos, info):
         audio.Audio.__init__(self)
