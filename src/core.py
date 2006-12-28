@@ -149,7 +149,10 @@ class Media(object):
 
 
     def __repr__(self):
-        return '<%s %s>' % (str(self.__class__)[8:-2], self.url)
+        if hasattr(self, 'url'):
+            return '<%s %s>' % (str(self.__class__)[8:-2], self.url)
+        else:
+            return '<%s>' % (str(self.__class__)[8:-2])
 
 
     #
