@@ -98,7 +98,9 @@ class AVContainer(Media):
         """
         Media._finalize(self)
         if not self.length and len(self.video) and self.video[0].length:
-            self.length = self.video[0].length
-        for container in [ self ] + self.video + self.audio:
-            if container.length:
-                container.length = container.length
+            self.length = 0
+            # Length not specified for container, so use the largest length
+            # of its tracks as container length.
+            for track in self.video + self.audio:
+                if track.length:
+                    self.length = max(self.length, track.length)
