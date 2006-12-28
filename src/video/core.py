@@ -101,4 +101,4 @@ class AVContainer(Media):
             self.length = self.video[0].length
         for container in [ self ] + self.video + self.audio:
             if container.length:
-                container.length = int(container.length)
+                container.length = container.length

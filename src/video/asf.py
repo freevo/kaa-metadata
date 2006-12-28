@@ -247,7 +247,7 @@ class Asf(core.AVContainer):
             (fileid, size, date, packetcount, duration, \
              senddur, preroll, flags, minpack, maxpack, maxbr) = \
              val
-            self.length = duration/10000000
+            self.length = duration/10000000.0
 
         elif guid == GUIDS['ASF_Stream_Properties_Object']:
             log.debug("Stream Properties Object [%d]" % objsize)

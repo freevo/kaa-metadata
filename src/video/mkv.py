@@ -170,10 +170,10 @@ class EbmlEntity:
 
 
     def compute_id(self, inbuf):
+        self.id_len = 0
         if len(inbuf) < 1:
             return 0
         first = ord(inbuf[0])
-        self.id_len = 0
         if first & 0x80:
             self.id_len = 1
             self.entity_id = first
@@ -361,7 +361,11 @@ class Matroska(core.AVContainer):
                 elif sub_elem.get_id() == MATROSKA_SEEK_POSITION_ID:
                     self.file.seek(self.segment.offset + sub_elem.get_value())
                     buffer = self.file.read(100)
-                    elem = EbmlEntity(buffer)
+                    try:
+                        elem = EbmlEntity(buffer)
+                    except core.ParseError:
+                        continue
+
                     # Fetch all data necessary for this element.
                     elem.add_data(self.file.read(elem.ebml_length))
                     self.process_elem(elem)

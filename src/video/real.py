@@ -71,7 +71,7 @@ class RealVideo(core.AVContainer):
         if object_id == 'MDPR':
             mdpr = struct.unpack('>H7I', s[:30])
             log.debug(mdpr)
-            self.length = mdpr[7]/1000
+            self.length = mdpr[7]/1000.0
             (stream_name_size,) = struct.unpack('>B', s[30:31])
             stream_name = s[31:31+stream_name_size]
             pos = 31+stream_name_size
