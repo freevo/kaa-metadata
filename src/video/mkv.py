@@ -413,6 +413,7 @@ class Matroska(core.AVContainer):
         elif track_type == MATROSKA_SUBTITLES_TRACK:
             log.debug("Subtitle track found")
             track = core.Subtitle()
+            track.id = len(self.subtitles)
             self.subtitles.append(track)
             for elem in elements:
                 self.process_track_common(elem, track)
@@ -486,6 +487,7 @@ class Matroska(core.AVContainer):
             track.codec = track.codec[2:]
 
         self.media = core.MEDIA_AV
+        track.id = len(self.video)
         self.video.append(track)
         return track
 
@@ -514,6 +516,7 @@ class Matroska(core.AVContainer):
         elif track.codec.startswith('A_'):
             track.codec = track.codec[2:]
 
+        track.id = len(self.audio)
         self.audio.append(track)
         return track
 
@@ -551,6 +554,7 @@ class Matroska(core.AVContainer):
                         chap.name = display_elem.get_utf8()
 
         log.debug('Chapter "%s" found' % str(chap.name))
+        chap.id = len(self.chapters)
         self.chapters.append(chap)
 
 

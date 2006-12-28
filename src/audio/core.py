@@ -34,7 +34,7 @@ from kaa.metadata.core import ParseError, Media, MEDIA_AUDIO, \
 from kaa.metadata.factory import register
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
-             'samplebits', 'bitrate', 'fourcc', 'trackno' ]
+             'samplebits', 'bitrate', 'fourcc', 'trackno', 'id' ]
 
 MUSICCORE = ['trackof', 'album', 'genre', 'discs', 'thumbnail' ]
 
