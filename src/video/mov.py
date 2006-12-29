@@ -86,7 +86,7 @@ class MPEG4(core.AVContainer):
             h = file.read(8)
             (size,type) = unpack('>I4s',h)
 
-        while type == 'mdat':
+        while type in ('mdat', 'skip'):
             # movie data at the beginning, skip
             file.seek(size-8, 1)
             h = file.read(8)
@@ -129,7 +129,7 @@ class MPEG4(core.AVContainer):
                 if ord(datatype[0]) == 169:
                     # i18n Metadata...
                     mypos = 8+pos
-                    while mypos < datasize+pos:
+                    while mypos + 4 < datasize+pos:
                         # first 4 Bytes are i18n header
                         (tlen, lang) = unpack('>HH', atomdata[mypos:mypos+4])
                         i18ntabl[lang] = i18ntabl.get(lang, {})
@@ -171,7 +171,7 @@ class MPEG4(core.AVContainer):
                         # XXX 2082844800 is the difference between Unix and
                         # XXX Apple time. Fix me to work on Apple, too
                         self.date = int(tkhd[1]) - 2082844800
-                        self.date = time.strftime('%y/%m/%d',
+                        self.date = time.strftime('%y.%m.%d %H:%M:%S',
                                                   time.gmtime(self.date))
                     except Exception, e:
                         log.exception('There was trouble extracting the date')
