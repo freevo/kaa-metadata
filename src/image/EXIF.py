@@ -1049,8 +1049,11 @@ class EXIF_header:
 
         # Olympus
         if make[:7] == 'OLYMPUS':
-            self.dump_IFD(note.field_offset+8, 'MakerNote',
-                          dict=MAKERNOTE_OLYMPUS_TAGS)
+            try:
+                self.dump_IFD(note.field_offset+8, 'MakerNote',
+                              dict=MAKERNOTE_OLYMPUS_TAGS)
+            except KeyError:
+                pass
             return
 
         # Casio
