@@ -41,11 +41,13 @@ mapping = {
     'headline': 'title',
     'date created': 'date',
     'keywords': 'keywords',
-    'writer/editor': 'artist',
-    'credit': 'artist',
+    'writer-editor': 'artist',
+    'credit': 'copyright',
+    'by-line': 'artist',
     'country/primary location name': 'country',
-    'caption/abstract': 'caption',
-    'city': 'city'
+    'caption-abstract': 'description',
+    'city': 'city',
+    'sub-location': 'location'
 }
 
 # These names match the codes defined in ITPC's IIM record 2.
@@ -92,8 +94,8 @@ c_datasets = {
   115: 'source',
   116: 'copyright notice',
   118: 'contact',
-  120: 'caption/abstract',
-  122: 'writer/editor',
+  120: 'caption-abstract',
+  122: 'writer-editor',
 #  125: 'rasterized caption', # unsupported (binary data)
   130: 'image type',
   131: 'image orientation',
