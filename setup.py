@@ -43,7 +43,7 @@ except ImportError:
 cdrom = Extension('kaa/metadata/disc/_cdrom', ['src/disc/cdrommodule.c'])
 
 # check for libdvdread
-ifoparser = Extension('kaa/metadata/disc/_ifoparser', ['src/disc/ifomodule.c'],
+ifoparser = Extension('kaa.metadata.disc._ifoparser', ['src/disc/ifomodule.c'],
                       libraries=[ 'dvdread' ])
 
 try:
@@ -61,10 +61,14 @@ except AttributeError:
     ext_modules = [ cdrom ]
     
 setup (module      = 'metadata',
-       version     = '0.6',
+       version     = '0.6.0',
        license     = 'GPL',
-       description = 'Module for retrieving information about media files',
+       summary     = 'Module for retrieving information about media files',
        author      = "Thomas Schueppel, Dirk Meyer",
        scripts     = [ 'bin/mminfo' ],
+       rpminfo = {
+           'requires':        'kaa-base >= 0.1.2, libdvdread >= 0.9.4',
+           'build_requires':  'kaa-base >= 0.1.2, libdvdread-devel >= 0.9.4, python-devel >= 2.3.0'
+       },
        ext_modules = ext_modules
       )
