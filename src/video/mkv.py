@@ -305,9 +305,12 @@ class Matroska(core.AVContainer):
             return
 
         log.debug("SEGMENT ID found %08X" % segment.get_id())
-        for elem in self.process_one_level(segment):
-            if elem.get_id() == MATROSKA_SEEKHEAD_ID:
-                self.process_elem(elem)
+        try:
+            for elem in self.process_one_level(segment):
+                if elem.get_id() == MATROSKA_SEEKHEAD_ID:
+                    self.process_elem(elem)
+        except core.ParseError:
+            pass
 
 
     def process_elem(self, elem):
