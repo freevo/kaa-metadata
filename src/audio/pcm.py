@@ -58,4 +58,4 @@ class PCM(core.Music):
         return None
 
 
-core.register( 'application/pcm', ('wav','aif','voc','au'), PCM )
+core.register( 'application/pcm', ('aif','voc','au'), PCM )

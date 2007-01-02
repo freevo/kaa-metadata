@@ -104,7 +104,7 @@ class Riff(core.AVContainer):
 
         self._find_subtitles(file.name)
 
-        if not self.has_idx:
+        if not self.has_idx and self.media == core.MEDIA_AV:
             log.debug('WARNING: avi has no index')
             self._set('corrupt', True)
 
@@ -538,6 +538,14 @@ class Riff(core.AVContainer):
                 file.seek(size-4, 1)
             # that's it, no new informations should be in AVIX
             return False
+        elif name == 'fmt ' and size <= 50:
+            # This is a wav file.
+            self.media = core.MEDIA_AUDIO
+            data = file.read(size)
+            fmt = struct.unpack("<HHLLHH", data[:16])
+            self._set('fourcc', fmt[0])
+            self._set('samplerate', fmt[2])
+            self._set('bitrate', fmt[3])
         elif not name.strip(string.printable + string.whitespace):
             # check if name is something usefull at all, maybe it is no
             # avi or broken
@@ -549,4 +557,4 @@ class Riff(core.AVContainer):
             return False
         return True
 
-core.register( 'video/avi', ('avi',), Riff )
+core.register( 'video/avi', ('wav','avi',), Riff )
