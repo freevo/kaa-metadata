@@ -81,7 +81,11 @@ DEBUG_LEVEL = [ logging.WARNING, logging.INFO, logging.DEBUG ]
 
 for o, a in opts:
     if o == '-d':
-        a = max(0, min(int(a), 2))
+        try:
+            a = max(0, min(int(a), 2))
+        except ValueError:
+            print 'Specify debug level (2 for full debug)'
+            sys.exit(1)
         print 'setting to log level %s' % a
         logger.setLevel(DEBUG_LEVEL[a])
 
