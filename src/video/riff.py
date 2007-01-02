@@ -208,6 +208,7 @@ class Riff(core.AVContainer):
             ai.samplerate = retval['nSamplesPerSec']
             ai.channels = retval['nChannels']
             ai.samplebits = retval['nBitsPerSample']
+            # FIXME: Bitrate calculation is completely wrong.
             ai.bitrate = retval['nAvgBytesPerSec'] * 8
             # TODO: set code if possible
             # http://www.stats.uwa.edu.au/Internal/Specs/DXALL/FileSpec/\
@@ -232,6 +233,7 @@ class Riff(core.AVContainer):
             vi.codec = t[16:20]
             vi.width = retval['biWidth']
             vi.height = retval['biHeight']
+            # FIXME: Bitrate calculation is completely wrong.
             vi.bitrate = strh['dwRate']
             vi.fps = float(strh['dwRate']) / strh['dwScale']
             vi.length = strh['dwLength'] / vi.fps
@@ -548,6 +550,14 @@ class Riff(core.AVContainer):
             self._set('bitrate', fmt[3])
             # Set a dummy fourcc so codec will be resolved in finalize.
             self._set('fourcc', 'dummy')
+        elif name == 'data':
+            # XXX: this is naive and may not be right.  For example if the
+            # stream is something that supports VBR like mp3, the value
+            # will be off.  The only way to properly deal with this issue
+            # is to decode part of the stream based on its codec, but
+            # kaa.metadata doesn't have this capability (yet?)
+            self._set('length', size / float(self.bitrate))
+            file.seek(size, 1)
         elif not name.strip(string.printable + string.whitespace):
             # check if name is something usefull at all, maybe it is no
             # avi or broken
