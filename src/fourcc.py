@@ -4,7 +4,7 @@ def resolve(code):
     """
     Transform a twocc or fourcc code into a name.
     """
-    if isinstance(code, str) and code.startswith('0x'):
+    if isinstance(code, basestring) and code.startswith('0x'):
         code = int(code[2:], 16)
     if isinstance(code, (int, long)):
         if code in TWOCC:

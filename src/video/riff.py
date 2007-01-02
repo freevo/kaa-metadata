@@ -543,9 +543,11 @@ class Riff(core.AVContainer):
             self.media = core.MEDIA_AUDIO
             data = file.read(size)
             fmt = struct.unpack("<HHLLHH", data[:16])
-            self._set('fourcc', fmt[0])
+            self._set('codec', hex(fmt[0]))
             self._set('samplerate', fmt[2])
             self._set('bitrate', fmt[3])
+            # Set a dummy fourcc so codec will be resolved in finalize.
+            self._set('fourcc', 'dummy')
         elif not name.strip(string.printable + string.whitespace):
             # check if name is something usefull at all, maybe it is no
             # avi or broken
