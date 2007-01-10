@@ -64,7 +64,7 @@ VORBISCOMMENT = { 'TITLE': 'title',
                   'GENRE': 'genre',
                 }
 
-MAXITERATIONS = 10
+MAXITERATIONS = 30
 
 class Ogm(core.AVContainer):
 
@@ -108,6 +108,7 @@ class Ogm(core.AVContainer):
         # Copy metadata to the streams
         if len(self.all_header) == len(self.all_streams):
             for i in range(len(self.all_header)):
+
                 # get meta info
                 for key in self.all_streams[i].keys():
                     if self.all_header[i].has_key(key):
@@ -122,9 +123,7 @@ class Ogm(core.AVContainer):
                 if self.all_header[i].has_key('CHAPTER01') and \
                        not self.chapters:
                     while 1:
-                        s = 'CHAPTER0%s' % (len(self.chapters) + 1)
-                        if len(s) < 9:
-                            s = '0' + s
+                        s = 'CHAPTER%02d' % (len(self.chapters) + 1)
                         if self.all_header[i].has_key(s) and \
                                self.all_header[i].has_key(s + 'NAME'):
                             pos = self.all_header[i][s]
