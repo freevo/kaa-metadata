@@ -108,9 +108,6 @@ class Ogm(core.AVContainer):
         # Copy metadata to the streams
         if len(self.all_header) == len(self.all_streams):
             for i in range(len(self.all_header)):
-                # set length
-                self.length = max(self.all_streams[i].length, self.length)
-
                 # get meta info
                 for key in self.all_streams[i].keys():
                     if self.all_header[i].has_key(key):
@@ -120,11 +117,6 @@ class Ogm(core.AVContainer):
                         asi = self.all_header[i][key.upper()]
                         self.all_streams[i][key] = asi
                         del self.all_header[i][key.upper()]
-
-                # Extract subtitles:
-                if hasattr(self.all_streams[i], 'type') and \
-                   self.all_streams[i].type == 'subtitle':
-                    self.subtitles.append(self.all_streams[i].language)
 
                 # Chapter parser
                 if self.all_header[i].has_key('CHAPTER01') and \
@@ -151,10 +143,6 @@ class Ogm(core.AVContainer):
                             self.chapters.append(c)
                         else:
                             break
-
-        for stream in self.all_streams:
-            if not stream.length:
-                stream.length = self.length
 
         # If there are no video streams in this ogg container, it
         # must be an audio file.  Raise an exception to cause the
@@ -303,6 +291,7 @@ class Ogm(core.AVContainer):
             elif htype[:4] == 'text':
                 subtitle = core.Subtitle()
                 # FIXME: add more info
+                self.subtitles.append(subtitle)
                 self.all_streams.append(subtitle)
 
         else:
