@@ -22,7 +22,8 @@ else:
     default_user = os.geteuid() or os.environ['USER'] or 'user'
     hostname = socket.gethostname() or 'host'
 
-proto = 4
+proto = 6
+
 default_server = 'http://freedb.freedb.org/~cddb/cddb.cgi'
 
 def query(track_info, server_url=default_server,
