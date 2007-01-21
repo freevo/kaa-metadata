@@ -16,10 +16,11 @@ Create doc in the Wiki and dump it into the doc subdir
 
 Add list of external files kaa.beacon should know about
 
-Move some code from mediainfo to media/core.py See image/core.py as
-example.
-
 Check attributes. Some are very similar and could be merged
+
+Make data int
+
+Make bitrate kbit/s
 
 If possible, attributes should match
 http://www.freedesktop.org/wiki/Standards_2fshared_2dfilemetadata_2dspec
