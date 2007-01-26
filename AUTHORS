@@ -16,6 +16,9 @@ Lars Eggert (FreeBSD support)
 Richard Mottershead <richard.mottershead@v21net.co.uk>
 Games support
 
+Jose Taza <jose4freevo@chello.nl>
+m4a
+
 This module is based on mmpython created by Thomas Schueppel and
 maintained by Thomas Schueppel and Dirk Meyer before it was renamed to
 kaa.metadata. The development of mmpython is discontinued.

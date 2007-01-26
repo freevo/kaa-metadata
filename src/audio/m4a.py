@@ -33,7 +33,6 @@
 # -----------------------------------------------------------------------------
 
 # python imports
-import struct
 import logging
 
 # import kaa.metadata.audio core
@@ -42,11 +41,119 @@ import core
 # get logging object
 log = logging.getLogger('metadata')
 
+import struct
 
-CONTAINER_TAGS = ('moov', 'udta', 'trak', 'mdia', 'minf',
-                  'dinf', 'stbl', 'meta', 'ilst', '----')
+FLAGS= CONTAINER, SKIPPER, TAGITEM, IGNORE= [2**_ for _ in xrange(4)]
 
-SKIP_TAGS = {'meta':4 }
+# CONTAINER: datum contains other boxes
+# SKIPPER: ignore first 4 bytes of datum
+# TAGITEM: "official" tag item
+CALLBACK= TAGITEM
+FLAGS.append(CALLBACK)
+
+TAGTYPES= (
+    ('ftyp', TAGITEM),
+    ('mvhd', 0),
+    ('moov', CONTAINER),
+    ('mdat', 0),
+    ('udta', CONTAINER),
+    ('meta', CONTAINER|SKIPPER),
+    ('ilst', CONTAINER),
+    ('\xa9ART', TAGITEM),
+    ('\xa9nam', TAGITEM),
+    ('\xa9too', TAGITEM),
+    ('\xa9alb', TAGITEM),
+    ('\xa9day', TAGITEM),
+    ('\xa9gen', TAGITEM),
+    ('\xa9wrt', TAGITEM),
+    ('\xa9cmt', TAGITEM),
+    ('trkn', TAGITEM),
+    ('trak', CONTAINER),
+    ('mdia', CONTAINER),
+    ('mdhd', TAGITEM),
+    ('minf', CONTAINER),
+    ('dinf', CONTAINER),
+    ('stbl', CONTAINER),
+)
+
+flagged= {}
+for flag in FLAGS:
+    flagged[flag]= frozenset(_[0] for _ in TAGTYPES if _[1] & flag)
+
+def _analyse(fp, offset0, offset1):
+    "Walk the atom tree in a mp4 file"
+    offset= offset0
+    while offset < offset1:
+        fp.seek(offset)
+        atomsize= struct.unpack("!i", fp.read(4))[0]
+        atomtype= fp.read(4)
+        if atomtype in flagged[CONTAINER]:
+            data= ''
+            for reply in _analyse(fp, offset+(atomtype in flagged[SKIPPER] and 12 or 8),
+                offset+atomsize):
+                yield reply
+        else:
+            fp.seek(offset+8)
+            if atomtype in flagged[TAGITEM]:
+                data=fp.read(atomsize-8)
+            else:
+                data= fp.read(min(atomsize-8, 32))
+            #print `atomtype`, `data`
+        if not atomtype in flagged[IGNORE]: yield atomtype, atomsize, data
+        offset+= atomsize
+
+def mp4_atoms(fp):
+    fp.seek(0,2)
+    size=fp.tell()
+    for atom in _analyse(fp, 0, size):
+        yield atom
+
+class M4ATags(dict):
+    "An class reading .m4a tags"
+    convtag= {
+        'ftyp': 'FileType',
+        'trkn': 'Track',
+        'length': 'Length',
+        'samplerate': 'SampleRate',
+        '\xa9ART': 'Artist',
+        '\xa9nam': 'Title',
+        '\xa9alb': 'Album',
+        '\xa9day': 'Year',
+        '\xa9gen': 'Genre',
+        '\xa9cmt': 'Comment',
+        '\xa9wrt': 'Writer',
+        '\xa9too': 'Tool',
+    }
+    def __init__(self, fp):
+        super(dict, self).__init__()
+        self['FileType'] = 'unknown'
+        fp.seek(0,0)
+        size= struct.unpack("!i", fp.read(4))[0]
+        type= fp.read(4)
+        #check for ftyp identification
+        if type == 'ftyp':
+            for atomtype, atomsize, atomdata in mp4_atoms(fp):
+                self.atom2tag(atomtype, atomdata)
+
+    def atom2tag(self, atomtype, atomdata):
+        "Insert items using descriptive key instead of atomtype"
+        if atomtype.find('\xa9',0,4) != -1:
+            key= self.convtag[atomtype]
+            self[key]= atomdata[16:].decode("utf-8")
+        elif atomtype == 'mdhd':
+            if ord(atomdata[0]) == 1:
+                #if version is 1 then date and duration values are 8 bytes in length
+                timescale= struct.unpack("!Q",atomdata[20:24])[0]
+                duration= struct.unpack("!Q",atomdata[24:30])[0]
+            else:
+                timescale= struct.unpack("!i",atomdata[12:16])[0]
+                duration= struct.unpack("!i",atomdata[16:20])[0]
+            self[self.convtag['length']]= duration/timescale
+            self[self.convtag['samplerate']]= timescale
+        elif atomtype == 'trkn':
+            self[self.convtag[atomtype]]= struct.unpack("!i",atomdata[16:20])[0]
+        elif atomtype == 'ftyp':
+            self[self.convtag[atomtype]]= atomdata[8:12].decode("utf-8")
 
 
 class Mpeg4Audio(core.Music):
@@ -55,55 +162,24 @@ class Mpeg4Audio(core.Music):
         core.Music.__init__(self)
         self.valid = 0
         returnval = 0
-        while returnval == 0:
+        tags = M4ATags(file)
+        if tags['FileType'] == 'M4A ':
             try:
-                self.readNextTag(file)
+                self.title = tags['Title']
+                self.artist = tags['Artist']
+                self.album = tags['Album']
+                self.trackno = tags['Track']
+                self.year = tags['Year']
+                self.encoder = tags['Tool']
+                self.length = tags['Length']
+                self.samplerate = tags['SampleRate']
+                self.valid = 1
+                self.mime = 'audio/mp4'
+                self.filename = file.name
             except ValueError:
                 returnval = 1
         if not self.valid:
             raise core.ParseError()
 
 
-    def readNextTag(self, file):
-        length, name = self.readInt(file), self.read(4, file)
-        length -= 8
-        if length < 0 or length > 1000:
-            raise ValueError, "Oops?"
-
-        if name in CONTAINER_TAGS:
-            self.read(SKIP_TAGS.get(name, 0), file)
-            data = '[container tag]'
-        else:
-            data = self.read(length, file)
-        if name == '\xa9nam':
-            self.title = data[8:]
-            self.valid = 1
-        if name == '\xa9ART':
-            self.artist = data[8:]
-            self.valid = 1
-        if name == '\xa9alb':
-            self.album = data[8:]
-            self.valid = 1
-        if name == 'trkn':
-            # Fix this
-            self.trackno = data
-            self.valid = 1
-        if name == '\xa9day':
-            self.year = data[8:]
-            self.valid = 1
-        if name == '\xa9too':
-            self.encoder = data[8:]
-            self.valid = 1
-        return 0
-
-    def read(self, b, file):
-        data = file.read(b)
-        if len(data) < b:
-            raise ValueError, "EOF"
-        return data
-
-    def readInt(self, file):
-        return struct.unpack('>I', self.read(4, file))[0]
-
-
-core.register( 'application/m4a', ('m4a',), Mpeg4Audio)
+core.register( 'audio/m4a', ('m4a',), Mpeg4Audio)
