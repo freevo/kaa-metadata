@@ -359,9 +359,7 @@ class Asf(core.AVContainer):
 
         elif guid == GUIDS['ASF_Content_Encryption_Object'] or \
              guid == GUIDS['ASF_Extended_Content_Encryption_Object']:
-            self.encrypted = True
-            if encrypted:
-                self._set('encrypted', True)
+            self._set('encrypted', True)
         else:
             # Just print the type:
             for h in GUIDS.keys():
