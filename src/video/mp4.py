@@ -1,12 +1,12 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# mov.py - mov file parser
+# mp4.py - mp4/mov file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
 # -----------------------------------------------------------------------------
 # kaa-Metadata - Media Metadata for Python
-# Copyright (C) 2003-2006 Thomas Schueppel, Dirk Meyer
+# Copyright (C) 2003-2007 Thomas Schueppel, Dirk Meyer
 #
 # First Edition: Thomas Schueppel <stain@acm.org>
 # Maintainer:    Dirk Meyer <dischi@freevo.org>

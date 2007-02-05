@@ -119,7 +119,7 @@ class _Factory:
         import video.riff
         import video.mpeg
         import video.asf
-        import video.mov
+        import video.mp4
         import video.flv
         import image.jpg
         import image.png
