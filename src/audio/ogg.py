@@ -69,6 +69,7 @@ class Ogg(core.Music):
         self.version, self.channels, self.samplerate, bitrate_max, \
                       self.bitrate, bitrate_min, blocksize, \
                       framing = struct.unpack('<IBIiiiBB',info[:23])
+        self.bitrate = self.bitrate / 1000
         # INFO Header, read Oggs and skip 10 bytes
         h = file.read(4+10+13)
         if h[:4] == 'OggS':
