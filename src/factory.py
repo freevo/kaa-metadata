@@ -146,6 +146,13 @@ class _Factory:
 
         import misc.directory
 
+    def get_scheme_from_info(self, info):
+        import disc.dvd
+        if isinstance(info, disc.dvd.DVDInfo):
+            return 'dvd'
+        else:
+            return 'file'
+
 
     def create_from_file(self, file, force=True):
         """
@@ -227,7 +234,11 @@ class _Factory:
 
         else:
             (scheme, location, path, query, fragment) = split
-            uhandle = urllib.urlopen(url)
+            try:
+                uhandle = urllib.urlopen(url)
+            except IOError:
+                # Unsupported URL scheme
+                return
             mime = uhandle.info().gettype()
             log.debug("Trying %s" % mime)
             if self.mimemap.has_key(mime):
@@ -258,7 +269,7 @@ class _Factory:
             r = self.create_from_file(f, force)
             f.close()
             if r:
-                r.url = 'file://%s' % os.path.abspath(filename)
+                r.url = '%s://%s' % (self.get_scheme_from_info(r), os.path.abspath(filename))
                 return r
         return None
 
@@ -272,7 +283,7 @@ class _Factory:
             log.debug('Trying %s' % e[R_MIMETYPE])
             try:
                 t = e[R_CLASS](devicename)
-                t.url = 'file://%s' % os.path.abspath(devicename)
+                t.url = '%s://%s' % (self.get_scheme_from_info(t), os.path.abspath(devicename))
                 return t
             except core.ParseError:
                 pass
