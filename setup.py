@@ -74,8 +74,9 @@ setup (module      = 'metadata',
        author      = "Thomas Schueppel, Dirk Meyer",
        scripts     = [ 'bin/mminfo' ],
        rpminfo = {
-           'requires':        'kaa-base >= 0.1.2, libdvdread >= 0.9.4',
-           'build_requires':  'kaa-base >= 0.1.2, libdvdread-devel >= 0.9.4, python-devel >= 2.3.0'
+           'requires':        'python-kaa-base >= 0.1.2, libdvdread >= 0.9.4',
+           'build_requires':  'python-kaa-base >= 0.1.2, libdvdread-devel >= 0.9.4, python-devel >= 2.3.0',
+           'obsoletes':       'mmpython'
        },
        ext_modules = ext_modules
       )
