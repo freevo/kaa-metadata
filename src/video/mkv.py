@@ -416,6 +416,7 @@ class Matroska(core.AVContainer):
         elif track_type == MATROSKA_SUBTITLES_TRACK:
             log.debug("Subtitle track found")
             track = core.Subtitle()
+            track.language = u'und'
             track.id = len(self.subtitles)
             self.subtitles.append(track)
             for elem in elements:
@@ -423,7 +424,6 @@ class Matroska(core.AVContainer):
 
 
     def process_track_common(self, elem, track):
-        track.language = u'und'
         elem_id = elem.get_id()
         if elem_id == MATROSKA_TRACK_LANGUAGE_ID:
             track.language = elem.get_str()
@@ -440,6 +440,7 @@ class Matroska(core.AVContainer):
         # Defaults
         track.codec = u'Unknown'
         track.fps = 0
+        track.language = u'und'
 
         for elem in elements:
             elem_id = elem.get_id()
@@ -498,6 +499,7 @@ class Matroska(core.AVContainer):
     def process_audio_track(self, elements):
         track = core.AudioStream()
         track.codec = u'Unknown'
+        track.language = u'und'
 
         for elem in elements:
             elem_id = elem.get_id()
