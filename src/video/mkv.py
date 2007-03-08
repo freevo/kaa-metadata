@@ -123,7 +123,8 @@ FOURCCMap = {
     'A_DTS': 0x2001,
     'A_PCM/INT/LIT': 0x0001,
     'A_PCM/FLOAT/IEEE': 0x003,
-    'A_TTA1': 0x77a1
+    'A_TTA1': 0x77a1,
+    'A_AAC/MPEG4/LC/SBR': 0x00ff
 }
 
 class EbmlEntity:
