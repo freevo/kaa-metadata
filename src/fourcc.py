@@ -1,25 +1,42 @@
+import struct, string, re
+
 __all__ = [ 'resolve' ]
 
 def resolve(code):
     """
-    Transform a twocc or fourcc code into a name.
+    Transform a twocc or fourcc code into a name.  Returns a 2-tuple of (cc,
+    codec) where both are strings and cc is a string in the form '0xXX' if it's
+    a twocc, or 'ABCD' if it's a fourcc.  If the given code is not a known
+    twocc or fourcc, the return value will be (None, 'Unknown'), unless the
+    code is otherwise a printable string in which case it will be returned as
+    the codec.
     """
-    if isinstance(code, basestring) and code.startswith('0x'):
-        code = int(code[2:], 16)
-    if isinstance(code, (int, long)):
-        if code in TWOCC:
-            return u'0x%04x' % code, unicode(TWOCC[code])
-        return u'0x%04x' % code, u'Unknown'
-    if code.upper() in FOURCC:
-        return unicode(code.upper()), unicode(FOURCC[code.upper()])
-    if code.upper().startswith('MS'):
-        code = code[2:]
-    if len(code) > 2:
-        return unicode(code), u'Unknown'
-    code = (ord(code[0]) << 8) + ord(code[1])
-    if code in TWOCC:
-        return u'0x%04x' % code, unicode(TWOCC[code])
-    return u'0x%04x' % code, u'Unknown'
+    if isinstance(code, basestring):
+        codec = u'Unknown'
+        # Check for twocc
+        if re.match(r'^0x[\da-f]{1,4}$', code, re.I):
+            # Twocc in hex form
+            return code, TWOCC.get(int(code, 16), codec)
+        elif code.isdigit() and 0 <= int(code) <= 0xff:
+            # Twocc in decimal form
+            return hex(int(code)), TWOCC.get(int(code), codec)
+        elif len(code) == 2:
+            code = struct.unpack('H', code)[0]
+            return hex(code), TWOCC.get(code, codec)
+        elif len(code) != 4 and len([ x for x in code if x not in string.printable ]) == 0:
+            # Code is a printable string.
+            codec = unicode(code)
+
+        if code[:2] == 'MS' and code[2:].upper() in FOURCC:
+            code = code[2:]
+
+        if code.upper() in FOURCC:
+            return code.upper(), unicode(FOURCC[code.upper()])
+        return None, codec
+    elif isinstance(code, (int, long)):
+        return hex(code), TWOCC.get(code, u'Unknown')
+
+    return None, u'Unknown'
 
 
 TWOCC = {

@@ -219,9 +219,9 @@ class Media(object):
                     value = value.strip().rstrip().replace(u'\0', u'')
                     setattr(self, attr, value)
 
-        if 'fourcc'  in self._keys and 'codec' in self._keys and \
-               self.codec is not None:
-            # resolve fourcc
+        if 'fourcc' in self._keys and 'codec' in self._keys and self.codec is not None:
+            # Codec may be a fourcc, in which case we resolve it to its actual
+            # name and set the fourcc attribute.
             self.fourcc, self.codec = fourcc.resolve(self.codec)
 
             

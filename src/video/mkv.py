@@ -124,7 +124,11 @@ FOURCCMap = {
     'A_PCM/INT/LIT': 0x0001,
     'A_PCM/FLOAT/IEEE': 0x003,
     'A_TTA1': 0x77a1,
-    'A_AAC/MPEG4/LC/SBR': 0x00ff
+    'A_WAVPACK4': 0x5756,
+    'A_VORBIS': 0x6750,
+    'A_FLAC': 0xF1AC,
+    'A_AAC': 0x00ff,
+    'A_AAC/': 0x00ff
 }
 
 class EbmlEntity:
@@ -483,6 +487,8 @@ class Matroska(core.AVContainer):
         # http://haali.cs.msu.ru/mkv/codecs.pdf
         if track.codec in FOURCCMap:
             track.codec = FOURCCMap[track.codec]
+        elif '/' in track.codec and track.codec.split('/')[0] + '/' in FOURCCMap:
+            track.codec = FOURCCMap[track.codec.split('/')[0] + '/']
         elif track.codec.endswith('FOURCC') and len(codec_private_id) == 40:
             track.codec = codec_private_id[16:20]
         elif track.codec.startswith('V_REAL/'):
@@ -519,6 +525,8 @@ class Matroska(core.AVContainer):
 
         if track.codec in FOURCCMap:
             track.codec = FOURCCMap[track.codec]
+        elif '/' in track.codec and track.codec.split('/')[0] + '/' in FOURCCMap:
+            track.codec = FOURCCMap[track.codec.split('/')[0] + '/']
         elif track.codec.startswith('A_'):
             track.codec = track.codec[2:]
 
