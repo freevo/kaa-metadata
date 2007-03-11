@@ -1,0 +1,4 @@
+0.6.1, released 2007/03/11
+
+* update mkv parser
+* update ogg parser to show bitrate as kbit/s
