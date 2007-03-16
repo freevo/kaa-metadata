@@ -100,7 +100,7 @@ class MP3(core.Music):
       core.Music.__init__(self)
       self.fileName = file.name;
       self.codec = 0x0055 # fourcc code of mp3
-      self.mime = 'audio/mp3'
+      self.mime = 'audio/mpeg'
 
       if not eyeD3_tag.isMp3File(file.name):
          raise core.ParseError()
@@ -299,4 +299,4 @@ class MP3(core.Music):
       self._set('mode', _modes[mode])
 
 
-core.register( 'audio/mp3', ('mp3',), MP3 )
+core.register( 'audio/mpeg', ('mp3',), MP3 )

@@ -86,7 +86,6 @@ class Riff(core.AVContainer):
         if h[:4] != "RIFF" and h[:4] != 'SDSS':
             raise core.ParseError()
 
-        self.mime = 'application/x-wave'
         self.has_idx = False
         self.header = {}
         self.junkStart = None
@@ -95,7 +94,7 @@ class Riff(core.AVContainer):
         if self.type == 'AVI ':
             self.mime = 'video/avi'
         elif self.type == 'WAVE':
-            self.mime = 'application/x-wave'
+            self.mime = 'audio/wav'
         try:
             while self._parseRIFFChunk(file):
                 pass
