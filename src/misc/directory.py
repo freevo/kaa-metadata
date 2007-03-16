@@ -75,7 +75,7 @@ class Directory(core.Media):
             if l.startswith('Icon='):
                 image = l[5:].strip()
                 if not image.startswith('/'):
-                    image = os.path.join(directory, image[2:])
+                    image = os.path.join(directory, image)
                 self._set('image', image)
             if l.startswith('Name='):
                 self.title = l[5:].strip()
