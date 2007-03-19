@@ -39,13 +39,6 @@ except ImportError:
     print 'kaa.base not installed'
     sys.exit(1)
 
-# check dependencies
-try:
-    import libxml2
-except ImportError:
-    print 'libxml2 python bindings not installed'
-    sys.exit(1)
-    
 # cdrom extension, FIXME: check if it will compile
 cdrom = Extension('kaa/metadata/disc/_cdrom', ['src/disc/cdrommodule.c'])
 

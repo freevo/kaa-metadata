@@ -29,13 +29,6 @@
 #
 # -----------------------------------------------------------------------------
 
-try:
-    # check deps
-    import libxml2
-except ImportError:
-    print 'libxml2 python bindings not installed'
-    raise ImportError('libxml2 python bindings not installed')
-
 # import factory code for kaa.metadata access
 from factory import *
 import disc.cdrom as cdrom
