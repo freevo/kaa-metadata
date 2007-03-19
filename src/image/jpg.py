@@ -33,7 +33,6 @@
 import struct
 import logging
 import cStringIO
-import libxml2
 
 # import kaa.metadata.image core
 import core
@@ -130,9 +129,8 @@ class JPG(core.Image):
                             elif orientation.find('180') > 0:
                                 self.rotation = 180
                 elif type == 'http://ns.adobe.com/xap/1.0/':
-                    doc = libxml2.parseDoc(data[data.find('\0')+1:])
-                    # FIXME: parse XMP data
-                    doc.freeDoc()
+                    # FIXME: parse XMP data (xml)
+                    doc = data[data.find('\0')+1:]
                 else:
                     pass
 
