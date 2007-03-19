@@ -1,4 +1,5 @@
-0.6.1, released 2007/03/11
+0.6.1, not yet released
 
 * update mkv parser
 * update ogg parser to show bitrate as kbit/s
+* remove libxml2 dependency
