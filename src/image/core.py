@@ -34,9 +34,7 @@ import os
 import sys
 import gzip
 import logging
-
-# kaa imports
-from kaa import xml
+import xml.sax
 
 # kaa.metadata imports
 from kaa.metadata.factory import register
@@ -50,6 +48,51 @@ ATTRIBUTES = ['description', 'people', 'location', 'event', 'width', 'height',
               'thumbnail','software','hardware', 'dpi', 'city', 'rotation', 'author' ]
 
 
+class BinsParser(xml.sax.ContentHandler):
+    def __init__(self, filename):
+        xml.sax.ContentHandler.__init__(self)
+        self.mode = 0
+        self.var = None
+        self.dict = {}
+
+        parser = xml.sax.make_parser()
+        parser.setContentHandler(self)
+        try:
+            parser.parse(filename)
+        except (KeyboardInterrupt, SystemExit):
+            sys.exit(0)
+        except ParseError:
+            pass
+        except Exception, e:
+            log.exception('bins parser')
+
+    def items(self):
+        return self.dict.items()
+    
+    def startElement(self, name, attr):
+        if self.mode == 0:
+            if name not in ('album', 'image'):
+                raise ParseError
+            self.mode = 1
+        if self.mode == 2 and name == 'field':
+            self.var = attr['name']
+            self.chars = ''
+        if self.mode == 1 and name == 'description':
+            self.mode = 2
+
+    def endElement(self, name):
+        if self.mode == 2 and name == 'description':
+            self.mode = 1
+        if self.var:
+            value = self.chars.strip()
+            if value:
+                self.dict[self.var] = value
+            self.var = None
+            
+    def characters(self, c):
+        if self.var:
+            self.chars += c
+            
 class Image(Media):
     """
     Digital Images, Photos, Pictures.
@@ -72,38 +115,18 @@ class Image(Media):
         """
         Parse external files like bins and .comments.
         """
-        for func in (self.parse_bins, self.parse_dot_comment):
-            try:
-                func(filename)
-            except (KeyboardInterrupt, SystemExit):
-                sys.exit(0)
-            except:
-                pass
-
-
-    def parse_bins(self, filename):
-        """
-        Parse bins xml files
-        """
+        # Parse bins xml files
         binsxml = filename + '.xml'
-        if not os.path.isfile(binsxml):
-            return
-        doc = xml.Document(binsxml, 'image')
-        for child in doc.get_child('description').children:
-            key = str(child.getattr('name'))
-            if not key or not child.content:
-                continue
-            self._set(key, child.content)
-
-
-    def parse_dot_comment(self, filename):
-        """
-        Parse info in .comments.
-        """
+        if os.path.isfile(binsxml):
+            bins = BinsParser(binsxml)
+            for key, value in bins.items():
+                self._set(key, value)
+        # FIXME: this doesn't work anymore
         comment_file = os.path.join(os.path.dirname(filename), '.comments',
                                     os.path.basename(filename) + '.xml')
-        if not os.path.isfile(comment_file):
+        if not os.path.isfile(comment_file) or 1:
             return
+        # FIXME: replace kaa.xml stuff with sax or minidom
         doc = xml.Document(comment_file, 'Comment')
         for child in doc.children:
             if child.name == 'Place':

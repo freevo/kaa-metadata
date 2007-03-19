@@ -36,15 +36,14 @@ import sys
 
 # kaa imports
 from kaa.strutils import unicode_to_str
-from kaa import xml
 
 # kaa.metadata imports
 import kaa.metadata.core as core
 import kaa.metadata.factory as factory
+from kaa.metadata.image.core import BinsParser
 
 # get logging object
 log = logging.getLogger('metadata')
-
 
 class Directory(core.Media):
     """
@@ -54,56 +53,34 @@ class Directory(core.Media):
 
     def __init__(self, directory):
         core.Media.__init__(self)
-        for func in (self.parse_dot_directory, self.parse_bins):
-            try:
-                func(directory)
-            except (KeyboardInterrupt, SystemExit):
-                sys.exit(0)
-            except:
-                log.exception('%s', func)
 
-
-    def parse_dot_directory(self, directory):
-        """
-        search .directory
-        """
+        # search .directory
         info = os.path.join(directory, '.directory')
-        if not os.path.isfile(info):
-            return
-        f = open(info)
-        for l in f.readlines():
-            if l.startswith('Icon='):
-                image = l[5:].strip()
-                if not image.startswith('/'):
-                    image = os.path.join(directory, image)
-                self._set('image', image)
-            if l.startswith('Name='):
-                self.title = l[5:].strip()
-            if l.startswith('Comment='):
-                self.comment = l[8:].strip()
-        f.close()
+        if os.path.isfile(info):
+            f = open(info)
+            for l in f.readlines():
+                if l.startswith('Icon='):
+                    image = l[5:].strip()
+                    if not image.startswith('/'):
+                        image = os.path.join(directory, image)
+                    self._set('image', image)
+                if l.startswith('Name='):
+                    self.title = l[5:].strip()
+                if l.startswith('Comment='):
+                    self.comment = l[8:].strip()
+            f.close()
 
-
-    def parse_bins(self, directory):
-        """
-        search album.xml (bins)
-        """
+        # search album.xml (bins)
         binsxml = os.path.join(directory, 'album.xml')
-        if not os.path.isfile(binsxml):
-            return
-
-        doc = xml.Document(binsxml, 'album')
-        for child in doc.get_child('description').children:
-            key = str(child.getattr('name'))
-            if not key or not child.content:
-                continue
-            if key == 'sampleimage':
-                image = os.path.join(directory, unicode_to_str(child.content))
-                if not os.path.isfile(image):
+        if os.path.isfile(binsxml):
+            bins = BinsParser(binsxml)
+            for key, value in bins.items():
+                if key == 'sampleimage':
+                    image = os.path.join(directory, unicode_to_str(value))
+                    if os.path.isfile(image):
+                        self._set('image', image)
                     continue
-                self._set('image', image)
-                continue
-            self._set(key, child.content)
+                self._set(key, value)
 
 # register to kaa.metadata core
 factory.register('directory', core.EXTENSION_DIRECTORY, Directory)
