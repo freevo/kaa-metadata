@@ -130,7 +130,7 @@ class _Factory:
         import video.real
         import video.ogm
         import video.mkv
-        import misc.xml
+        import misc.xmlfile
 
         import disc.vcd
         import disc.audio
