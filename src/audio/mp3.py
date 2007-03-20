@@ -221,6 +221,10 @@ class MP3(core.Music):
 
       self._parse_header(header)
 
+      if id3:
+         # Note: information about variable bitrate or not should
+         # be handled somehow.
+         (vbr, self.bitrate) = id3.getBitRate()
 
    def _find_header(self, file):
       file.seek(0, 0)
