@@ -1573,10 +1573,6 @@ class Mp3AudioFile(TagFile):
    def __init__(self, fileName, tagVersion = ID3_ANY_VERSION):
       TagFile.__init__(self, fileName);
 
-      # isMp3File is naive checks file extension only.
-      #if not isMp3File(fileName):
-      #   raise self.invalidFileExc;
-
       # Parse ID3 tag.
       f = file(self.fileName, "rb");
       tag = Tag();
@@ -1598,12 +1594,20 @@ class Mp3AudioFile(TagFile):
                                            "frame");
       header = mp3.Header();
       frameHead = header.find(bString)[0]
-      # Keep reading until we find a valid mp3 frame header, but give up if we
-      # don't find one within the first 300KB.
-      offset = n_chunks = 0
 
-      while not frameHead and n_chunks < 10:
-         bString = bString[-3:] + f.read(32768)
+      # Keep reading until we find a valid mp3 frame header, but give up if we
+      # don't find one within the first X KB, where X is 300KB if the file
+      # extension indicates the file may be an MP3, and 128 bytes otherwise.
+      offset = n_chunks = 0
+      if isMp3File(fileName):
+         chunk_size = 32768
+         chunk_limit = 10
+      else:
+         chunk_size = 128
+         chunk_limit = 1
+
+      while not frameHead and n_chunks < chunk_limit:
+         bString = bString[-3:] + f.read(chunk_size)
          n_chunks += 1
          if len(bString) <= 3:
             break
@@ -1615,7 +1619,7 @@ class Mp3AudioFile(TagFile):
 
       # Seek back just before frame header, for Xing header detection.
       try:
-          f.seek(-4 + (offset - 32768 + 4) * (n_chunks > 0), 1)
+          f.seek(-4 + (offset - chunk_size + 4) * (n_chunks > 0), 1)
       except IOError:
          raise InvalidAudioFormatException("Unable to find a valid mp3 frame")
         
