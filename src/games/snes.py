@@ -94,6 +94,3 @@ class SNES(core.Game):
             # not detected as rom
             raise core.ParseError()
         self.title = romName.strip()
-
-
-core.register( 'games/snes', ('smc', 'sfc', 'fig', ), SNES )

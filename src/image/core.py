@@ -37,7 +37,6 @@ import logging
 import xml.sax
 
 # kaa.metadata imports
-from kaa.metadata.factory import register
 from kaa.metadata.core import ParseError, Media, MEDIA_IMAGE
 
 # get logging object

@@ -65,7 +65,6 @@ def Factory():
     # One-time init
     if _factory == None:
         _factory = _Factory()
-        _factory.import_parser()
     return _factory
 
 
@@ -93,6 +92,11 @@ def parse(filename, force=True):
     return result
 
 
+class NullParser(object):
+    def __init__(self, file):
+        raise core.ParseError
+
+
 class _Factory:
     """
     Abstract Factory for the creation of Media instances. The different
@@ -101,50 +105,27 @@ class _Factory:
     def __init__(self):
         self.extmap = {}
         self.mimemap = {}
+        self.classmap = {}
         self.types = []
         self.device_types = []
         self.directory_types = []
         self.stream_types = []
 
 
-    def import_parser(self):
-        """
-        This functions imports all known parser.
-        """
-        import audio.ogg
-        import audio.m4a
-        import audio.ac3
-        import audio.pcm
-        import audio.adts
-        import video.riff
-        import video.mpeg
-        import video.asf
-        import video.mp4
-        import video.flv
-        import image.jpg
-        import image.png
-        import image.tiff
-        import image.bmp
-        import image.gif
-        import video.vcd
-        import video.real
-        import video.ogm
-        import video.mkv
-        import misc.xmlfile
+    def get_class(self, name):
+        if name not in self.classmap:
+            # Import the parser class for the given name.
+            modname, clsname = name.rsplit('.', 1)
+            # FIXME: why aren't relative imports working?
+            try:
+                module = __import__('kaa.metadata.' + modname, [], [], [clsname])
+                self.classmap[name] = getattr(module, clsname)
+            except:
+                log.exception('Error importing parser')
+                self.classmap[name] = NullParser
 
-        import disc.vcd
-        import disc.audio
-        import disc.dvd
-        import disc.data
+        return self.classmap[name]
 
-        import audio.mp3
-        import audio.webradio
-        import audio.flac
-
-        import games.gameboy
-        import games.snes
-
-        import misc.directory
 
     def get_scheme_from_info(self, info):
         import disc.dvd
@@ -165,7 +146,7 @@ class _Factory:
             log.debug("trying ext %s" % e[1:])
             file.seek(0,0)
             try:
-                parser = self.extmap[e[1:]][R_CLASS]
+                parser = self.get_class(self.extmap[e[1:]][R_CLASS])
                 return parser(file)
             except core.ParseError:
                 pass
@@ -181,13 +162,13 @@ class _Factory:
         log.info('No Type found by Extension. Trying all')
 
         for e in self.types:
-            if e[R_CLASS] == parser:
+            if self.get_class(e[R_CLASS]) == parser:
                 # We already tried this parser, don't bother again.
                 continue
             log.debug('trying %s' % e[R_MIMETYPE])
             file.seek(0,0)
             try:
-                return e[R_CLASS](file)
+                return self.get_class(e[R_CLASS])(file)
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(0)
             except:
@@ -220,7 +201,7 @@ class _Factory:
             for e in self.stream_types:
                 log.debug('Trying %s' % e[R_MIMETYPE])
                 try:
-                    return e[R_CLASS](url)
+                    return self.get_class(e[R_CLASS])(url)
                 except core.ParseError:
                     pass
                 except (KeyboardInterrupt, SystemExit):
@@ -243,7 +224,7 @@ class _Factory:
             log.debug("Trying %s" % mime)
             if self.mimemap.has_key(mime):
                 try:
-                    return self.mimemap[mime][R_CLASS](file)
+                    return self.get_class(self.mimemap[mime][R_CLASS])(file)
                 except core.ParseError:
                     pass
                 except (KeyboardInterrupt, SystemExit):
@@ -282,7 +263,7 @@ class _Factory:
         for e in self.device_types:
             log.debug('Trying %s' % e[R_MIMETYPE])
             try:
-                t = e[R_CLASS](devicename)
+                t = self.get_class(e[R_CLASS])(devicename)
                 t.url = '%s://%s' % (self.get_scheme_from_info(t), os.path.abspath(devicename))
                 return t
             except core.ParseError:
@@ -299,7 +280,7 @@ class _Factory:
         for e in self.directory_types:
             log.debug('Trying %s' % e[R_MIMETYPE])
             try:
-                return e[R_CLASS](dirname)
+                return self.get_class(e[R_CLASS])(dirname)
             except core.ParseError:
                 pass
             except (KeyboardInterrupt, SystemExit):
@@ -368,5 +349,5 @@ class _Factory:
 
         for info in l:
             if info[R_MIMETYPE] == mimetype and info[R_EXTENSION] == extensions:
-                return info[R_CLASS]
+                return self.get_class(info[R_CLASS])
         return None

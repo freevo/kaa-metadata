@@ -30,7 +30,6 @@
 # -----------------------------------------------------------------------------
 
 from kaa.metadata.core import ParseError, Media, MEDIA_GAME
-from kaa.metadata.factory import register
 
 class Game(Media):
     media = MEDIA_GAME

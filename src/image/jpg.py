@@ -169,5 +169,3 @@ class JPG(core.Image):
         for key, value in self.meta.items():
             if key.startswith('Thumb:') or key == 'Software':
                 self._set(key, value)
-
-core.register( 'image/jpeg', ('jpg','jpeg'), JPG )

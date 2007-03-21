@@ -207,8 +207,3 @@ class DVDInfo(core.Disc):
 
         # OK, try libdvdread
         self._parse(f.name)
-
-
-core.register( 'video/dvd', core.EXTENSION_DEVICE, DVDInfo )
-core.register('video/dvd', core.EXTENSION_DIRECTORY, DVDInfo)
-core.register('video/dvd', ['iso'], DVDInfo)

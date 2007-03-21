@@ -171,6 +171,3 @@ class AudioDisc(core.Disc):
                 t.title = t.title[len(self.title):].lstrip('/ \t-_')
 
         cdromfd.close()
-
-
-core.register( 'audio/cd', core.EXTENSION_DEVICE, AudioDisc )

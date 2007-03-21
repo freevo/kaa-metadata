@@ -34,9 +34,7 @@ import md5
 import logging
 
 # kaa imports
-from kaa.metadata.core import ParseError, Collection, EXTENSION_DEVICE, \
-     EXTENSION_DIRECTORY, MEDIA_DISC
-from kaa.metadata.factory import register
+from kaa.metadata.core import ParseError, Collection, MEDIA_DISC
 from kaa.metadata.video.core import VideoStream
 
 # extra cdrom parser

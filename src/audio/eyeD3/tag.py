@@ -1573,8 +1573,9 @@ class Mp3AudioFile(TagFile):
    def __init__(self, fileName, tagVersion = ID3_ANY_VERSION):
       TagFile.__init__(self, fileName);
 
-      if not isMp3File(fileName):
-         raise self.invalidFileExc;
+      # isMp3File is naive checks file extension only.
+      #if not isMp3File(fileName):
+      #   raise self.invalidFileExc;
 
       # Parse ID3 tag.
       f = file(self.fileName, "rb");

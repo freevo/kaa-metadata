@@ -93,5 +93,3 @@ class Gameboy(core.Game):
             # Check that the Fized Value is 0x96, if not then error.
             if file.read(1) != '\x96':
                 raise core.ParseError()
-
-core.register( 'games/gameboy', ('gba', 'gb', 'gbc', ), Gameboy )

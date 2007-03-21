@@ -122,5 +122,3 @@ class PNG(core.Image):
         if key is not None and key.lower() == "comment":
             self.comment = self.meta[key]
         return 1
-
-core.register( 'image/png', ('png',), PNG )

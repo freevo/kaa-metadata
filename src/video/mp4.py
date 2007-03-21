@@ -358,7 +358,3 @@ class MPEG4(core.AVContainer):
                 return 0
 
         return atomsize
-
-
-exts = ('mov', 'qt', 'mp4', 'mp4a', '3gp', '3gp2', 'mk2')
-core.register( 'video/quicktime', exts, MPEG4)

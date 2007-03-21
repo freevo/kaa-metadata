@@ -32,7 +32,6 @@
 from kaa.metadata.core import ParseError, Media, MEDIA_VIDEO, \
      MEDIA_SUBTITLE, MEDIA_AV, MEDIA_AUDIO, MEDIA_AV, Collection
 
-from kaa.metadata.factory import register
 from kaa.metadata.audio.core import Audio as AudioStream
 
 

@@ -136,6 +136,3 @@ class Ogg(core.Music):
             log.debug("granule = %d / %d" % (granule_position, absPos))
         # the last one is the one we are interested in
         return (granule_position / self.samplerate)
-
-
-core.register( 'application/ogg', ('ogg',), Ogg)

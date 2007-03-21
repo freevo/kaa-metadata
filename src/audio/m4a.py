@@ -180,6 +180,3 @@ class Mpeg4Audio(core.Music):
                 returnval = 1
         if not self.valid:
             raise core.ParseError()
-
-
-core.register( 'audio/m4a', ('m4a',), Mpeg4Audio)

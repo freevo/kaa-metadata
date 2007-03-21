@@ -55,6 +55,3 @@ class GIF(core.Image):
             raise core.ParseError()
 
         self.type = gifType.lower()
-
-
-core.register( 'image/gif', ('gif', ), GIF )

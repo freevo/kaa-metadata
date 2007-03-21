@@ -90,6 +90,3 @@ class VCDFile(core.Collection):
                     else:
                         vi.codec = 'MPEG2'
                     self.tracks.append(vi)
-
-
-core.register( 'video/vcd', ('cue',), VCDFile )

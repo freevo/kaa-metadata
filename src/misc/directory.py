@@ -81,6 +81,3 @@ class Directory(core.Media):
                         self._set('image', image)
                     continue
                 self._set(key, value)
-
-# register to kaa.metadata core
-factory.register('directory', core.EXTENSION_DIRECTORY, Directory)

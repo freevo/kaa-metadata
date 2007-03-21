@@ -604,5 +604,3 @@ class Matroska(core.AVContainer):
             self.thumbnail = data
 
         log.debug('Attachment "%s" found' % name)
-
-core.register( 'application/mkv', ('mkv', 'mka',), Matroska )

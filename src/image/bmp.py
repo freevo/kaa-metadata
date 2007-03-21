@@ -56,6 +56,3 @@ class BMP(core.Image):
 
         if bfType != 'BM' or bfSize != file.tell():
             raise core.ParseError()
-
-
-core.register( 'image/bmp', ('bmp', ), BMP )

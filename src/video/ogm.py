@@ -304,6 +304,3 @@ class Ogm(core.AVContainer):
         except (KeyError, IndexError, UnicodeDecodeError):
             return (len+4,None)
 
-
-
-core.register( 'application/ogg', ('ogm', 'ogg',), Ogm )

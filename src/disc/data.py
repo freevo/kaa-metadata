@@ -42,5 +42,3 @@ class DataDisc(core.Disc):
         self.type = 'CD'
         self.subtype = 'data'
 
-
-core.register( 'cd/unknown', core.EXTENSION_DEVICE, DataDisc )

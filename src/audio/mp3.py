@@ -102,13 +102,13 @@ class MP3(core.Music):
       self.codec = 0x0055 # fourcc code of mp3
       self.mime = 'audio/mpeg'
 
-      if not eyeD3_tag.isMp3File(file.name):
-         raise core.ParseError()
+      #if not eyeD3_tag.isMp3File(file.name):
+      #   raise core.ParseError()
 
       id3 = None
       try:
          id3 = eyeD3_tag.Mp3AudioFile(file.name)
-      except eyeD3_tag.TagException:
+      except (eyeD3_tag.TagException, eyeD3_tag.InvalidAudioFormatException):
          try:
             id3 = eyeD3_tag.Mp3AudioFile(file.name)
          except eyeD3_tag.InvalidAudioFormatException:
@@ -301,6 +301,3 @@ class MP3(core.Music):
          return
 
       self._set('mode', _modes[mode])
-
-
-core.register( 'audio/mpeg', ('mp3',), MP3 )

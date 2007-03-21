@@ -567,5 +567,3 @@ class Riff(core.AVContainer):
             log.debug("Bad or broken avi")
             return False
         return True
-
-core.register( 'video/avi', ('wav','avi',), Riff )

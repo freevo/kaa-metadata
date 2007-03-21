@@ -106,6 +106,3 @@ class RealVideo(core.AVContainer):
             pos += copyright_len+2
             (comment_len,) = struct.unpack('>H', s[pos:pos+2])
             self.comment = s[pos+2:pos+comment_len+2]
-
-
-core.register( 'video/real', ('rm', 'ra', 'ram'), RealVideo )

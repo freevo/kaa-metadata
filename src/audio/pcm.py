@@ -56,6 +56,3 @@ class PCM(core.Music):
             if res:
                 return res
         return None
-
-
-core.register( 'application/pcm', ('aif','voc','au'), PCM )

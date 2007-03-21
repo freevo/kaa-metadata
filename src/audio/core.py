@@ -29,9 +29,7 @@
 #
 # -----------------------------------------------------------------------------
 
-from kaa.metadata.core import ParseError, Media, MEDIA_AUDIO, \
-     EXTENSION_STREAM
-from kaa.metadata.factory import register
+from kaa.metadata.core import ParseError, Media, MEDIA_AUDIO
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
              'samplebits', 'bitrate', 'fourcc', 'trackno', 'id' ]

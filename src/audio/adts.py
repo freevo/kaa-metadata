@@ -74,6 +74,3 @@ class ADTS(core.Music):
        if header[0] != 255 or (header[1] >> 4) != 15:
            raise core.ParseError()
        self.mime = 'audio/aac'
-       
-       
-core.register( 'application/adts', ('aac',), ADTS )

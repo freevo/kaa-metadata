@@ -110,6 +110,3 @@ class TIFF(core.Image):
 
         if iptc:
             self._appendtable('IPTC', iptc)
-
-
-core.register( 'image/tiff', ('tif','tiff'), TIFF)

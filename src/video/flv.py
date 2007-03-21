@@ -175,6 +175,3 @@ class FlashVideo(core.AVContainer):
 
         log.info('unknown code: %x. Stop metadata parser', ord(data[0]))
         return 0, None
-
-    
-core.register( 'video/flv', ('flv',), FlashVideo )

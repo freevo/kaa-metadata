@@ -155,6 +155,3 @@ class AC3(core.Music):
             self.channels += 1
         self.codec = 0x2000 # fourcc code of ac3
         self.mime = 'audio/ac3'
-
-
-core.register( 'audio/ac3', ('ac3',), AC3 )

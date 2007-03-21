@@ -71,6 +71,7 @@ class XML(core.Media):
         handler = xml.sax.ContentHandler()
         handler.startElement = self.startElement
         parser = xml.sax.make_parser()
+        parser.setFeature('http://xml.org/sax/features/external-general-entities', False)
         parser.setContentHandler(handler)
         try:
             parser.parse(file)
@@ -86,5 +87,3 @@ class XML(core.Media):
         else:
             self.type = 'XML file'
         raise Identified
-        
-factory.register( 'text/xml', ('xml', 'fxd', 'html', 'htm'), XML )

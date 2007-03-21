@@ -93,6 +93,3 @@ class VCD(core.Disc):
             num += 1
             lmin, lsec = min, sec
         device.close()
-
-
-core.register( 'video/vcd', core.EXTENSION_DEVICE, VCD )

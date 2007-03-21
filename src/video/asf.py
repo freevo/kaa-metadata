@@ -370,7 +370,3 @@ class Asf(core.AVContainer):
                 u = "%.8X-%.4X-%.4X-%.2X%.2X-%s" % guid
                 log.debug("unknown: %s [%d]" % (u, objsize))
         return r
-
-
-
-core.register( 'video/asf', ('asf','wmv','wma'), Asf)

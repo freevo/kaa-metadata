@@ -856,6 +856,3 @@ class MPEG(core.AVContainer):
 
         file.close()
         log.debug('done scanning file')
-
-
-core.register( 'video/mpeg', ('mpeg','mpg','mp4', 'ts'), MPEG )
