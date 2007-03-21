@@ -1614,7 +1614,11 @@ class Mp3AudioFile(TagFile):
          raise InvalidAudioFormatException("Unable to find a valid mp3 frame")
 
       # Seek back just before frame header, for Xing header detection.
-      f.seek(-4 + (offset - 32768 + 4) * (n_chunks > 0), 1)
+      try:
+          f.seek(-4 + (offset - 32768 + 4) * (n_chunks > 0), 1)
+      except IOError:
+         raise InvalidAudioFormatException("Unable to find a valid mp3 frame")
+        
 
       TRACE_MSG("mp3 header %x found at position: %d (0x%x)" % \
                 (frameHead, f.tell(), f.tell()));
