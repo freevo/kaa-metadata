@@ -31,6 +31,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import os
 import logging
@@ -207,3 +209,6 @@ class DVDInfo(core.Disc):
 
         # OK, try libdvdread
         self._parse(f.name)
+
+
+Parser = DVDInfo

@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import re
 import os
@@ -856,3 +858,6 @@ class MPEG(core.AVContainer):
 
         file.close()
         log.debug('done scanning file')
+
+
+Parser = MPEG

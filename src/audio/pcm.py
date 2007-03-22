@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import sndhdr
 
@@ -56,3 +58,6 @@ class PCM(core.Music):
             if res:
                 return res
         return None
+
+
+Parser = PCM

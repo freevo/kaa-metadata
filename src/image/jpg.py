@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 import logging
@@ -169,3 +171,6 @@ class JPG(core.Image):
         for key, value in self.meta.items():
             if key.startswith('Thumb:') or key == 'Software':
                 self._set(key, value)
+
+
+Parser = JPG

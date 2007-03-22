@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # kaa.metadata.disc imports
 import core
 import cdrom
@@ -93,3 +95,6 @@ class VCD(core.Disc):
             num += 1
             lmin, lsec = min, sec
         device.close()
+
+
+Parser = VCD

@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import os
 import re
@@ -301,3 +303,6 @@ class MP3(core.Music):
          return
 
       self._set('mode', _modes[mode])
+
+
+Parser = MP3

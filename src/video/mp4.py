@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import re
 import struct
@@ -358,3 +360,6 @@ class MPEG4(core.AVContainer):
                 return 0
 
         return atomsize
+
+
+Parser = MPEG4

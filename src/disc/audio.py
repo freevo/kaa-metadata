@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import logging
 
@@ -171,3 +173,6 @@ class AudioDisc(core.Disc):
                 t.title = t.title[len(self.title):].lstrip('/ \t-_')
 
         cdromfd.close()
+
+
+Parser = AudioDisc

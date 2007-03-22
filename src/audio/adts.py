@@ -31,6 +31,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 import struct
 
 # import kaa.metadata.audio core
@@ -74,3 +76,5 @@ class ADTS(core.Music):
        if header[0] != 255 or (header[1] >> 4) != 15:
            raise core.ParseError()
        self.mime = 'audio/aac'
+
+Parser = ADTS

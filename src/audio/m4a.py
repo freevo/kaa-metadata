@@ -32,6 +32,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import logging
 
@@ -180,3 +182,5 @@ class Mpeg4Audio(core.Music):
                 returnval = 1
         if not self.valid:
             raise core.ParseError()
+
+Parser = Mpeg4Audio

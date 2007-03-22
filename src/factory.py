@@ -115,21 +115,20 @@ class _Factory:
     def get_class(self, name):
         if name not in self.classmap:
             # Import the parser class for the given name.
-            modname, clsname = name.rsplit('.', 1)
-            # FIXME: why aren't relative imports working?
             try:
-                module = __import__('kaa.metadata.' + modname, [], [], [clsname])
-                self.classmap[name] = getattr(module, clsname)
+                exec('from %s import Parser' % name)
+                self.classmap[name] = Parser
             except:
-                log.exception('Error importing parser')
+                # Something failed while trying to import this parser.  Rather
+                # than bail altogher, just log the error and use NullParser.
+                log.exception('Error importing parser %s' % name)
                 self.classmap[name] = NullParser
 
         return self.classmap[name]
 
 
     def get_scheme_from_info(self, info):
-        import disc.dvd
-        if isinstance(info, disc.dvd.DVDInfo):
+        if info.__class__.__name__ == 'DVDInfo':
             return 'dvd'
         else:
             return 'file'
@@ -151,6 +150,10 @@ class _Factory:
             except core.ParseError:
                 pass
             except (KeyboardInterrupt, SystemExit):
+                # FIXME: kaa.metadata is a library, and it is not its place
+                # to institute behaviour on these exceptions.  Rather it
+                # should bubble up these exceptions and let the caller
+                # deal with them.
                 sys.exit(0)
             except:
                 log.exception('parse error')

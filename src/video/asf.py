@@ -32,6 +32,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import re
 import struct
@@ -370,3 +372,6 @@ class Asf(core.AVContainer):
                 u = "%.8X-%.4X-%.4X-%.2X%.2X-%s" % guid
                 log.debug("unknown: %s [%d]" % (u, objsize))
         return r
+
+
+Parser = Asf

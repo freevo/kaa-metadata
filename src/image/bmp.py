@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 import logging
@@ -56,3 +58,6 @@ class BMP(core.Image):
 
         if bfType != 'BM' or bfSize != file.tell():
             raise core.ParseError()
+
+
+Parser = BMP

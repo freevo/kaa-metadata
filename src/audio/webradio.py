@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import urlparse
 import string
@@ -97,3 +99,6 @@ class WebRadio(core.Music):
     def _finalize(self):
         core.Music._finalize(self)
         self.bitrate = string.atoi(self.bitrate)*1000
+
+
+Parser = WebRadio

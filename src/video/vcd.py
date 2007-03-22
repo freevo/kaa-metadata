@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import os
 
@@ -90,3 +92,6 @@ class VCDFile(core.Collection):
                     else:
                         vi.codec = 'MPEG2'
                     self.tracks.append(vi)
+
+
+Parser = VCDFile

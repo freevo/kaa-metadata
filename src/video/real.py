@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 import string
@@ -106,3 +108,6 @@ class RealVideo(core.AVContainer):
             pos += copyright_len+2
             (comment_len,) = struct.unpack('>H', s[pos:pos+2])
             self.comment = s[pos+2:pos+comment_len+2]
+
+
+Parser = RealVideo

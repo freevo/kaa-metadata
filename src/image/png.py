@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 import zlib
@@ -122,3 +124,6 @@ class PNG(core.Image):
         if key is not None and key.lower() == "comment":
             self.comment = self.meta[key]
         return 1
+
+
+Parser = PNG

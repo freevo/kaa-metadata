@@ -41,45 +41,48 @@ from core import Media, MEDIA_AUDIO, MEDIA_VIDEO, MEDIA_IMAGE, \
 USE_NETWORK = 1
 
 # Audio parsers
-register('audio/mpeg', ('mp3',), 'audio.mp3.MP3')
-register('audio/ac3', ('ac3',), 'audio.ac3.AC3')
-register('application/adts', ('aac',), 'audio.adts.ADTS')
-register('application/flac', ('flac',), 'audio.flac.Flac')
-register('audio/m4a', ('m4a',), 'audio.m4a.Mpeg4Audio')
-register('application/ogg', ('ogg',), 'audio.ogg.Ogg')
-register('application/pcm', ('aif','voc','au'), 'audio.pcm.PCM')
-register('text/plain', EXTENSION_STREAM, 'audio.webradio.WebRadio')
+register('audio/mpeg', ('mp3',), 'audio.mp3')
+register('audio/ac3', ('ac3',), 'audio.ac3')
+register('application/adts', ('aac',), 'audio.adts')
+register('audio/m4a', ('m4a',), 'audio.m4a')
+register('application/ogg', ('ogg',), 'audio.ogg')
+register('application/pcm', ('aif','voc','au'), 'audio.pcm')
 
 # Video parsers
-register('video/asf', ('asf','wmv','wma'), 'video.asf.Asf')
-register('video/flv', ('flv',), 'video.flv.FlashVideo')
-register('application/mkv', ('mkv', 'mka'), 'video.mkv.Matroska')
-register('video/quicktime', ('mov', 'qt', 'mp4', 'mp4a', '3gp', '3gp2', 'mk2'), 'video.mp4.MPEG4')
-register('video/mpeg', ('mpeg','mpg','mp4', 'ts'), 'video.mpeg.MPEG')
-register('application/ogg', ('ogm', 'ogg'), 'video.ogm.Ogm')
-register('video/real', ('rm', 'ra', 'ram'), 'video.real.RealVideo')
-register('video/avi', ('wav','avi'), 'video.riff.Riff')
-register('video/vcd', ('cue',), 'video.vcd.VCDFile')
+register('video/asf', ('asf','wmv','wma'), 'video.asf')
+register('video/flv', ('flv',), 'video.flv')
+register('application/mkv', ('mkv', 'mka'), 'video.mkv')
+register('video/quicktime', ('mov', 'qt', 'mp4', 'mp4a', '3gp', '3gp2', 'mk2'), 'video.mp4')
+register('video/mpeg', ('mpeg','mpg','mp4', 'ts'), 'video.mpeg')
+register('application/ogg', ('ogm', 'ogg'), 'video.ogm')
+register('video/real', ('rm', 'ra', 'ram'), 'video.real')
+register('video/avi', ('wav','avi'), 'video.riff')
+register('video/vcd', ('cue',), 'video.vcd')
 
 # Disc parsers
-register('audio/cd', EXTENSION_DEVICE, 'disc.audio.AudioDisc')
-register('cd/unknown', EXTENSION_DEVICE, 'disc.data.DataDisc')
-register('video/dvd', EXTENSION_DEVICE, 'disc.dvd.DVDInfo')
-register('video/dvd', EXTENSION_DIRECTORY, 'disc.dvd.DVDInfo')
-register('video/dvd', ('iso',), 'disc.dvd.DVDInfo')
-register('video/vcd', EXTENSION_DEVICE, 'disc.vcd.VCD')
+register('audio/cd', EXTENSION_DEVICE, 'disc.audio')
+register('cd/unknown', EXTENSION_DEVICE, 'disc.data')
+register('video/dvd', EXTENSION_DEVICE, 'disc.dvd')
+register('video/dvd', EXTENSION_DIRECTORY, 'disc.dvd')
+register('video/dvd', ('iso',), 'disc.dvd')
+register('video/vcd', EXTENSION_DEVICE, 'disc.vcd')
 
 # Image parsers
-register('image/bmp', ('bmp', ), 'image.bmp.BMP')
-register('image/gif', ('gif', ), 'image.gif.GIF')
-register('image/jpeg', ('jpg','jpeg'), 'image.jpg.JPG')
-register('image/png', ('png',), 'image.png.PNG')
-register('image/tiff', ('tif','tiff'), 'image.tiff.TIFF')
+register('image/bmp', ('bmp', ), 'image.bmp')
+register('image/gif', ('gif', ), 'image.gif')
+register('image/jpeg', ('jpg','jpeg'), 'image.jpg')
+register('image/png', ('png',), 'image.png')
+register('image/tiff', ('tif','tiff'), 'image.tiff')
 
 # Games parsers
-register('games/gameboy', ('gba', 'gb', 'gbc'), 'games.gameboy.Gameboy')
-register('games/snes', ('smc', 'sfc', 'fig'), 'games.snes.SNES')
+register('games/gameboy', ('gba', 'gb', 'gbc'), 'games.gameboy')
+register('games/snes', ('smc', 'sfc', 'fig'), 'games.snes')
 
 # Misc parsers
-register('directory', EXTENSION_DIRECTORY, 'misc.directory.Directory')
-register('text/xml', ('xml', 'fxd', 'html', 'htm'), 'misc.xmlfile.XML')
+register('directory', EXTENSION_DIRECTORY, 'misc.directory')
+register('text/xml', ('xml', 'fxd', 'html', 'htm'), 'misc.xmlfile')
+
+# These parsers are prone to producing false positives, so we use them
+# last.  They should be fixed.
+register('text/plain', EXTENSION_STREAM, 'audio.webradio')
+register('application/flac', ('flac',), 'audio.flac')

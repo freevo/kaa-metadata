@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import re
 import os
@@ -567,3 +569,6 @@ class Riff(core.AVContainer):
             log.debug("Bad or broken avi")
             return False
         return True
+
+
+Parser = Riff

@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 import string
@@ -175,3 +177,6 @@ class FlashVideo(core.AVContainer):
 
         log.info('unknown code: %x. Stop metadata parser', ord(data[0]))
         return 0, None
+
+
+Parser = FlashVideo

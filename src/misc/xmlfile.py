@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import os
 import logging
@@ -87,3 +89,6 @@ class XML(core.Media):
         else:
             self.type = 'XML file'
         raise Identified
+
+
+Parser = XML

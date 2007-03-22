@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 
@@ -155,3 +157,6 @@ class AC3(core.Music):
             self.channels += 1
         self.codec = 0x2000 # fourcc code of ac3
         self.mime = 'audio/ac3'
+
+
+Parser = AC3

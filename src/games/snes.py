@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 import logging
@@ -94,3 +96,5 @@ class SNES(core.Game):
             # not detected as rom
             raise core.ParseError()
         self.title = romName.strip()
+
+Parser = SNES

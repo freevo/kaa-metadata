@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 import zlib
@@ -110,3 +112,6 @@ class TIFF(core.Image):
 
         if iptc:
             self._appendtable('IPTC', iptc)
+
+
+Parser = TIFF

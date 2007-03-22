@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 import logging
@@ -51,10 +53,10 @@ class Gameboy(core.Game):
     def __init__(self,file):
         core.Game.__init__(self)
 
-	# Determine if the ROM is a Gameboy Advance ROM.
-	# Compare the Logo Code. All GBA Roms have this code.
-	file.seek(4)
-	if file.read(156) != GBA_LOGOCODE:
+        # Determine if the ROM is a Gameboy Advance ROM.
+        # Compare the Logo Code. All GBA Roms have this code.
+        file.seek(4)
+        if file.read(156) != GBA_LOGOCODE:
 
             # Determine if the ROM is a Standard Gameboy ROM
             # Compare the Logo Code. All GB Roms have this code.
@@ -74,7 +76,7 @@ class Gameboy(core.Game):
                 self.mime = 'games/gb'
                 self.type = 'GameBoy game'
 
-	else:
+        else:
 
             self.mime = 'games/gba'
             self.type = 'GameBoyAdvance game'
@@ -93,3 +95,6 @@ class Gameboy(core.Game):
             # Check that the Fized Value is 0x96, if not then error.
             if file.read(1) != '\x96':
                 raise core.ParseError()
+
+
+Parser = Gameboy

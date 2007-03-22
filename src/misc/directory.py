@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import os
 import logging
@@ -81,3 +83,5 @@ class Directory(core.Media):
                         self._set('image', image)
                     continue
                 self._set(key, value)
+
+Parser = Directory

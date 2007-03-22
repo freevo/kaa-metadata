@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 import logging
@@ -55,3 +57,6 @@ class GIF(core.Image):
             raise core.ParseError()
 
         self.type = gifType.lower()
+
+
+Parser = GIF

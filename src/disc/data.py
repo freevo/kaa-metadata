@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # kaa.metadata.disc imports
 import core
 
@@ -42,3 +44,5 @@ class DataDisc(core.Disc):
         self.type = 'CD'
         self.subtype = 'data'
 
+
+Parser = DataDisc

@@ -28,6 +28,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 import re
@@ -604,3 +606,6 @@ class Matroska(core.AVContainer):
             self.thumbnail = data
 
         log.debug('Attachment "%s" found' % name)
+
+
+Parser = Matroska

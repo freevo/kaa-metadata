@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 import re
@@ -112,3 +114,6 @@ class Flac(core.Music):
     def _extractHeaderString(self,header):
         len = struct.unpack( '<I', header[:4] )[0]
         return (len+4,unicode(header[4:4+len], 'utf-8'))
+
+
+Parser = Flac

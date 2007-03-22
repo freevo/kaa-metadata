@@ -29,6 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
+__all__ = ['Parser']
+
 # python imports
 import struct
 import re
@@ -304,3 +306,5 @@ class Ogm(core.AVContainer):
         except (KeyError, IndexError, UnicodeDecodeError):
             return (len+4,None)
 
+
+Parser = Ogm
