@@ -3,4 +3,4 @@ recursive-include src *.c
 recursive-include src *.h
 
 include bin/mminfo
-include ChangeLog MANIFEST README COPYING TODO AUTHORS
+include ChangeLog MANIFEST README COPYING TODO AUTHORS NEWS
