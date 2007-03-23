@@ -3,3 +3,4 @@
 * update mkv parser
 * update ogg parser to show bitrate as kbit/s
 * remove libxml2 dependency
+* load parser on demand
