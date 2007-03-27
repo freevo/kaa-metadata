@@ -31,6 +31,7 @@
 
 # import factory code for kaa.metadata access
 from factory import *
+from version import VERSION
 import disc.cdrom as cdrom
 
 from core import Media, MEDIA_AUDIO, MEDIA_VIDEO, MEDIA_IMAGE, \
