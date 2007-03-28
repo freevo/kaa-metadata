@@ -3,21 +3,22 @@ The module is part of the Kaa Media Repository
 Maintainer of this module:
 
 Dirk Meyer <dischi@freevo.org>
-Jason Tackaberry <tack@urandom.ca>
 
 Contributions:
+
+Jason Tackaberry <tack@urandom.ca>
 
 Thomas Schueppel <stain@acm.org>
 As founder of mmpython, he wrote many of the info parser modules.
 
 Aubin Paul <aubin@punknews.org>
+
 Lars Eggert (FreeBSD support)
 
 Richard Mottershead <richard.mottershead@v21net.co.uk>
 Games support
 
-Jose Taza <jose4freevo@chello.nl>
-m4a
+Jose Taza <jose4freevo@chello.nl> (m4a parser)
 
 This module is based on mmpython created by Thomas Schueppel and
 maintained by Thomas Schueppel and Dirk Meyer before it was renamed to
@@ -27,7 +28,7 @@ kaa.metadata. The development of mmpython is discontinued.
 
 This package also includes some code from the following projects:
 
-disc/ifomodule.c is based on ifoinfo from Jens Arnfast
+src/disc/ifomodule.c is based on ifoinfo from Jens Arnfast
 http://arnfast.net/projects/ifoinfo.php
 
 The Python CDDB module from Ben Gertzfield <che@debian.org>
