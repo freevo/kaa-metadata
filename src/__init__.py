@@ -62,11 +62,11 @@ register('video/vcd', ('cue',), 'video.vcd')
 
 # Disc parsers
 register('audio/cd', EXTENSION_DEVICE, 'disc.audio')
-register('cd/unknown', EXTENSION_DEVICE, 'disc.data')
 register('video/dvd', EXTENSION_DEVICE, 'disc.dvd')
 register('video/dvd', EXTENSION_DIRECTORY, 'disc.dvd')
 register('video/dvd', ('iso',), 'disc.dvd')
 register('video/vcd', EXTENSION_DEVICE, 'disc.vcd')
+register('cd/unknown', EXTENSION_DEVICE, 'disc.data')
 
 # Image parsers
 register('image/bmp', ('bmp', ), 'image.bmp')
