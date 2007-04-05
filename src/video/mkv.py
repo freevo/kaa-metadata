@@ -54,6 +54,7 @@ MATROSKA_SUBTITLES_TRACK          = 0x11
 
 MATROSKA_HEADER_ID                = 0x1A45DFA3
 MATROSKA_TRACKS_ID                = 0x1654AE6B
+MATROSKA_CUE_DATE_ID              = 0x1C53BB6B
 MATROSKA_SEGMENT_ID               = 0x18538067
 MATROSKA_SEGMENT_INFO_ID          = 0x1549A966
 MATROSKA_CLUSTER_ID               = 0x1F43B675
@@ -302,6 +303,7 @@ class Matroska(core.AVContainer):
         log.debug("HEADER ID found %08X" % header.get_id() )
         self.mime = 'application/mkv'
         self.type = 'Matroska'
+        self.has_idx = False
 
         # Now get the segment
         self.segment = segment = EbmlEntity(buffer[header.get_total_len():])
@@ -319,6 +321,9 @@ class Matroska(core.AVContainer):
         except core.ParseError:
             pass
 
+        if not self.has_idx:
+            log.debug('WARNING: file has no index')
+            self._set('corrupt', True)
 
     def process_elem(self, elem):
         elem_id = elem.get_id()
@@ -354,6 +359,9 @@ class Matroska(core.AVContainer):
         elif elem_id == MATROSKA_SEEKHEAD_ID:
             self.process_seekhead(elem)
 
+        elif elem_id == MATROSKA_CUE_DATE_ID:
+            self.has_idx = True
+            
         log.debug('END: process element %s' % hex(elem_id))
         return True
 
