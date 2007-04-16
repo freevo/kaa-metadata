@@ -577,7 +577,7 @@ class Matroska(core.AVContainer):
                     if display_elem.get_id() == MATROSKA_CHAPTER_STRING_ID:
                         chap.name = display_elem.get_utf8()
 
-        log.debug('Chapter "%s" found' % chap.name)
+        log.debug('Chapter "%s" found', chap.name)
         chap.id = len(self.chapters)
         self.chapters.append(chap)
 
