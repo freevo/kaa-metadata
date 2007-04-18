@@ -1,6 +1,9 @@
 Release Notes, see ChangeLog for a detailed list of changes.
 
-0.6.1, not yet released
+0.6.2, not yet released
+
+
+0.6.1, 2007-04-18
 
 * update mkv parser
 * update ogg parser to show bitrate as kbit/s
