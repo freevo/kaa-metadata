@@ -198,6 +198,10 @@ class Media(object):
             value = getattr(self, key)
             if value is None:
                 continue
+            if key == 'image':
+                if isinstance(value, unicode):
+                    setattr(self, key, unicode_to_str(value))
+                continue
             if isinstance(value, str):
                 setattr(self, key, str_to_unicode(value))
             if isinstance(value, unicode):
