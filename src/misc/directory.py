@@ -84,4 +84,9 @@ class Directory(core.Media):
                     continue
                 self._set(key, value)
 
+        # find folder.jpg (windows style cover)
+        folderjpg = os.path.join(directory, 'folder.jpg')
+        if os.path.isfile(folderjpg):
+            self._set('image', folderjpg)
+            
 Parser = Directory
