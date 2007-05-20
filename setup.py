@@ -59,6 +59,13 @@ try:
 except AttributeError:
     print 'The DVD parser will be disabled'
     ext_modules = [ cdrom ]
+
+if not cdrom.has_python_h():
+    print "---------------------------------------------------------------------"
+    print "Python headers not found; please install python development package."
+    print "Rom drive support will be unavailable"
+    print "---------------------------------------------------------------------"
+    ext_modules = [ ]
     
 setup (module      = 'metadata',
        version     = '0.6.2',
