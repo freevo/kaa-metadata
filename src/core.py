@@ -41,7 +41,7 @@ from kaa.strutils import str_to_unicode, unicode_to_str
 
 import fourcc
 
-UNPRINTABLE_KEYS = [ 'thumbnail']
+UNPRINTABLE_KEYS = [ 'thumbnail', 'url' ]
 
 # media type definitions
 MEDIA_AUDIO     = 'MEDIA_AUDIO'
