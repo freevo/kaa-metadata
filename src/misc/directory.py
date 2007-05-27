@@ -88,5 +88,7 @@ class Directory(core.Media):
         folderjpg = os.path.join(directory, 'folder.jpg')
         if os.path.isfile(folderjpg):
             self._set('image', folderjpg)
+
+        self.mime = 'text/directory'
             
 Parser = Directory
