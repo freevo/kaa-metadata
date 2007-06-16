@@ -66,7 +66,8 @@ MP3_INFO_TABLE = { "LINK": "link",
                    "TPE1": "artist",
                    "TPE2": "artist",
                    "TRCK": "trackno",
-                   "TPOS": "discs"}
+                   "TPOS": "discs",
+                   "TPUB": "publisher"}
 
 _bitrates = [
    [ # MPEG-2 & 2.5
@@ -162,7 +163,7 @@ class MP3(core.Music):
 
             for k, var in MP3_INFO_TABLE.items():
                if id3.tag.frames[k]:
-                  setattr(self, var, id3.tag.frames[k][0].text)
+                  self._set(var,id3.tag.frames[k][0].text)
             if id3.tag.frames['APIC']:
                pic = id3.tag.frames['APIC'][0]
                if pic.imageData:
@@ -174,7 +175,9 @@ class MP3(core.Music):
                if f.__class__ is eyeD3_frames.TextFrame:
                   tab[f.header.id] = f.text
                elif f.__class__ is eyeD3_frames.UserTextFrame:
-                  tab[f.header.id] = f.text
+                  #userTextFrames : debug: id  starts with _
+                  self._set('_'+f.description,f.text) 
+                  tab['_'+f.description] = f.text
                elif f.__class__ is eyeD3_frames.DateFrame:
                   tab[f.header.id] = f.date_str
                elif f.__class__ is eyeD3_frames.CommentFrame:

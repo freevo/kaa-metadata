@@ -371,6 +371,7 @@ class Matroska(core.AVContainer):
             if seek_elem.get_id() != MATROSKA_SEEK_ID:
                 continue
             for sub_elem in self.process_one_level(seek_elem):
+                print 'xx', hex(sub_elem.get_id()), hex(sub_elem.get_value())
                 if sub_elem.get_id() == MATROSKA_SEEKID_ID:
                     if sub_elem.get_value() == MATROSKA_CLUSTER_ID:
                         # Not interested in these.
