@@ -32,6 +32,7 @@
 __all__ = ['Parser']
 
 # python imports
+import sys
 import struct
 import string
 import logging
@@ -127,17 +128,21 @@ class FlashVideo(core.AVContainer):
             elif chunk[0] == FLV_TAG_TYPE_META:
                 log.info('metadata %s', str(chunk))
                 metadata = file.read(size)
-                while metadata:
-                    length, value = self._parse_value(metadata)
-                    if isinstance(value, dict):
-                        if value.get('duration'):
-                            self.length = value.get('duration')
-                        self._appendtable('FLVINFO', value)
-                    if not length:
-                        # parse error
-                        break
-                    metadata = metadata[length:]
-
+                try:
+                    while metadata:
+                        length, value = self._parse_value(metadata)
+                        if isinstance(value, dict):
+                            if value.get('duration'):
+                                self.length = value.get('duration')
+                            self._appendtable('FLVINFO', value)
+                        if not length:
+                            # parse error
+                            break
+                        metadata = metadata[length:]
+                except (KeyboardInterrupt, SystemExit):
+                    sys.exit(0)
+                except:
+                    pass
             else:
                 log.info('unkown %s', str(chunk))
                 file.seek(size, 1)
