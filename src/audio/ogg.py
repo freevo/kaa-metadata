@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# ogg.py - ogg file parser
+# ogg.py - ogg file parser (vorbis only)
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -65,7 +65,8 @@ class Ogg(core.Music):
             log.info("Wrong vorbis header type, giving up.")
             raise core.ParseError()
 
-        self.mime = 'application/ogg'
+        # http://wiki.xiph.org/index.php/MIME_Types_and_File_Extensions
+        self.mime = 'audio/x-vorbis+ogg'
         header = {}
         info = file.read(23)
         self.version, self.channels, self.samplerate, bitrate_max, \

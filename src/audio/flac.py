@@ -50,6 +50,9 @@ class Flac(core.Music):
         if file.read(4) != 'fLaC':
             raise core.ParseError()
 
+        # http://wiki.xiph.org/index.php/MIME_Types_and_File_Extensions
+        self.mime = 'application/flac'
+
         while 1:
             (blockheader,) = struct.unpack('>I',file.read(4))
             lastblock = (blockheader >> 31) & 1
