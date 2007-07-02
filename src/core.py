@@ -217,7 +217,7 @@ class Media(object):
                 value = table.get(tag, None)
                 if value is not None:
                     if not isinstance(value, (str, unicode)):
-                        value = unicode(str(value))
+                        value = str_to_unicode(str(value))
                     elif isinstance(value, str):
                         value = str_to_unicode(value)
                     value = value.strip().rstrip().replace(u'\0', u'')
