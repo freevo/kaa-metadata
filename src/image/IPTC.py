@@ -42,7 +42,7 @@ mapping = {
     'date created': 'date',
     'keywords': 'keywords',
     'writer-editor': 'artist',
-    'credit': 'copyright',
+    'credit': 'artist',
     'by-line': 'artist',
     'country/primary location name': 'country',
     'caption-abstract': 'description',
