@@ -54,7 +54,7 @@ MATROSKA_SUBTITLES_TRACK          = 0x11
 
 MATROSKA_HEADER_ID                = 0x1A45DFA3
 MATROSKA_TRACKS_ID                = 0x1654AE6B
-MATROSKA_CUE_DATE_ID              = 0x1C53BB6B
+MATROSKA_CUES_ID                  = 0x1C53BB6B
 MATROSKA_SEGMENT_ID               = 0x18538067
 MATROSKA_SEGMENT_INFO_ID          = 0x1549A966
 MATROSKA_CLUSTER_ID               = 0x1F43B675
@@ -170,7 +170,7 @@ class EbmlEntity:
 
 
     def add_data(self, data):
-        maxlen = self.ebml_length - self.get_total_len()
+        maxlen = self.ebml_length - len(self.entity_data)
         if maxlen <= 0:
             return
         self.entity_data += data[:maxlen]
@@ -359,7 +359,7 @@ class Matroska(core.AVContainer):
         elif elem_id == MATROSKA_SEEKHEAD_ID:
             self.process_seekhead(elem)
 
-        elif elem_id == MATROSKA_CUE_DATE_ID:
+        elif elem_id == MATROSKA_CUES_ID:
             self.has_idx = True
             
         log.debug('END: process element %s' % hex(elem_id))
