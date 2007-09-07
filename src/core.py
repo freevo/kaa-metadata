@@ -214,6 +214,8 @@ class Media(object):
         for name, table in self._tables.items():
             mapping = self.table_mapping.get(name, {})
             for tag, attr in mapping.items():
+                if self.get(attr):
+                    continue
                 value = table.get(tag, None)
                 if value is not None:
                     if not isinstance(value, (str, unicode)):
