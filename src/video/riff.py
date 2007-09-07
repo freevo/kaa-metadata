@@ -477,10 +477,8 @@ class Riff(core.AVContainer):
                                 log.debug('no support for time format %s', value)
                                 date = 0
                         if date:
-                            # format date to something similar to a date in an
-                            # EXIF header. This creates one unique way in
-                            # kaa.metadata to handle this.
-                            self.date = time.strftime("%Y:%m:%d %H:%M:%S", date)
+                            # save date as int
+                            self.date = int(time.mktime(date))
                 i+=sz
         return retval
 

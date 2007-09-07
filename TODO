@@ -18,8 +18,6 @@ Add list of external files kaa.beacon should know about
 
 Check attributes. Some are very similar and could be merged
 
-Make data int
-
 Make bitrate kbit/s
 
 If possible, attributes should match

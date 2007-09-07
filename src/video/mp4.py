@@ -171,10 +171,8 @@ class MPEG4(core.AVContainer):
                     try:
                         # XXX Date number of Seconds is since January 1st 1904!
                         # XXX 2082844800 is the difference between Unix and
-                        # XXX Apple time. Fix me to work on Apple, too
+                        # XXX Apple time. FIXME to work on Apple, too
                         self.date = int(tkhd[1]) - 2082844800
-                        self.date = time.strftime('%y.%m.%d %H:%M:%S',
-                                                  time.gmtime(self.date))
                     except Exception, e:
                         log.exception('There was trouble extracting the date')
 
