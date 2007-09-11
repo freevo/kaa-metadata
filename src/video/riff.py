@@ -467,7 +467,7 @@ class Riff(core.AVContainer):
                         try:
                             # The doc says it should be a format like
                             # "Wed Jan 02 02:03:55 1990"
-                            date = time.strptime(value, "%a %b %d %Y %H:%M:%S")
+                            date = time.strptime(value, "%a %b %d %H:%M:%S %Y")
                         except ValueError:
                             try:
                                 # The Casio S500 uses "2005/12/24/ 14:11"
