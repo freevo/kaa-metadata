@@ -55,7 +55,6 @@ AVIINFO = {
     'IART': 'artist',
     'IPRD': 'product',
     'ISFT': 'software',
-    'ICRD': 'date',
     'ICMT': 'comment',
     'ILNG': 'language',
     'IKEY': 'keywords',
@@ -462,23 +461,23 @@ class Riff(core.AVContainer):
                 value = value.replace('\0', '').lstrip().rstrip()
                 if value:
                     retval[key] = value
-                    if key == 'IDIT':
-                        # Date the video was created
+                    if key in ('IDIT', 'ICRD'):
+                        # Timestamp the video was created
                         try:
                             # The doc says it should be a format like
                             # "Wed Jan 02 02:03:55 1990"
-                            date = time.strptime(value, "%a %b %d %H:%M:%S %Y")
+                            t = time.strptime(value, "%a %b %d %H:%M:%S %Y")
                         except ValueError:
                             try:
                                 # The Casio S500 uses "2005/12/24/ 14:11"
-                                date = time.strptime(value, "%Y/%m/%d/ %H:%M")
+                                t = time.strptime(value, "%Y/%m/%d/ %H:%M")
                             except ValueError, e:
                                 # FIXME: something different
                                 log.debug('no support for time format %s', value)
-                                date = 0
-                        if date:
-                            # save date as int
-                            self.date = int(time.mktime(date))
+                                t = 0
+                        if t:
+                            # save timestamp as int
+                            self.timestamp = int(time.mktime(t))
                 i+=sz
         return retval
 

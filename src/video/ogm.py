@@ -59,12 +59,14 @@ VORBISCOMMENT = { 'TITLE': 'title',
                   'ALBUM': 'album',
                   'ARTIST': 'artist',
                   'COMMENT': 'comment',
-                  'DATE': 'date',
                   'ENCODER': 'encoder',
                   'TRACKNUMBER': 'trackno',
                   'LANGUAGE': 'language',
                   'GENRE': 'genre',
                 }
+
+# FIXME: check VORBISCOMMENT date and convert to timestamp
+# Deactived tag: 'DATE': 'date',
 
 MAXITERATIONS = 30
 

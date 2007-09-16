@@ -39,7 +39,6 @@ from kaa.strutils import str_to_unicode
 mapping = {
     'by-line title': 'title',
     'headline': 'title',
-    'date created': 'date',
     'keywords': 'keywords',
     'writer-editor': 'author',
     'credit': 'author',

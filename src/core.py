@@ -55,7 +55,7 @@ MEDIA_DISC      = 'MEDIA_DISC'
 MEDIA_GAME      = 'MEDIA_GAME'
 
 
-MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'date',
+MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'timestamp',
              'keywords', 'country', 'language', 'url', 'media', 'artist', 'mime']
 
 EXTENSION_DEVICE    = 'device'

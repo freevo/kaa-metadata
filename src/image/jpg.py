@@ -130,12 +130,12 @@ class JPG(core.Image):
                                 self.rotation = 270
                             elif orientation.find('180') > 0:
                                 self.rotation = 180
-                        date = exif.get('Image DateTimeOriginal')
-                        if not date:
-                            date = exif.get('Image DateTime')
-                        if date:
-                            t = time.strptime(str(date), '%Y:%m:%d %H:%M:%S')
-                            self.date = int(time.mktime(t))
+                        t = exif.get('Image DateTimeOriginal')
+                        if not t:
+                            t = exif.get('Image DateTime')
+                        if t:
+                            t = time.strptime(str(t), '%Y:%m:%d %H:%M:%S')
+                            self.timestamp = int(time.mktime(t))
                 elif type == 'http://ns.adobe.com/xap/1.0/':
                     # FIXME: parse XMP data (xml)
                     doc = data[data.find('\0')+1:]

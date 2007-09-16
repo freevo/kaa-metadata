@@ -249,6 +249,7 @@ class Asf(core.AVContainer):
             (fileid, size, date, packetcount, duration, \
              senddur, preroll, flags, minpack, maxpack, maxbr) = \
              val
+            # FIXME: parse date to timestamp
             self.length = duration/10000000.0
 
         elif guid == GUIDS['ASF_Stream_Properties_Object']:

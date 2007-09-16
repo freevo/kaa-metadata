@@ -100,7 +100,8 @@ class Ogg(core.Music):
             if header.has_key('COMMENT'):
                 self.comment = header['COMMENT']
             if header.has_key('DATE'):
-                self.date = header['DATE']
+                # FIXME: try to convert to timestamp
+                self.userdate = header['DATE']
             if header.has_key('ENCODER'):
                 self.encoder = header['ENCODER']
             if header.has_key('TRACKNUMBER'):

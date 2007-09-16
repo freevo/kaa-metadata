@@ -57,7 +57,7 @@ MP3_INFO_TABLE = { "LINK": "link",
                    "TCOM": "composer",
                    "TCOP": "copyright",
                    "TDOR": "release",
-                   "TYER": "date",
+                   "TYER": "userdate",
                    "TEXT": "text",
                    "TIT2": "title",
                    "TLAN": "language",
@@ -169,7 +169,7 @@ class MP3(core.Music):
                if pic.imageData:
                   self.thumbnail = pic.imageData
             if id3.tag.getYear():
-               self.date = id3.tag.getYear()
+               self.userdate = id3.tag.getYear()
             tab = {}
             for f in id3.tag.frames:
                if f.__class__ is eyeD3_frames.TextFrame:

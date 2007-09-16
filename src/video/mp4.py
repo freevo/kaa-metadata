@@ -169,12 +169,12 @@ class MPEG4(core.AVContainer):
                     trackinfo['id'] = tkhd[3]
 
                     try:
-                        # XXX Date number of Seconds is since January 1st 1904!
+                        # XXX Timestamp of Seconds is since January 1st 1904!
                         # XXX 2082844800 is the difference between Unix and
                         # XXX Apple time. FIXME to work on Apple, too
-                        self.date = int(tkhd[1]) - 2082844800
+                        self.timestamp = int(tkhd[1]) - 2082844800
                     except Exception, e:
-                        log.exception('There was trouble extracting the date')
+                        log.exception('There was trouble extracting timestamp')
 
                 elif datatype == 'mdia':
                     pos      += 8
