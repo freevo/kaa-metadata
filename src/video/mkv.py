@@ -343,7 +343,7 @@ class Matroska(core.AVContainer):
                 elif ielem_id == MATROSKA_DATE_UTC_ID:
                     timestamp =  unpack('!q', ielem.get_data())[0] / 10.0**9
                     # Date is offset 2001-01-01 00:00:00 (timestamp 978307200.0)
-                    self.timestamp = int(self.timestamp + 978307200)
+                    self.timestamp = int(timestamp + 978307200)
 
             self.length = duration * scalecode / 1000000000.0
 
