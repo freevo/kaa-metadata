@@ -46,7 +46,7 @@ register('audio/mpeg', ('mp3',), 'audio.mp3')
 register('audio/ac3', ('ac3',), 'audio.ac3')
 register('application/adts', ('aac',), 'audio.adts')
 register('audio/m4a', ('m4a',), 'audio.m4a')
-register('application/ogg', ('ogg',), 'audio.ogg')
+register('application/ogg', ('ogg',), 'audio.ogg', magic='OggS\00')
 register('application/pcm', ('aif','voc','au'), 'audio.pcm')
 
 # Video parsers

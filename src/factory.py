@@ -68,11 +68,11 @@ def Factory():
     return _factory
 
 
-def register(mimetype, extensions, c):
+def register(mimetype, extensions, c, magic=None):
     """
     Register a parser to the factory.
     """
-    return Factory().register(mimetype, extensions, c)
+    return Factory().register(mimetype, extensions, c, magic)
 
 
 def gettype(mimetype, extensions):
@@ -106,6 +106,7 @@ class _Factory:
         self.extmap = {}
         self.mimemap = {}
         self.classmap = {}
+        self.magicmap = {}
         self.types = []
         self.device_types = []
         self.directory_types = []
@@ -157,6 +158,30 @@ class _Factory:
                 sys.exit(0)
             except:
                 log.exception('parse error')
+
+        # Try to find a parser based on the first bytes of the
+        # file (magic header). If a magic header is found but the
+        # parser failed, no other parser will be tried to speed
+        # up parsing of a bunch of files. So magic information should
+        # only be set if the parser is very sure
+        file.seek(0,0)
+        magic = file.read(10)
+        for length, magicmap in self.magicmap.items():
+            if magic[:length] in magicmap:
+                for p in magicmap[magic[:length]]:
+                    log.info('Trying %s by magic header', p[R_CLASS])
+                    file.seek(0,0)
+                    try:
+                        parser = self.get_class(p[R_CLASS])
+                        return parser(file)
+                    except core.ParseError:
+                        pass
+                    except (KeyboardInterrupt, SystemExit):
+                        sys.exit(0)
+                    except:
+                        log.exception('parse error')
+            log.info('Magic header found but parser failed')
+            return None
 
         if not force:
             log.info('No Type found by Extension. Give up')
@@ -317,7 +342,7 @@ class _Factory:
 
 
 
-    def register(self, mimetype, extensions, c):
+    def register(self, mimetype, extensions, c, magic=None):
         """
         register the parser to kaa.metadata
         """
@@ -335,6 +360,14 @@ class _Factory:
             for e in extensions:
                 self.extmap[e.lower()] = tuple
             self.mimemap[mimetype] = tuple
+
+        # add to magic header list
+        if magic is not None:
+            if not len(magic) in self.magicmap:
+                self.magicmap[len(magic)] = {}
+            if not magic in self.magicmap[len(magic)]:
+                self.magicmap[len(magic)][magic] = []
+            self.magicmap[len(magic)][magic].append(tuple)
 
 
     def get(self, mimetype, extensions):
