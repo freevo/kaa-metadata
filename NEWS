@@ -1,6 +1,11 @@
 Release Notes, see ChangeLog for a detailed list of changes.
 
-0.6.2, not yet released
+0.7.0, 2007-12-22
+
+* Return date as timestamp (int) or userdate (str)
+* Parser selection by first bytes
+* Support Windows style folger.jpg in a directory
+* Matroska, mp3 parser enhancements
 
 
 0.6.1, 2007-04-18
