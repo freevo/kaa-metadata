@@ -180,8 +180,8 @@ class _Factory:
                         sys.exit(0)
                     except:
                         log.exception('parse error')
-            log.info('Magic header found but parser failed')
-            return None
+                log.info('Magic header found but parser failed')
+                return None
 
         if not force:
             log.info('No Type found by Extension. Give up')
