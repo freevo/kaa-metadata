@@ -1,5 +1,10 @@
 Release Notes, see ChangeLog for a detailed list of changes.
 
+0.7.1, 2007-12-25
+
+* Bugfix to enable force on parse()
+
+
 0.7.0, 2007-12-22
 
 * Return date as timestamp (int) or userdate (str)
