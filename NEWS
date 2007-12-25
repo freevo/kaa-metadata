@@ -1,0 +1,21 @@
+Release Notes, see ChangeLog for a detailed list of changes.
+
+0.7.1, 2007-12-25
+
+* Bugfix to enable force on parse()
+
+
+0.7.0, 2007-12-22
+
+* Return date as timestamp (int) or userdate (str)
+* Parser selection by first bytes
+* Support Windows style folger.jpg in a directory
+* Matroska, mp3 parser enhancements
+
+
+0.6.1, 2007-04-18
+
+* update mkv parser
+* update ogg parser to show bitrate as kbit/s
+* remove libxml2 dependency
+* load parser on demand
