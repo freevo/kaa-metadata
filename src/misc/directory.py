@@ -65,7 +65,8 @@ class Directory(core.Media):
                     image = l[5:].strip()
                     if not image.startswith('/'):
                         image = os.path.join(directory, image)
-                    self._set('image', image)
+                    if os.path.isfile(image):
+                        self._set('image', image)
                 if l.startswith('Name='):
                     self.title = l[5:].strip()
                 if l.startswith('Comment='):
