@@ -132,6 +132,9 @@ class JPG(core.Image):
                                 self.rotation = 180
                         t = exif.get('Image DateTimeOriginal')
                         if not t:
+                            # sometimes it is called this way
+                            t = exif.get('EXIF DateTimeOriginal')
+                        if not t:
                             t = exif.get('Image DateTime')
                         if t:
                             t = time.strptime(str(t), '%Y:%m:%d %H:%M:%S')
