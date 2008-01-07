@@ -137,8 +137,12 @@ class JPG(core.Image):
                         if not t:
                             t = exif.get('Image DateTime')
                         if t:
-                            t = time.strptime(str(t), '%Y:%m:%d %H:%M:%S')
-                            self.timestamp = int(time.mktime(t))
+                            try:
+                                t = time.strptime(str(t), '%Y:%m:%d %H:%M:%S')
+                                self.timestamp = int(time.mktime(t))
+                            except ValueError:
+                                # Malformed time string.
+                                pass
                 elif type == 'http://ns.adobe.com/xap/1.0/':
                     # FIXME: parse XMP data (xml)
                     doc = data[data.find('\0')+1:]
