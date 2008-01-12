@@ -51,21 +51,27 @@ class VCD(core.Disc):
         if self.is_disc(device) != 2:
             raise core.ParseError()
 
-        # brute force reading of the device to find out if it is a VCD
-        f = open(device,'rb')
-        f.seek(32768, 0)
-        buffer = f.read(60000)
-        f.close()
-
-        if buffer.find('SVCD') > 0 and buffer.find('TRACKS.SVD') > 0 and \
-               buffer.find('ENTRIES.SVD') > 0:
-            type = 'SVCD'
-
-        elif buffer.find('INFO.VCD') > 0 and buffer.find('ENTRIES.VCD') > 0:
-            type = 'VCD'
-
-        else:
-            raise core.ParseError()
+        f = open(device)
+        try:
+            # read CD-XA001 at byte 1024 in sector 16
+            f.seek(2048*16 + 1024, 0)
+            if f.read(8) != 'CD-XA001':
+                raise core.ParseError()
+            # read VIDEO_CD at sector 150
+            f.seek(2048*150, 0)
+            if f.read(8) != 'VIDEO_CD':
+                raise core.ParseError()
+            # read some bytes of the ISO9660 part to guess VCD or SVCD
+            f.seek(2048*16, 0)
+            iso9660 = f.read(2048*16)
+            if iso9660.find('MPEGAV') > 0:
+                type = 'VCD'
+            elif iso9660.find('SVCD') > 0 or iso9660.find('MPEG2') > 0:
+                type = 'SVCD'
+            else:
+                raise core.ParseError()
+        finally:
+            f.close()
 
         # read the tracks to generate the title list
         device = open(device)
