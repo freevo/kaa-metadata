@@ -59,14 +59,17 @@ class VCD(core.Disc):
                 raise core.ParseError()
             # read VIDEO_CD at sector 150
             f.seek(2048*150, 0)
-            if f.read(8) != 'VIDEO_CD':
+            typebuffer = f.read(8)
+            if typebuffer != 'VIDEO_CD' and typebuffer != 'SUPERVCD':
                 raise core.ParseError()
-            # read some bytes of the ISO9660 part to guess VCD or SVCD
+            # Read some bytes of the ISO9660 part to better guess VCD or SVCD.
+            # Maybe this code is not needed and VIDEO_CD and SUPERVCD are enough.
             f.seek(2048*16, 0)
             iso9660 = f.read(2048*16)
-            if iso9660.find('MPEGAV') > 0:
+            if typebuffer == 'VIDEO_CD' and iso9660.find('MPEGAV') > 0:
                 type = 'VCD'
-            elif iso9660.find('SVCD') > 0 or iso9660.find('MPEG2') > 0:
+            elif typebuffer == 'SUPERVCD' and \
+                 (iso9660.find('SVCD') > 0 or iso9660.find('MPEG2') > 0):
                 type = 'SVCD'
             else:
                 raise core.ParseError()
