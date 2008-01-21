@@ -77,7 +77,7 @@ class PNG(core.Image):
     def _readChunk(self,file):
         try:
             (length, type) = struct.unpack('>I4s', file.read(8))
-        except (OSError, IOError):
+        except (OSError, IOError, struct.error):
             return 0
 
         key = None
