@@ -68,7 +68,7 @@ if not cdrom.has_python_h():
     ext_modules = [ ]
     
 setup (module      = 'metadata',
-       version     = '0.7.1',
+       version     = '0.7.2',
        license     = 'GPL',
        summary     = 'Module for retrieving information about media files',
        author      = "Thomas Schueppel, Dirk Meyer",
