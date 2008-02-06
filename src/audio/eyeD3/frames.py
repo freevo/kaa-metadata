@@ -1,6 +1,6 @@
 ################################################################################
 #
-#  Copyright (C) 2002-2006  Travis Shirk <travis@pobox.com>
+#  Copyright (C) 2002-2007  Travis Shirk <travis@pobox.com>
 #  Copyright (C) 2001  Ryan Finne <ryan@finnie.org>
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -385,28 +385,28 @@ class FrameHeader:
           # no flags for 2.2 frames
           pass;
       elif (major == 2 and minor == 3):
-         self.TAG_ALTER   = 0;   
-         self.FILE_ALTER  = 1;   
-         self.READ_ONLY   = 2;   
-         self.COMPRESSION = 8;   
-         self.ENCRYPTION  = 9;   
-         self.GROUPING    = 10;   
+         self.TAG_ALTER   = 0;
+         self.FILE_ALTER  = 1;
+         self.READ_ONLY   = 2;
+         self.COMPRESSION = 8;
+         self.ENCRYPTION  = 9;
+         self.GROUPING    = 10;
          # This is not really in 2.3 frame header flags, but there is
          # a "global" unsync bit in the tag header and that is written here
          # so access to the tag header is not required.
-         self.UNSYNC      = 14;   
+         self.UNSYNC      = 14;
          # And this is mapped to an used bit, so that 0 is returned.
          self.DATA_LEN    = 4;
       elif (major == 2 and minor == 4) or \
            (major == 1 and (minor == 0 or minor == 1)):
-         self.TAG_ALTER   = 1;   
-         self.FILE_ALTER  = 2;   
-         self.READ_ONLY   = 3;   
-         self.COMPRESSION = 12;   
-         self.ENCRYPTION  = 13;   
-         self.GROUPING    = 9;   
-         self.UNSYNC      = 14;   
-         self.DATA_LEN    = 15;   
+         self.TAG_ALTER   = 1;
+         self.FILE_ALTER  = 2;
+         self.READ_ONLY   = 3;
+         self.COMPRESSION = 12;
+         self.ENCRYPTION  = 13;
+         self.GROUPING    = 9;
+         self.UNSYNC      = 14;
+         self.DATA_LEN    = 15;
       else:
          raise ValueError("ID3 v" + str(major) + "." + str(minor) +\
                           " is not supported.");
@@ -450,19 +450,18 @@ class FrameHeader:
          self.dataSize = bin2dec(bytes2bin(sz, 8));
          TRACE_MSG("FrameHeader [data size]: %d (0x%X)" % (self.dataSize,
                                                            self.dataSize));
+         return True
       elif frameId == '\x00\x00\x00':
          TRACE_MSG("FrameHeader: Null frame id found at byte " +\
                    str(f.tell()));
-         return 0;
       elif not strictID3() and frameId in KNOWN_BAD_FRAMES:
-         TRACE_MSG("FrameHeader: Illegal but known "\
-                   "(possibly created by the shitty mp3ext) frame found; "\
-                   "Happily ignoring!" + str(f.tell()));
-         return 0;
-      else:
+         TRACE_MSG("FrameHeader: Illegal but known frame found; "\
+                   "Happily ignoring" + str(f.tell()));
+      elif strictID3():
          raise FrameException("FrameHeader: Illegal Frame ID: " + frameId);
-      return 1;
-      
+
+      return False
+
 
    # Returns 1 on success and 0 when a null tag (marking the beginning of
    # padding).  In the case of an invalid frame header, a FrameException is 
@@ -472,14 +471,14 @@ class FrameHeader:
                                                          f.tell()));
       if self.minorVersion == 2:
           return self.parse2_2(f)
-      
+
       frameId = f.read(4);
       if self.isFrameIdValid(frameId):
          TRACE_MSG("FrameHeader [id]: %s (0x%x%x%x%x)" % (frameId,
-                                                       ord(frameId[0]),
-                                                       ord(frameId[1]),
-                                                       ord(frameId[2]),
-                                                       ord(frameId[3])));
+                                                          ord(frameId[0]),
+                                                          ord(frameId[1]),
+                                                          ord(frameId[2]),
+                                                          ord(frameId[3])));
          self.id = frameId;
          # dataSize corresponds to the size of the data segment after
          # encryption, compression, and unsynchronization.
@@ -492,7 +491,7 @@ class FrameHeader:
             self.dataSize = bin2dec(bytes2bin(sz, 7));
          TRACE_MSG("FrameHeader [data size]: %d (0x%X)" % (self.dataSize,
                                                            self.dataSize));
- 
+
          # Frame flags.
          flags = f.read(2);
          self.flags = bytes2bin(flags);
@@ -518,18 +517,17 @@ class FrameHeader:
             raise FrameException("Invalid frame; compressed with no data "
                                  "length indicator");
 
+         return True
       elif frameId == '\x00\x00\x00\x00':
          TRACE_MSG("FrameHeader: Null frame id found at byte " +\
                    str(f.tell()));
-         return 0;
       elif not strictID3() and frameId in KNOWN_BAD_FRAMES:
          TRACE_MSG("FrameHeader: Illegal but known "\
                    "(possibly created by the shitty mp3ext) frame found; "\
                    "Happily ignoring!" + str(f.tell()));
-         return 0;
-      else:
+      elif strictID3():
          raise FrameException("FrameHeader: Illegal Frame ID: " + frameId);
-      return 1;
+      return False
 
 
    def isFrameIdValid(self, id):
@@ -730,7 +728,7 @@ class TextFrame(Frame):
    def __unicode__(self):
       return u'<%s (%s): %s>' % (self.getFrameDesc(), self.header.id,
                                  self.text);
-   
+
    def render(self):
        if self.header.minorVersion == 4 and self.header.id == "TSIZ":
            TRACE_MSG("Dropping deprecated frame TSIZ");
@@ -761,7 +759,7 @@ class DateFrame(TextFrame):
       if self.header.id[:2] != "TD" and self.header.minorVersion >= 4:
          raise FrameException("Invalid frame id for DateFrame: " + \
                               self.header.id);
-   
+
    def setDate(self, d):
       if not d:
          self.date = None;
@@ -797,37 +795,37 @@ class DateFrame(TextFrame):
 
    def getYear(self):
       if self.date:
-	 return self.__padDateField(self.date[0], 4);
+         return self.__padDateField(self.date[0], 4);
       else:
          return None;
 
    def getMonth(self):
       if self.date:
-	 return self.__padDateField(self.date[1], 2);
+         return self.__padDateField(self.date[1], 2);
       else:
          return None;
 
    def getDay(self):
       if self.date:
-	 return self.__padDateField(self.date[2], 2);
+         return self.__padDateField(self.date[2], 2);
       else:
          return None;
 
    def getHour(self):
       if self.date:
-	 return self.__padDateField(self.date[3], 2);
+         return self.__padDateField(self.date[3], 2);
       else:
          return None;
 
    def getMinute(self):
       if self.date:
-	 return self.__padDateField(self.date[4], 2);
+         return self.__padDateField(self.date[4], 2);
       else:
          return None;
 
    def getSecond(self):
       if self.date:
-	 return self.__padDateField(self.date[5], 2);
+         return self.__padDateField(self.date[5], 2);
       else:
          return None;
 
@@ -854,8 +852,19 @@ class DateFrame(TextFrame):
            self.header.id = "TDOR";
        elif self.header.minorVersion == 3 and self.header.id == "TDOR":
            self.header.id = OBSOLETE_ORIG_RELEASE_FID;
+       elif self.header.minorVersion == 3 and self.header.id == "TDEN":
+           TRACE_MSG('Converting TDEN to TXXX(Encoding time) frame')
+           self.header.id = "TXXX";
+           self.description = "Encoding time";
+           data = self.encoding +\
+                  self.description.encode(id3EncodingToString(self.encoding)) +\
+                  self.getTextDelim() +\
+                  self.date_str.encode(id3EncodingToString(self.encoding));
+           return self.assembleFrame(data)
+
        elif self.header.minorVersion == 3 and self.header.id[:2] == "TD":
-           self.header.id = OBSOLETE_YEAR_FID;
+           if self.header.id not in ['TDEN', 'TDLY', 'TDTG']:
+              self.header.id = OBSOLETE_YEAR_FID;
 
        data = self.encoding +\
               self.date_str.encode(id3EncodingToString(self.encoding));
@@ -902,6 +911,16 @@ class UserTextFrame(TextFrame):
       TRACE_MSG("UserTextFrame text: %s" % self.text);
 
    def render(self):
+      if self.header.minorVersion == 4:
+         if self.description.lower() == 'tagging time':
+            TRACE_MSG("Converting TXXX(%s) to TDTG frame)" % self.description)
+            return ""
+         if self.description.lower() == 'encoding time':
+            TRACE_MSG("Converting TXXX(%s) to TDEN frame" % self.description)
+            self.header.id = 'TDEN'
+            data = self.encoding +\
+                   self.text.encode(id3EncodingToString(self.encoding))
+            return self.assembleFrame(data);
       data = self.encoding +\
              self.description.encode(id3EncodingToString(self.encoding)) +\
              self.getTextDelim() +\
@@ -1196,9 +1215,9 @@ class ImageFrame(Frame):
    DURING_PERFORMANCE  = 0x0F;
    VIDEO               = 0x10;
    BRIGHT_COLORED_FISH = 0x11; # There's always room for porno.
-   ILLUSTRATION        = 0x12; 
-   BAND_LOGO           = 0x13; 
-   PUBLISHER_LOGO      = 0x14; 
+   ILLUSTRATION        = 0x12;
+   BAND_LOGO           = 0x13;
+   PUBLISHER_LOGO      = 0x14;
    MIN_TYPE            = OTHER;
    MAX_TYPE            = PUBLISHER_LOGO;
 
@@ -1223,7 +1242,7 @@ class ImageFrame(Frame):
            else:
                self.imageURL = imageURL;
            assert(self.imageData or self.imageURL);
-     
+
 
    # Factory method
    def create(type, imgFile, desc = u"", encoding = DEFAULT_ENCODING):
@@ -1242,7 +1261,7 @@ class ImageFrame(Frame):
        frameData += bin2bytes(dec2bin(type, 8));
        frameData += desc.encode(id3EncodingToString(encoding)) + "\x00";
        frameData += imgData;
- 
+
        frameHeader = FrameHeader();
        frameHeader.id = IMAGE_FID;
        return ImageFrame(frameHeader, data = frameData);
@@ -1701,10 +1720,13 @@ class FrameSet(list):
    # Read frames starting from the current read position of the file object.
    # Returns the amount of padding which occurs after the tag, but before the
    # audio content.  A return valule of 0 DOES NOT imply an error.
-   def parse(self, f, tagHeader):
+   def parse(self, f, tagHeader, extendedHeader):
       self.tagHeader = tagHeader;
+      self.extendedHeader = extendedHeader
       paddingSize = 0;
-      sizeLeft = tagHeader.tagSize;
+      sizeLeft = tagHeader.tagSize - extendedHeader.size
+      start_size = sizeLeft
+      consumed_size = 0
 
       # Handle a tag-level unsync.  Some frames may have their own unsync bit
       # set instead.
@@ -1720,40 +1742,46 @@ class FrameSet(list):
           # Deunsyncing changed the tag size we are working with.
           size_change = og_size - sizeLeft;
 
-      # Adding 10 to simulate the tag header in the buffer.  This keeps 
-      # f.tell() values matching the file itself.
-      tagBuffer = StringIO((10 * '\x00') + tagData);
-      tagBuffer.seek(10);
-      #tagBuffer.tell();
+      # Adding bytes to simulate the tag header(s) in the buffer.  This keeps 
+      # f.tell() values matching the file offsets.
+      prepadding = '\x00' * 10  # Tag header
+      prepadding += '\x00' * extendedHeader.size
+      tagBuffer = StringIO(prepadding + tagData);
+      tagBuffer.seek(len(prepadding));
 
       while sizeLeft > 0:
          TRACE_MSG("sizeLeft: " + str(sizeLeft));
-         if sizeLeft < (10 + 1):
+         if sizeLeft < (10 + 1): # The size of the smallest frame.
             TRACE_MSG("FrameSet: Implied padding (sizeLeft < minFrameSize)");
-            paddingSize = sizeLeft;
+            paddingSize = sizeLeft
             break;
 
          TRACE_MSG("+++++++++++++++++++++++++++++++++++++++++++++++++");
          TRACE_MSG("FrameSet: Reading Frame #" + str(len(self) + 1));
          frameHeader = FrameHeader(tagHeader);
          if not frameHeader.parse(tagBuffer):
-            paddingSize = sizeLeft;
+            TRACE_MSG("No frame found, implied padding of %d bytes" % sizeLeft)
+            paddingSize = sizeLeft
             break;
 
          # Frame data.
-         TRACE_MSG("FrameSet: Reading %d (0x%X) bytes of data from byte "\
-                   "pos %d (0x%X)" % (frameHeader.dataSize,
-                                      frameHeader.dataSize, tagBuffer.tell(),
-                                      tagBuffer.tell()));
-         data = tagBuffer.read(frameHeader.dataSize);
-         TRACE_MSG("FrameSet: %d bytes of data read" % len(data));
+         if frameHeader.dataSize:
+             TRACE_MSG("FrameSet: Reading %d (0x%X) bytes of data from byte "
+                       "pos %d (0x%X)" % (frameHeader.dataSize,
+                                          frameHeader.dataSize,
+                                          tagBuffer.tell(),
+                                          tagBuffer.tell()));
+             data = tagBuffer.read(frameHeader.dataSize);
+             TRACE_MSG("FrameSet: %d bytes of data read" % len(data));
 
-         self.addFrame(createFrame(frameHeader, data));
+             consumed_size += (frameHeader.FRAME_HEADER_SIZE +
+                               frameHeader.dataSize)
+             self.addFrame(createFrame(frameHeader, data));
 
          # Each frame contains dataSize + headerSize bytes.
          sizeLeft -= (frameHeader.FRAME_HEADER_SIZE + frameHeader.dataSize);
 
-      return paddingSize;
+      return paddingSize
 
    # Returrns the size of the frame data.
    def getSize(self):

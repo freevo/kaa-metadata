@@ -130,3 +130,53 @@ class FileWalker:
                 return 1;
         return 0;
 
+################################################################################
+# Time and memory string formatting
+def format_track_time(curr, total=None):
+    def time_tuple(ts):
+        if ts is None or ts < 0:
+            ts = 0
+        hours = ts / 3600
+        mins = (ts % 3600) / 60
+        secs = (ts % 3600) % 60
+        tstr = '%02d:%02d' % (mins, secs)
+        if int(hours):
+            tstr = '%02d:%s' % (hours, tstr)
+        return (int(hours), int(mins), int(secs), tstr)
+
+    hours, mins, secs, curr_str = time_tuple(curr)
+    retval = curr_str
+    if total:
+        hours, mins, secs, total_str = time_tuple(total)
+        retval += ' / %s' % total_str
+    return retval
+
+KB_BYTES = 1024
+MB_BYTES = 1048576
+GB_BYTES = 1073741824
+KB_UNIT = 'KB'
+MB_UNIT = 'MB'
+GB_UNIT = 'GB'
+
+def format_size(sz):
+    unit = 'Bytes'
+    if sz >= GB_BYTES:
+        sz = float(sz) / float(GB_BYTES)
+        unit = GB_UNIT
+    elif sz >= MB_BYTES:
+        sz = float(sz) / float(MB_BYTES)
+        unit = MB_UNIT
+    elif sz >= KB_BYTES:
+        sz = float(sz) / float(KB_BYTES)
+        unit = KB_UNIT
+    return "%.2f %s" % (sz, unit)
+
+def format_time_delta(td):
+    days = td.days
+    hours = td.seconds / 3600
+    mins = (td.seconds % 3600) / 60
+    secs = (td.seconds % 3600) % 60
+    tstr = "%02d:%02d:%02d" % (hours, mins, secs)
+    if days:
+        tstr = "%d days %s" % (days, tstr)
+    return tstr

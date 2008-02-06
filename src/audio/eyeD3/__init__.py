@@ -1,6 +1,5 @@
 ################################################################################
-#
-#  Copyright (C) 2002-2005  Travis Shirk <travis@pobox.com>
+#  Copyright (C) 2002-2005,2007  Travis Shirk <travis@pobox.com>
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,7 +17,7 @@
 #
 ################################################################################
 
-eyeD3Version = "0.6.11";
+eyeD3Version = "0.6.14";
 eyeD3Maintainer = "Travis Shirk <travis@pobox.com>";
 
 # Version constants
@@ -35,7 +34,7 @@ ID3_DEFAULT_VERSION = ID3_V2_4;
 ID3_ANY_VERSION     = ID3_V1 | ID3_V2;
 
 import locale;
-LOCAL_ENCODING = locale.getpreferredencoding();
+LOCAL_ENCODING = locale.getpreferredencoding(do_setlocale=False);
 if not LOCAL_ENCODING or LOCAL_ENCODING == "ANSI_X3.4-1968":
     LOCAL_ENCODING = 'latin1';
 
