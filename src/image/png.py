@@ -37,7 +37,7 @@ import zlib
 import logging
 
 # kaa imports
-from kaa.strutils import str_to_unicode
+import kaa
 
 # import kaa.metadata.image core
 import core
@@ -93,7 +93,7 @@ class PNG(core.Image):
             log.debug('latin-1 Text found.')
             (data, crc) = struct.unpack('>%isI' % length,file.read(length+4))
             (key, value) = data.split('\0')
-            self.meta[key] = str_to_unicode(value)
+            self.meta[key] = kaa.str_to_unicode(value)
 
         elif type == 'zTXt':
             log.debug('Compressed Text found.')
@@ -109,13 +109,13 @@ class PNG(core.Image):
                           (key,compression,decompressed))
             else:
                 log.debug("%s has unknown Compression %c" % (key,compression))
-            self.meta[key] = str_to_unicode(value)
+            self.meta[key] = kaa.str_to_unicode(value)
 
         elif type == 'iTXt':
             log.debug('International Text found.')
             (data,crc) = struct.unpack('>%isI' % length,file.read(length+4))
             (key, value) = data.split('\0')
-            self.meta[key] = str_to_unicode(value)
+            self.meta[key] = kaa.str_to_unicode(value)
 
         else:
             file.seek(length+4,1)

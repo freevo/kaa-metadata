@@ -37,7 +37,7 @@ import copy
 import sys
 
 # kaa imports
-from kaa.strutils import str_to_unicode, unicode_to_str
+import kaa
 
 import fourcc
 
@@ -145,7 +145,7 @@ class Media(object):
 
 
     def __str__(self):
-        return unicode_to_str(unicode(self))
+        return kaa.unicode_to_str(unicode(self))
 
 
     def __repr__(self):
@@ -181,7 +181,7 @@ class Media(object):
         if value is None and getattr(self, key, None) is None:
             return
         if isinstance(value, str):
-            value = str_to_unicode(value)
+            value = kaa.str_to_unicode(value)
         setattr(self, key, value)
         if not key in self._keys:
             self._keys.append(key)
@@ -200,10 +200,10 @@ class Media(object):
                 continue
             if key == 'image':
                 if isinstance(value, unicode):
-                    setattr(self, key, unicode_to_str(value))
+                    setattr(self, key, kaa.unicode_to_str(value))
                 continue
             if isinstance(value, str):
-                setattr(self, key, str_to_unicode(value))
+                setattr(self, key, kaa.str_to_unicode(value))
             if isinstance(value, unicode):
                 setattr(self, key, value.strip().rstrip().replace(u'\0', u''))
             if isinstance(value, list) and value and isinstance(value[0], Media):
@@ -219,9 +219,9 @@ class Media(object):
                 value = table.get(tag, None)
                 if value is not None:
                     if not isinstance(value, (str, unicode)):
-                        value = str_to_unicode(str(value))
+                        value = kaa.str_to_unicode(str(value))
                     elif isinstance(value, str):
-                        value = str_to_unicode(value)
+                        value = kaa.str_to_unicode(value)
                     value = value.strip().rstrip().replace(u'\0', u'')
                     setattr(self, attr, value)
 

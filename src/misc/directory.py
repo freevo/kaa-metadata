@@ -37,7 +37,7 @@ import logging
 import sys
 
 # kaa imports
-from kaa.strutils import unicode_to_str
+import kaa
 
 # kaa.metadata imports
 import kaa.metadata.core as core
@@ -79,7 +79,7 @@ class Directory(core.Media):
             bins = BinsParser(binsxml)
             for key, value in bins.items():
                 if key == 'sampleimage':
-                    image = os.path.join(directory, unicode_to_str(value))
+                    image = os.path.join(directory, kaa.unicode_to_str(value))
                     if os.path.isfile(image):
                         self._set('image', image)
                     continue
