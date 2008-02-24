@@ -42,6 +42,8 @@ import logging
 
 # import kaa.metadata.video core
 import core
+# import kaa.metadata.audio for asf files without video stream
+import kaa.metadata.audio.core as audiocore
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -375,4 +377,26 @@ class Asf(core.AVContainer):
         return r
 
 
-Parser = Asf
+class AsfAudio(audiocore.Audio):
+    def __init__(self):
+        audiocore.Audio.__init__(self)
+        self.mime = 'audio/x-ms-asf'
+        self.type = 'asf format'
+
+
+def Parser(file):
+    """
+    Wrapper around audio and av content.
+    """
+    asf = Asf(file)
+    if not len(asf.audio) or len(asf.video):
+        # AV container
+        return asf
+    # No video but audio streams. Handle has audio core
+    audio = AsfAudio()
+    for key in audio._keys:
+        if key in asf._keys:
+            if not getattr(audio, key, None):
+                setattr(audio, key, getattr(asf, key))
+    return audio
+
