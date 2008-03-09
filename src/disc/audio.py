@@ -104,12 +104,15 @@ class AudioDisc(core.Disc):
             #self.id = '%s_%s' % (query_info['disc_id'], disc_id[1])
 
             if read_stat == 210:
+                self.year = read_info['DYEAR']
+
                 for i in range(0, disc_id[1]):
                     mi = AudioTrack()
                     mi.title = read_info['TTITLE' + `i`]
                     mi.album = self.title
                     mi.artist = self.artist
                     mi.genre = query_info['category']
+                    mi.year = self.year
                     mi.codec = 'PCM'
                     mi.samplerate = 44.1
                     mi.trackno = i+1
