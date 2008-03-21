@@ -36,6 +36,7 @@ __all__ = ['Parser']
 # python imports
 import os
 import logging
+import glob
 
 # kaa.metadata imports
 import kaa.metadata.video.core as video
@@ -156,10 +157,16 @@ class DVDInfo(core.Disc):
 
 
     def parseDVDdir(self, dirname):
-        if not (os.path.isdir(dirname+'/VIDEO_TS') or \
-                os.path.isdir(dirname+'/video_ts') or \
-                os.path.isdir(dirname+'/Video_ts')):
+        def iglob(path, ifile):
+            # Case insensitive glob to find video_ts dir/file.  Python 2.5 has
+            # glob.iglob but this doesn't exist in 2.4.
+            file_glob = ''.join([ '[%s%s]' % (c, c.upper()) for c in ifile ])
+            return glob.glob(os.path.join(path, file_glob))
+
+        if True not in [ os.path.isdir(x) for x in iglob(dirname, 'video_ts') ] + \
+                       [ os.path.isfile(x) for x in iglob(dirname, 'video_ts.vob') ]:
             raise core.ParseError()
+
         # OK, try libdvdread
         self._parse(dirname)
         return 1
