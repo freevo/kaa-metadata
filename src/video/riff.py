@@ -207,9 +207,10 @@ class Riff(core.AVContainer):
             ai = core.AudioStream()
             ai.samplerate = retval['nSamplesPerSec']
             ai.channels = retval['nChannels']
-            ai.samplebits = retval['nBitsPerSample']
             # FIXME: Bitrate calculation is completely wrong.
-            ai.bitrate = retval['nAvgBytesPerSec'] * 8
+            #ai.samplebits = retval['nBitsPerSample']
+            #ai.bitrate = retval['nAvgBytesPerSec'] * 8
+
             # TODO: set code if possible
             # http://www.stats.uwa.edu.au/Internal/Specs/DXALL/FileSpec/\
             #    Languages
@@ -234,7 +235,7 @@ class Riff(core.AVContainer):
             vi.width = retval['biWidth']
             vi.height = retval['biHeight']
             # FIXME: Bitrate calculation is completely wrong.
-            vi.bitrate = strh['dwRate']
+            #vi.bitrate = strh['dwRate']
             vi.fps = float(strh['dwRate']) / strh['dwScale']
             vi.length = strh['dwLength'] / vi.fps
             self.video.append(vi)
