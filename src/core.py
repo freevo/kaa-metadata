@@ -40,6 +40,7 @@ import sys
 import kaa
 
 import fourcc
+import language
 
 UNPRINTABLE_KEYS = [ 'thumbnail', 'url' ]
 
@@ -56,7 +57,7 @@ MEDIA_GAME      = 'MEDIA_GAME'
 
 
 MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'timestamp',
-             'keywords', 'country', 'language', 'url', 'media', 'artist', 'mime']
+             'keywords', 'country', 'language', 'langcode', 'url', 'media', 'artist', 'mime']
 
 EXTENSION_DEVICE    = 'device'
 EXTENSION_DIRECTORY = 'directory'
@@ -229,6 +230,8 @@ class Media(object):
             # Codec may be a fourcc, in which case we resolve it to its actual
             # name and set the fourcc attribute.
             self.fourcc, self.codec = fourcc.resolve(self.codec)
+        if 'language' in self._keys:
+            self.langcode, self.language = language.resolve(self.language)
 
             
     #
