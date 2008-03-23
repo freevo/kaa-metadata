@@ -92,21 +92,16 @@ class Flac(core.Music):
                     start += nextlen
                     a = re.split('=',s)
                     header[(a[0]).upper()]=a[1]
-                if header.has_key('TITLE'):
-                    self.title = header['TITLE']
-                if header.has_key('ALBUM'):
-                    self.album = header['ALBUM']
-                if header.has_key('ARTIST'):
-                    self.artist = header['ARTIST']
-                if header.has_key('COMMENT'):
-                    self.comment = header['COMMENT']
-                if header.has_key('DATE'):
-                    # FIXME: try to convert to timestamp
-                    self.userdate = header['DATE']
-                if header.has_key('ENCODER'):
-                    self.encoder = header['ENCODER']
-                if header.has_key('TRACKNUMBER'):
-                    self.trackno = header['TRACKNUMBER']
+
+                map = {
+                    u'TITLE': 'title', u'ALBUM': 'album', u'ARTIST': 'artist', u'COMMENT': 'comment',
+                    u'ENCODER': 'encoder', u'TRACKNUMBER': 'trackno', u'TRACKTOTAL': 'trackof',
+                    # FIXME: try to convert userdate to timestamp
+                    u'DATE': 'userdate',
+                }
+                for key, attr in map.items():
+                    if key in header:
+                        setattr(self, attr, header[key])
 
                 self._appendtable('VORBISCOMMENT', header)
             elif type == 5:
