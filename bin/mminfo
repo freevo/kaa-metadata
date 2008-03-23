@@ -46,8 +46,7 @@ if not __site__ in sys.path:
 import kaa.metadata
 
 def usage():
-    print
-    print 'usage: mminfo [options] file...'
+    print 'Usage: mminfo [options] file...'
     print
     print 'options:'
     print '  -d   turn on debug information. For complete debug set -d 2'
@@ -61,8 +60,6 @@ def usage():
     print
     sys.exit(0)
 
-
-print 'kaa media metadata info'
 
 # create and setup the root logger object.
 logger = logging.getLogger()
@@ -102,7 +99,6 @@ for o, a in opts:
 
 for file in args:
     medium = kaa.metadata.parse(file)
-    print
     if len(file) > 70:
         print "%s[...]%s" % (file[:30], file[len(file)-30:])
     else:
