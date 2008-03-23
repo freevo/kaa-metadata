@@ -35,6 +35,9 @@ import sys
 import os
 import getopt
 import logging
+import termios
+import fcntl
+import struct
 
 # insert kaa path information
 __site__ = '../lib/python%s.%s/site-packages' % sys.version_info[:2]
@@ -60,6 +63,19 @@ def usage():
     print
     sys.exit(0)
 
+
+def print_header(filename, info=''):
+    # Get terminal dimensions
+    try:
+        h, w = struct.unpack('hh', fcntl.ioctl(sys.stdin.fileno(), termios.TIOCGWINSZ, 'xxxx'))
+    except:
+        w = 75
+
+    if len(filename) + len(info) > w:
+        n = (w - len(info)) / 2 - 6
+        print "%s[...]%s%s" % (filename[:n], filename[len(filename)-n:], info)
+    else:
+        print "%s%s" % (filename, info)
 
 # create and setup the root logger object.
 logger = logging.getLogger()
@@ -98,12 +114,10 @@ for o, a in opts:
 
 
 for file in args:
-    medium = kaa.metadata.parse(file)
-    if len(file) > 70:
-        print "%s[...]%s" % (file[:30], file[len(file)-30:])
+    info = kaa.metadata.parse(file)
+    if info:
+        print_header(file)
+        print info
     else:
-        print "%s" % file
-    if medium:
-        print medium
-    else:
-        print "No Match found"
+        print_header(file, ': unable to identify file')
+        print
