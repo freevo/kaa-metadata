@@ -1534,7 +1534,7 @@ class TagFile:
    fileSize = int(0);
    tag      = None;
    # Number of seconds required to play the audio file.
-   play_time = int(0);
+   play_time = 0.0
 
    def __init__(self, fileName):
        self.fileName = fileName;
@@ -1633,7 +1633,7 @@ class Mp3AudioFile(TagFile):
       # Compute track play time.
       tpf = mp3.computeTimePerFrame(self.header);
       if self.xingHeader and self.xingHeader.vbr:
-         self.play_time = int(tpf * self.xingHeader.numFrames);
+         self.play_time = tpf * self.xingHeader.numFrames;
       else:
          length = self.getSize();
          if self.tag and self.tag.isV2():
@@ -1644,7 +1644,7 @@ class Mp3AudioFile(TagFile):
                length -= 128;
          elif self.tag and self.tag.isV1():
             length -= 128;
-         self.play_time = int((length / self.header.frameLength) * tpf);
+         self.play_time = (length / self.header.frameLength) * tpf
 
       f.close();
 

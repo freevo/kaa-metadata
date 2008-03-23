@@ -139,7 +139,7 @@ class Ogg(core.Music):
                 return
             log.debug("granule = %d / %d" % (granule_position, absPos))
         # the last one is the one we are interested in
-        return (granule_position / self.samplerate)
+        return float(granule_position) / self.samplerate
 
 
 Parser = Ogg
