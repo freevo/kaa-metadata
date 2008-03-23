@@ -69,6 +69,9 @@ class Flac(core.Music):
                 self.channels = ((bits >> 9) & 7) + 1
                 self.samplebits = ((bits >> 4) & 0x1F) + 1
                 md5 = data[18:34]
+                # Number of samples is bits 108-144 in block.
+                samples = (ord(data[13]) & 0x0f) + struct.unpack('>L', data[14:18])[0]
+                self.length = float(samples) / self.samplerate
             elif type == 1:
                 # PADDING
                 pass
