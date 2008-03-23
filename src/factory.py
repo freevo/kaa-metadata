@@ -40,6 +40,9 @@ import traceback
 import urllib
 import logging
 
+# kaa imports
+import kaa.utils
+
 # kaa.metadata imports
 import core
 
@@ -55,18 +58,6 @@ TIME_DEBUG = False
 R_MIMETYPE  = 0
 R_EXTENTION = 1
 R_CLASS     = 2
-
-def Factory():
-    """
-    Create or return global unique factory object.
-    """
-    global _factory
-
-    # One-time init
-    if _factory == None:
-        _factory = _Factory()
-    return _factory
-
 
 def register(mimetype, extensions, c, magic=None):
     """
@@ -387,3 +378,5 @@ class _Factory:
             if info[R_MIMETYPE] == mimetype and info[R_EXTENSION] == extensions:
                 return self.get_class(info[R_CLASS])
         return None
+
+Factory = kaa.utils.Singleton(_Factory)
