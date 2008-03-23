@@ -47,16 +47,17 @@ import kaa.metadata
 
 def usage():
     print
-    print 'usage: mminfo [options] files'
+    print 'usage: mminfo [options] file...'
     print
     print 'options:'
     print '  -d   turn on debug information. For complete debug set -d 2'
     print
-    print 'A file can be a normal file, a device for VCD/VCD/AudioCD'
+    print 'File can be a normal file, a device (DVD, VCD, CD, etc.), or a directory'
     print
     print 'Examples:'
     print '  mminfo foo.avi bar.mpg'
     print '  mminfo /dev/dvd'
+    print '  mminfo /mnt/dvd/VIDEO_TS'
     print
     sys.exit(0)
 
@@ -81,6 +82,9 @@ logger = logging.getLogger('metadata')
 try:
     opts, args = getopt.getopt(sys.argv[1:], 'd:', [])
 except getopt.GetoptError:
+    usage()
+
+if not args:
     usage()
 
 DEBUG_LEVEL = [ logging.WARNING, logging.INFO, logging.DEBUG ]
