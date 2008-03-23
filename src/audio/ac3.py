@@ -153,8 +153,12 @@ class AC3(core.Music):
         for i in range(13 - bits - 1):
             info = info >> 1
         if info & 1:
-            # subwover
+            # LFE channel
             self.channels += 1
+
+        file.seek(-1, 2)
+        size = file.tell()
+        self.length = size * 8.0 / self.bitrate
         self.codec = 0x2000 # fourcc code of ac3
         self.mime = 'audio/ac3'
 
