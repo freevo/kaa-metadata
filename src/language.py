@@ -5,17 +5,17 @@ def resolve(code):
     Transform the given (2- or 3-letter) language code to a human readable
     language name.  The return value is a 2-tuple containing the given
     language code and the language name.  If the language code cannot be
-    resolved, name will be 'Unknown'.
+    resolved, name will be 'Unknown (<code>)'.
     """
     if not code:
-        code = 'und'
+        return None, None
     code = code[:3]
 
     for spec in codes:
         if code in spec[:-1]:
             return code, spec[-1]
 
-    return code, u'Undetermined'
+    return code, u'Unknown (%s)' % code
 
 
 # Parsed from http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt
