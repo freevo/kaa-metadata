@@ -1,5 +1,13 @@
 Release Notes, see ChangeLog for a detailed list of changes.
 
+0.7.3, 2008-03-24
+
+* Sync with eyeD3 0.6.14
+* Handle WMA files as MEDIA_AUDIO
+* Better detection of DVD directory
+* Bugfixes
+
+
 0.7.2, 2008-02-04
 
 * EXIF date updates
