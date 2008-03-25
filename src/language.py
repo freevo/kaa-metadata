@@ -1,3 +1,5 @@
+import re
+
 __all__ = [ 'resolve' ]
 
 def resolve(code):
@@ -9,7 +11,11 @@ def resolve(code):
     """
     if not code:
         return None, None
-    code = code[:3]
+    if not isinstance(code, basestring):
+        raise ValueError('Invalid language code specified by parser')
+
+    # Take up to 3 letters from the code.
+    code = re.split(r'[^a-z]', code.lower())[0][:3]
 
     for spec in codes:
         if code in spec[:-1]:
