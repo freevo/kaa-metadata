@@ -348,7 +348,8 @@ class Asf(core.AVContainer):
             if len(lang) == 1:
                 self.language = lang[0]
             else:
-                self.language = tuple(lang)
+                #self.language = tuple(lang)
+                self.language = lang[0]
             # TODO: Find the stream in self.audio and self.video and
             #       set it there instead of here
 
