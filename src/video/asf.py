@@ -273,9 +273,8 @@ class Asf(core.AVContainer):
             self._apply_extinfo(strno)
 
         elif guid == GUIDS['ASF_Extended_Stream_Properties_Object']:
-            streamid, langid = struct.unpack('<HH',s[72:72+4])
+            streamid, langid, frametime = struct.unpack('<HHQ',s[72:84])
             (bitrate,) = struct.unpack('<I', s[40:40+4])
-            (frametime,) = struct.unpack('<Q', s[76:76+8])
             if streamid not in self._extinfo:
                 self._extinfo[streamid] = [None, None, None, {}]
             self._extinfo[streamid][:3] = [bitrate, 10000000.0 / frametime, langid]
