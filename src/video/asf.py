@@ -65,76 +65,48 @@ GUIDS = {
     'ASF_Data_Object' : _guid('75B22636-668E-11CF-A6D9-00AA0062CE6C'),
     'ASF_Simple_Index_Object' : _guid('33000890-E5B1-11CF-89F4-00A0C90349CB'),
     'ASF_Index_Object' : _guid('D6E229D3-35DA-11D1-9034-00A0C90349BE'),
-    'ASF_Media_Object_Index_Object' : \
-    _guid('FEB103F8-12AD-4C64-840F-2A1D2F7AD48C'),
-    'ASF_Timecode_Index_Object' : \
-    _guid('3CB73FD0-0C4A-4803-953D-EDF7B6228F0C'),
+    'ASF_Media_Object_Index_Object' : _guid('FEB103F8-12AD-4C64-840F-2A1D2F7AD48C'),
+    'ASF_Timecode_Index_Object' : _guid('3CB73FD0-0C4A-4803-953D-EDF7B6228F0C'),
 
-    'ASF_File_Properties_Object' : \
-    _guid('8CABDCA1-A947-11CF-8EE4-00C00C205365'),
-    'ASF_Stream_Properties_Object' : \
-    _guid('B7DC0791-A9B7-11CF-8EE6-00C00C205365'),
-    'ASF_Header_Extension_Object' : \
-    _guid('5FBF03B5-A92E-11CF-8EE3-00C00C205365'),
+    'ASF_File_Properties_Object' : _guid('8CABDCA1-A947-11CF-8EE4-00C00C205365'),
+    'ASF_Stream_Properties_Object' : _guid('B7DC0791-A9B7-11CF-8EE6-00C00C205365'),
+    'ASF_Header_Extension_Object' : _guid('5FBF03B5-A92E-11CF-8EE3-00C00C205365'),
     'ASF_Codec_List_Object' : _guid('86D15240-311D-11D0-A3A4-00A0C90348F6'),
-    'ASF_Script_Command_Object' : \
-    _guid('1EFB1A30-0B62-11D0-A39B-00A0C90348F6'),
-    'ASF_Marker_Object' : \
-    _guid('F487CD01-A951-11CF-8EE6-00C00C205365'),
-    'ASF_Bitrate_Mutual_Exclusion_Object' : \
-    _guid('D6E229DC-35DA-11D1-9034-00A0C90349BE'),
-    'ASF_Error_Correction_Object' : \
-    _guid('75B22635-668E-11CF-A6D9-00AA0062CE6C'),
-    'ASF_Content_Description_Object' : \
-    _guid('75B22633-668E-11CF-A6D9-00AA0062CE6C'),
-    'ASF_Extended_Content_Description_Object' : \
-    _guid('D2D0A440-E307-11D2-97F0-00A0C95EA850'),
-    'ASF_Content_Branding_Object' : \
-    _guid('2211B3FA-BD23-11D2-B4B7-00A0C955FC6E'),
-    'ASF_Stream_Bitrate_Properties_Object' : \
-    _guid('7BF875CE-468D-11D1-8D82-006097C9A2B2'),
-    'ASF_Content_Encryption_Object' : \
-    _guid('2211B3FB-BD23-11D2-B4B7-00A0C955FC6E'),
-    'ASF_Extended_Content_Encryption_Object' : \
-    _guid('298AE614-2622-4C17-B935-DAE07EE9289C'),
-    'ASF_Alt_Extended_Content_Encryption_Obj' : \
-    _guid('FF889EF1-ADEE-40DA-9E71-98704BB928CE'),
-    'ASF_Digital_Signature_Object' : \
-    _guid('2211B3FC-BD23-11D2-B4B7-00A0C955FC6E'),
+    'ASF_Script_Command_Object' : _guid('1EFB1A30-0B62-11D0-A39B-00A0C90348F6'),
+    'ASF_Marker_Object' : _guid('F487CD01-A951-11CF-8EE6-00C00C205365'),
+    'ASF_Bitrate_Mutual_Exclusion_Object' : _guid('D6E229DC-35DA-11D1-9034-00A0C90349BE'),
+    'ASF_Error_Correction_Object' : _guid('75B22635-668E-11CF-A6D9-00AA0062CE6C'),
+    'ASF_Content_Description_Object' : _guid('75B22633-668E-11CF-A6D9-00AA0062CE6C'),
+    'ASF_Extended_Content_Description_Object' : _guid('D2D0A440-E307-11D2-97F0-00A0C95EA850'),
+    'ASF_Content_Branding_Object' : _guid('2211B3FA-BD23-11D2-B4B7-00A0C955FC6E'),
+    'ASF_Stream_Bitrate_Properties_Object' : _guid('7BF875CE-468D-11D1-8D82-006097C9A2B2'),
+    'ASF_Content_Encryption_Object' : _guid('2211B3FB-BD23-11D2-B4B7-00A0C955FC6E'),
+    'ASF_Extended_Content_Encryption_Object' : _guid('298AE614-2622-4C17-B935-DAE07EE9289C'),
+    'ASF_Alt_Extended_Content_Encryption_Obj' : _guid('FF889EF1-ADEE-40DA-9E71-98704BB928CE'),
+    'ASF_Digital_Signature_Object' : _guid('2211B3FC-BD23-11D2-B4B7-00A0C955FC6E'),
     'ASF_Padding_Object' : _guid('1806D474-CADF-4509-A4BA-9AABCB96AAE8'),
 
-    'ASF_Extended_Stream_Properties_Object' : \
-    _guid('14E6A5CB-C672-4332-8399-A96952065B5A'),
-    'ASF_Advanced_Mutual_Exclusion_Object' : \
-    _guid('A08649CF-4775-4670-8A16-6E35357566CD'),
-    'ASF_Group_Mutual_Exclusion_Object' : \
-    _guid('D1465A40-5A79-4338-B71B-E36B8FD6C249'),
-    'ASF_Stream_Prioritization_Object' : \
-    _guid('D4FED15B-88D3-454F-81F0-ED5C45999E24'),
-    'ASF_Bandwidth_Sharing_Object' : \
-    _guid('A69609E6-517B-11D2-B6AF-00C04FD908E9'),
+    'ASF_Extended_Stream_Properties_Object' : _guid('14E6A5CB-C672-4332-8399-A96952065B5A'),
+    'ASF_Advanced_Mutual_Exclusion_Object' : _guid('A08649CF-4775-4670-8A16-6E35357566CD'),
+    'ASF_Group_Mutual_Exclusion_Object' : _guid('D1465A40-5A79-4338-B71B-E36B8FD6C249'),
+    'ASF_Stream_Prioritization_Object' : _guid('D4FED15B-88D3-454F-81F0-ED5C45999E24'),
+    'ASF_Bandwidth_Sharing_Object' : _guid('A69609E6-517B-11D2-B6AF-00C04FD908E9'),
     'ASF_Language_List_Object' : _guid('7C4346A9-EFE0-4BFC-B229-393EDE415C85'),
     'ASF_Metadata_Object' : _guid('C5F8CBEA-5BAF-4877-8467-AA8C44FA4CCA'),
-    'ASF_Metadata_Library_Object' : \
-    _guid('44231C94-9498-49D1-A141-1D134E457054'),
-    'ASF_Index_Parameters_Object' : \
-    _guid('D6E229DF-35DA-11D1-9034-00A0C90349BE'),
-    'ASF_Media_Object_Index_Parameters_Obj' : \
-    _guid('6B203BAD-3F11-4E84-ACA8-D7613DE2CFA7'),
-    'ASF_Timecode_Index_Parameters_Object' : \
-    _guid('F55E496D-9797-4B5D-8C8B-604DFE9BFB24'),
+    'ASF_Metadata_Library_Object' : _guid('44231C94-9498-49D1-A141-1D134E457054'),
+    'ASF_Index_Parameters_Object' : _guid('D6E229DF-35DA-11D1-9034-00A0C90349BE'),
+    'ASF_Media_Object_Index_Parameters_Obj' : _guid('6B203BAD-3F11-4E84-ACA8-D7613DE2CFA7'),
+    'ASF_Timecode_Index_Parameters_Object' : _guid('F55E496D-9797-4B5D-8C8B-604DFE9BFB24'),
 
     'ASF_Audio_Media' : _guid('F8699E40-5B4D-11CF-A8FD-00805F5C442B'),
     'ASF_Video_Media' : _guid('BC19EFC0-5B4D-11CF-A8FD-00805F5C442B'),
     'ASF_Command_Media' : _guid('59DACFC0-59E6-11D0-A3AC-00A0C90348F6'),
     'ASF_JFIF_Media' : _guid('B61BE100-5B4E-11CF-A8FD-00805F5C442B'),
-    'ASF_Degradable_JPEG_Media' : \
-    _guid('35907DE0-E415-11CF-A917-00805F5C442B'),
+    'ASF_Degradable_JPEG_Media' : _guid('35907DE0-E415-11CF-A917-00805F5C442B'),
     'ASF_File_Transfer_Media' : _guid('91BD222C-F21C-497A-8B6D-5AA86BFC0185'),
     'ASF_Binary_Media' : _guid('3AFB65E2-47EF-40F2-AC2C-70A90D71D343'),
 
-    'ASF_Web_Stream_Media_Subtype' : \
-    _guid('776257D4-C627-41CB-8F81-7AC7FF1C40CC'),
+    'ASF_Web_Stream_Media_Subtype' : _guid('776257D4-C627-41CB-8F81-7AC7FF1C40CC'),
     'ASF_Web_Stream_Format' : _guid('DA1E6B13-8359-4050-B398-388E965BF00C'),
 
     'ASF_No_Error_Correction' : _guid('20FB5700-5B55-11CF-A8FD-00805F5C442B'),
@@ -147,6 +119,8 @@ class Asf(core.AVContainer):
         core.AVContainer.__init__(self)
         self.mime = 'video/x-ms-asf'
         self.type = 'asf format'
+        self._languages = []
+        self._extinfo = {}
 
         h = file.read(30)
         if len(h) < 30:
@@ -166,6 +140,25 @@ class Asf(core.AVContainer):
         for i in range(0,objnum):
             h = self._getnextheader(header)
             header = header[h[1]:]
+
+        del self._languages
+        del self._extinfo
+
+
+    def _findstream(self, id):
+        for stream in self.video + self.audio:
+            if stream.id == id:
+                return stream
+
+    def _apply_extinfo(self, streamid):
+        stream = self._findstream(streamid)
+        if not stream or streamid not in self._extinfo:
+            return
+        stream.bitrate, stream.fps, langid, metadata = self._extinfo[streamid]
+        if langid is not None and langid >= 0 and langid < len(self._languages):
+            stream.language = self._languages[langid]
+        if metadata:
+            stream._appendtable('ASFMETADATA', metadata)
 
 
     def _parseguid(self,string):
@@ -208,8 +201,7 @@ class Asf(core.AVContainer):
 
     def _parsekv2(self,s):
         pos = 0
-        (strno,descriptorlen,descriptortype,\
-         valuelen) = struct.unpack('<2xHHHI', s[pos:pos+12])
+        strno, descriptorlen, descriptortype, valuelen = struct.unpack('<2xHHHI', s[pos:pos+12])
         pos += 12
         descriptorname = s[pos:pos+descriptorlen]
         pos += descriptorlen
@@ -258,16 +250,14 @@ class Asf(core.AVContainer):
             log.debug("Stream Properties Object [%d]" % objsize)
             streamtype = self._parseguid(s[24:40])
             errortype = self._parseguid(s[40:56])
-            offset, typelen, errorlen, \
-                    flags = struct.unpack('>QIIH4x', s[56:78])
-            strno = flags & 63
+            offset, typelen, errorlen, flags = struct.unpack('<QIIH', s[56:74])
+            strno = flags & 0x7f
             encrypted = flags >> 15
             if encrypted:
                 self._set('encrypted', True)
             if streamtype == GUIDS['ASF_Video_Media']:
                 vi = core.VideoStream()
-                vi.width, vi.height, depth, \
-                          codec, = struct.unpack('<4xII2xH4s', s[89:89+20])
+                vi.width, vi.height, depth, codec, = struct.unpack('<4xII2xH4s', s[89:89+20])
                 vi.codec = codec
                 vi.id = strno
                 self.video.append(vi)
@@ -275,11 +265,21 @@ class Asf(core.AVContainer):
                 ai = core.AudioStream()
                 twocc, ai.channels, ai.samplerate, bitrate, block, \
                        ai.samplebits, = struct.unpack('<HHIIHH', s[78:78+16])
-                ai.bitrate = 8*bitrate  # XXX Is this right?
+                ai.bitrate = 8*bitrate
                 ai.codec = twocc
                 ai.id = strno
                 self.audio.append(ai)
-            pass
+
+            self._apply_extinfo(strno)
+
+        elif guid == GUIDS['ASF_Extended_Stream_Properties_Object']:
+            streamid, langid = struct.unpack('<HH',s[72:72+4])
+            (bitrate,) = struct.unpack('<I', s[40:40+4])
+            (frametime,) = struct.unpack('<Q', s[76:76+8])
+            if streamid not in self._extinfo:
+                self._extinfo[streamid] = [None, None, None, {}]
+            self._extinfo[streamid][:3] = [bitrate, 10000000.0 / frametime, langid]
+            self._apply_extinfo(streamid)
 
         elif guid == GUIDS['ASF_Header_Extension_Object']:
             log.debug("ASF_Header_Extension_Object %d" % objsize)
@@ -307,8 +307,10 @@ class Asf(core.AVContainer):
                 ss = s[pos:pos+i].replace('\0', '').lstrip().rstrip()
                 strings.append(ss)
                 pos+=i
-            (self.title, self.artist, self.copyright, self.caption, \
-             rating) = tuple(strings)
+
+            # Set empty strings to None
+            strings = [ x or None for x in strings ]
+            self.title, self.artist, self.copyright, self.caption, rating = strings
 
         elif guid == GUIDS['ASF_Extended_Content_Description_Object']:
             (count,) = struct.unpack('<H', s[24:26])
@@ -324,44 +326,39 @@ class Asf(core.AVContainer):
         elif guid == GUIDS['ASF_Metadata_Object']:
             (count,) = struct.unpack('<H', s[24:26])
             pos = 26
-            descriptor = {}
+            streams = {}
             for i in range(0, count):
                 # Read additional content descriptors
-                d = self._parsekv2(s[pos:])
-                pos += d[0]
-                descriptor[d[1]] = d[2]
-            # TODO: Find the stream in self.audio and self.video and
-            #       append it there instead of here
-            self._appendtable('ASFMETADATA%d'%d[3], descriptor)
+                size,key,value,strno = self._parsekv2(s[pos:])
+                if strno not in streams:
+                    streams[strno] = {}
+                streams[strno][key] = value
+                pos += size
+
+            for strno, metadata in streams.items():
+                if strno not in self._extinfo:
+                    self._extinfo[strno] = [None, None, None, {}]
+                self._extinfo[strno][3].update(metadata)
+                self._apply_extinfo(strno)
 
         elif guid == GUIDS['ASF_Language_List_Object']:
             count = struct.unpack('<H', s[24:26])[0]
             pos = 26
-            lang = []
             for i in range(0, count):
                 idlen = struct.unpack('<B', s[pos:pos+1])[0]
                 idstring = s[pos+1:pos+1+idlen]
-                log.debug("Language: %d/%d: %s" % (i+1, count, idstring))
                 idstring = unicode(idstring, 'utf-16').replace('\0', '')
-                lang.append(idstring)
+                log.debug("Language: %d/%d: %s" % (i+1, count, idstring))
+                self._languages.append(idstring)
                 pos += 1+idlen
-            if len(lang) == 1:
-                self.language = lang[0]
-            else:
-                #self.language = tuple(lang)
-                self.language = lang[0]
-            # TODO: Find the stream in self.audio and self.video and
-            #       set it there instead of here
 
         elif guid == GUIDS['ASF_Stream_Bitrate_Properties_Object']:
-            (count,) = struct.unpack('<H', s[24:26])
-            pos = 26
-            for i in range(0,count):
-                strno, avbitrate = struct.unpack('<HI', s[pos:pos+6])
-                strno &= 63
-                log.debug("Stream %d Bitrate: %d" % (strno, avbitrate))
-            # TODO: Find the stream in self.audio and self.video and
-            #       set it there instead of here
+            # This record contains stream bitrate with payload overhead.  For
+            # audio streams, we should have the average bitrate from
+            # ASF_Stream_Properties_Object.  For video streams, we get it from
+            # ASF_Extended_Stream_Properties_Object.  So this record is not
+            # used.
+            pass
 
         elif guid == GUIDS['ASF_Content_Encryption_Object'] or \
              guid == GUIDS['ASF_Extended_Content_Encryption_Object']:
@@ -374,7 +371,7 @@ class Asf(core.AVContainer):
                     break
             else:
                 u = "%.8X-%.4X-%.4X-%.2X%.2X-%s" % guid
-                log.debug("unknown: %s [%d]" % (u, objsize))
+                log.debug("unknown: len=%d [%d]" % (len(u), objsize))
         return r
 
 
