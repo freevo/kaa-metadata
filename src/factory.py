@@ -136,19 +136,21 @@ class _Factory:
         if e and e.startswith('.') and e[1:] in self.extmap:
             log.debug("trying ext %s" % e[1:])
             file.seek(0,0)
-            try:
-                parser = self.get_class(self.extmap[e[1:]][R_CLASS])
-                return parser(file)
-            except core.ParseError:
-                pass
-            except (KeyboardInterrupt, SystemExit):
-                # FIXME: kaa.metadata is a library, and it is not its place
-                # to institute behaviour on these exceptions.  Rather it
-                # should bubble up these exceptions and let the caller
-                # deal with them.
-                sys.exit(0)
-            except:
-                log.exception('parse error')
+            parsers = self.extmap[e[1:]]
+            for info in parsers:
+                try:
+                    parser = self.get_class(info[R_CLASS])
+                    return parser(file)
+                except core.ParseError:
+                    pass
+                except (KeyboardInterrupt, SystemExit):
+                    # FIXME: kaa.metadata is a library, and it is not its place
+                    # to institute behaviour on these exceptions.  Rather it
+                    # should bubble up these exceptions and let the caller
+                    # deal with them.
+                    sys.exit(0)
+                except:
+                    log.exception('parse error')
 
         # Try to find a parser based on the first bytes of the
         # file (magic header). If a magic header is found but the
@@ -348,8 +350,10 @@ class _Factory:
             self.stream_types.append(tuple)
         else:
             self.types.append(tuple)
-            for e in extensions:
-                self.extmap[e.lower()] = tuple
+            for e in (x.lower() for x in extensions):
+                if e not in self.extmap:
+                    self.extmap[e] = []
+                self.extmap[e].append(tuple)
             self.mimemap[mimetype] = tuple
 
         # add to magic header list
