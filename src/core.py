@@ -118,7 +118,7 @@ class Media(object):
                     lists.append((key, value))
                 continue
             if key in UNPRINTABLE_KEYS:
-                value = '<unprintable data>'
+                value = '<unprintable data, size=%d>' % len(value)
             result += u'| %10s: %s\n' % (unicode(key), unicode(value))
 
         # print lists
@@ -138,9 +138,9 @@ class Media(object):
                     try:
                         value = unicode(value)
                         if len(value) > 50:
-                            value = '<unprintable data>'
+                            value = '<unprintable data, size=%d>' % len(value)
                     except UnicodeDecodeError:
-                        value = '<unprintable data>'
+                        value = '<unprintable data, size=%d>' % len(value)
                     result += u'|    | %s: %s\n' % (unicode(key), unicode(value))
         return result
 

@@ -39,7 +39,7 @@ VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
              'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno', 'fourcc', 'id' ]
 
 AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
-             'genre', 'writer', 'producer', 'studio', 'rating', 'starring',
+             'genre', 'writer', 'producer', 'studio', 'rating', 'starring', 'thumbnail',
              'delay', 'image', 'video', 'audio', 'subtitles', 'chapters', 'software' ]
 
 class VideoStream(Media):
