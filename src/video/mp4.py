@@ -207,6 +207,10 @@ class MPEG4(core.AVContainer):
         # Extended size
         if size == 1:
             size = unpack('>Q', file.read(8))
+
+        # Back over the atom header we just read, since _readatom expects the
+        # file position to be at the start of an atom.
+        file.seek(-8, 1)
         while self._readatom(file):
             pass
 
