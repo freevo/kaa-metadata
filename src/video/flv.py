@@ -84,8 +84,8 @@ class FlashVideo(core.AVContainer):
         core.AVContainer.__init__(self)
         self.mime = 'video/flv'
         self.type = 'Flash Video'
-        header = struct.unpack('>3sBBII', file.read(13))
-        if not header[0] == 'FLV':
+        data = file.read(13)
+        if len(data) < 13 or struct.unpack('>3sBBII', data)[0] != 'FLV':
             raise core.ParseError()
 
         for i in range(10):
