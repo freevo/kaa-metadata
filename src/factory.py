@@ -135,9 +135,9 @@ class _Factory:
         parser = None
         if e and e.startswith('.') and e[1:] in self.extmap:
             log.debug("trying ext %s" % e[1:])
-            file.seek(0,0)
             parsers = self.extmap[e[1:]]
             for info in parsers:
+                file.seek(0,0)
                 try:
                     parser = self.get_class(info[R_CLASS])
                     return parser(file)
