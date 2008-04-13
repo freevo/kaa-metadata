@@ -147,8 +147,13 @@ class MPEG(core.AVContainer):
             if not self.isMPEG(file):
                 # detect PES
                 if not self.isPES(file):
-                    # no mpeg at all
-                    raise core.ParseError()
+                    # Maybe it's MPEG-ES
+                    if self.isES(file):
+                        # If isES() succeeds, we needn't do anything further.
+                        return
+                    else:
+                        # no mpeg at all
+                        raise core.ParseError()
 
         self.mime = 'video/mpeg'
         if not self.video:
@@ -649,6 +654,33 @@ class MPEG(core.AVContainer):
                 # looks ok to me
                 return retpos
         return None
+
+
+    # Elementary Stream ===============================================
+
+    def isES(self, file):
+        file.seek(0, 0)
+        try:
+            header = struct.unpack('>LL', file.read(8))
+        except:
+            return False
+            
+        if header[0] != 0x1B3:
+            return False
+
+        # Is an mpeg video elementary stream
+
+        self.mime = 'video/mpeg'
+        video = core.VideoStream()
+        video.width = header[1] >> 20
+        video.height = (header[1] >> 8) & 0xfff
+        if header[1] & 0xf < len(FRAME_RATE):
+            video.fps = FRAME_RATE[header[1] & 0xf]
+        if (header[1] >> 4) & 0xf < len(ASPECT_RATIO):
+            # FIXME: Empirically the aspect looks like PAR rather than DAR
+            video.aspect = ASPECT_RATIO[(header[1] >> 4) & 0xf]
+        self.video.append(video)
+        return True
 
 
     # Transport Stream ===============================================
