@@ -151,6 +151,16 @@ class MPEG(core.AVContainer):
                     if self.isES(file):
                         # If isES() succeeds, we needn't do anything further.
                         return
+                    if file.name.lower().endswith('mpeg') or \
+                             file.name.lower().endswith('mpg'):
+                        # This has to be an mpeg file. It could be a bad
+                        # recording from an ivtv based hardware encoder with
+                        # same bytes missing at the beginning.
+                        # Do some more digging...
+                        if not self.isMPEG(file, force=True) or \
+                           not self.video or not self.audio:
+                            # does not look like an mpeg at all
+                            raise core.ParseError()
                     else:
                         # no mpeg at all
                         raise core.ParseError()
@@ -428,7 +438,7 @@ class MPEG(core.AVContainer):
 
     # Normal MPEG (VCD, SVCD) ========================================
 
-    def isMPEG(self, file):
+    def isMPEG(self, file, force=False):
         """
         This MPEG starts with a sequence of 0x00 followed by a PACK Header
         http://dvd.sourceforge.net/dvdinfo/packhdr.html
@@ -443,8 +453,15 @@ class MPEG(core.AVContainer):
         offset -= 2
 
         # test for mpeg header 0x00 0x00 0x01
-        if not buffer[offset:offset+4] == '\x00\x00\x01%s' % chr(PACK_PKT):
-            return 0
+        header = '\x00\x00\x01%s' % chr(PACK_PKT)
+        if offset < 0 or not buffer[offset:offset+4] == header:
+            if not force:
+                return 0
+            # brute force and try to find the pack header in the first
+            # 10000 bytes somehow
+            offset = buffer.find(header)
+            if offset < 0:
+                return 0
 
         # scan the 100000 bytes of data
         buffer += file.read(100000)
