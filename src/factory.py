@@ -214,8 +214,10 @@ class _Factory:
                 r.url = url
             return r
 
-        elif scheme == 'http':
-            # Quick Hack for webradio support
+        elif scheme == 'http' and False:
+            # This code is deactivated right now. Parsing video data over
+            # http is way to slow right now. We need a better way to handle
+            # this before activating it again.
             # We will need some more soffisticated and generic construction
             # method for this. Perhaps move file.open stuff into __init__
             # instead of doing it here...
