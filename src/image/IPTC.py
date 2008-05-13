@@ -129,7 +129,9 @@ def flatten(list):
         for i, val in list.items()[:]:
             if len(val) == 0:
                 del list[i]
-            elif i != 'keywords':
+            elif i == 'keywords':
+                list[i] = [ x.strip(' \t\0\n\r') for x in val ]
+            else:
                 list[i] = u' '.join(val).strip()
         return list
     except (ValueError, AttributeError, IndexError, KeyError):
