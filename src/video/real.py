@@ -59,7 +59,12 @@ class RealVideo(core.AVContainer):
         log.debug("size: %d, ver: %d, headers: %d" % \
                   (object_size, file_version,num_headers))
         for i in range(0,num_headers):
-            oi = struct.unpack('>4sIH',file.read(10))
+            try:
+                oi = struct.unpack('>4sIH',file.read(10))
+            except:
+                # Header data we expected wasn't there.  File may be
+                # only partially complete.
+                break
             (object_id,object_size,object_version) = oi
             self._read_header(object_id, file.read(object_size-10))
             log.debug("%s [%d]" % (object_id,object_size-10))
