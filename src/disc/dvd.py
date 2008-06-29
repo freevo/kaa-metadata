@@ -74,13 +74,9 @@ class DVDAudio(audio.Audio):
 
     _keys = audio.Audio._keys
 
-    def __init__(self, pos, info):
+    def __init__(self, info):
         audio.Audio.__init__(self)
-        self.id = 128 + pos
-        self.language, self.codec, self.channels, self.samplerate = info
-        if self.codec == '0x2001':      # DTS
-            # dts uses the same counter as ac3 but is always +8
-            self.id += 8
+        self.id, self.language, self.codec, self.channels, self.samplerate = info
 
 
 class DVDTitle(video.AVContainer):
@@ -103,11 +99,13 @@ class DVDTitle(video.AVContainer):
         self.video.append(DVDVideo(info[2:8]))
         self.length = self.video[0].length
 
-        for pos, a in enumerate(info[-2]):
-            self.audio.append(DVDAudio(pos, a))
+        for a in info[-2]:
+            self.audio.append(DVDAudio(a))
 
-        for pos, s in enumerate(info[-1]):
-            self.subtitles.append(video.Subtitle(s))
+        for id, lang in info[-1]:
+            sub = video.Subtitle(lang)
+            sub.id = id
+            self.subtitles.append(sub)
 
 
 class DVDInfo(core.Disc):

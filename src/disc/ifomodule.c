@@ -64,14 +64,16 @@ int dvdtime2msec(dvd_time_t *dt)
 }
 
 
-static PyObject * ifoinfo_get_audio_tracks(ifo_handle_t *vtsfile, int id) {
+static PyObject * ifoinfo_get_audio_track(ifo_handle_t *vtsfile, int ttn, int id) {
     char audioformat[7];
     char audiolang[5];
     int audiochannels;
     int audiofreq;
+    int audioid;
     audio_attr_t *attr;
+    pgc_t *pgc = vtsfile->vts_pgcit ? vtsfile->vts_pgcit->pgci_srp[ttn].pgc : NULL;
 
-    if (!vtsfile->vts_pgcit || !vtsfile->vtsi_mat)
+    if (!pgc || !vtsfile->vtsi_mat || (pgc->audio_control[id] & 0x8000) == 0)
         return NULL;
 
     attr = &vtsfile->vtsi_mat->vts_audio_attr[id];
@@ -89,10 +91,13 @@ static PyObject * ifoinfo_get_audio_tracks(ifo_handle_t *vtsfile, int id) {
         return NULL;
     }
 
+    audioid = pgc->audio_control[id] >> 8 & 7;
+
     /* audio format */
     switch (attr->audio_format) {
     case 0:
         snprintf(audioformat, 7, "0x2000");
+        audioid += 128; // AC3 ids start at 128
         break;
     case 2:
         snprintf(audioformat, 7, "0x0050");
@@ -102,9 +107,11 @@ static PyObject * ifoinfo_get_audio_tracks(ifo_handle_t *vtsfile, int id) {
         break;
     case 4:
         snprintf(audioformat, 7, "0x0001");
+        audioid += 160; // PCM ids start at 160
         break;
     case 6:
         snprintf(audioformat, 7, "0x2001");
+        audioid += 136; // DTS ids start at 136
         break;
     default:
         snprintf(audioformat, 7, "%02x%02x", 0, 0);
@@ -137,15 +144,17 @@ static PyObject * ifoinfo_get_audio_tracks(ifo_handle_t *vtsfile, int id) {
     audiochannels = attr->channels + 1;
 
     //AUDIOTRACK: ID=%i; LANG=%s; FORMAT=%s; CHANNELS=%i; FREQ=%ikHz
-    return Py_BuildValue("(ssii)", audiolang, audioformat, audiochannels,
-                         audiofreq);
+    return Py_BuildValue("(issii)", audioid, audiolang, audioformat, audiochannels, audiofreq);
 }
 
-static PyObject * ifoinfo_get_subtitle_tracks(ifo_handle_t *vtsfile, int id) {
+static PyObject * ifoinfo_get_subtitle_track(ifo_handle_t *vtsfile, int ttn, int id) {
+    int subid = id;
     char language[5];
     subp_attr_t *attr;
+    video_attr_t *video = &vtsfile->vtsi_mat->vts_video_attr;
+    pgc_t *pgc = vtsfile->vts_pgcit ? vtsfile->vts_pgcit->pgci_srp[ttn].pgc : NULL;
 
-    if (!vtsfile->vts_pgcit)
+    if (!pgc || (pgc->subp_control[id] & 0x80000000) == 0)
         return NULL;
 
     attr = &vtsfile->vtsi_mat->vts_subp_attr[id];
@@ -158,6 +167,11 @@ static PyObject * ifoinfo_get_subtitle_tracks(ifo_handle_t *vtsfile, int id) {
         return Py_BuildValue("s", "N/A");
     }
 
+    if (video->display_aspect_ratio == 0) // 4:3
+        subid = pgc->subp_control[id] >> 24 & 31;
+    else if(video->display_aspect_ratio == 3) // 16:9
+        subid = pgc->subp_control[id] >> 8 & 31;
+
     /* language code */
     if (isalpha((int)(attr->lang_code >> 8)) &&
         isalpha((int)(attr->lang_code & 0xff))) {
@@ -169,7 +183,7 @@ static PyObject * ifoinfo_get_subtitle_tracks(ifo_handle_t *vtsfile, int id) {
                  0xff & (unsigned)(attr->lang_code & 0xff));
     }
 
-    return Py_BuildValue("s", language);
+    return Py_BuildValue("(is)", subid, language);
 }
 
 static PyObject *ifoinfo_read_title(dvd_reader_t *dvd, ifo_handle_t *ifofile,
@@ -177,6 +191,7 @@ static PyObject *ifoinfo_read_title(dvd_reader_t *dvd, ifo_handle_t *ifofile,
     tt_srpt_t *tt_srpt;
     ifo_handle_t *vtsfile;
     video_attr_t *video_attr;
+    int ttn;
     long playtime;
     int fps;
     PyObject *ret;
@@ -197,13 +212,14 @@ static PyObject *ifoinfo_read_title(dvd_reader_t *dvd, ifo_handle_t *ifofile,
         return NULL;
 
     playtime = 0;
+    ttn = tt_srpt->title[id].vts_ttn - 1;
     fps = 0;
     chapters = PyList_New(0);
 
     if (vtsfile->vts_pgcit) {
         dvd_time_t *time;
         pgc_t *pgc;
-        i = vtsfile->vts_ptt_srpt->title[tt_srpt->title[id].vts_ttn - 1].ptt[0].pgcn - 1;
+        i = vtsfile->vts_ptt_srpt->title[ttn].ptt[0].pgcn - 1;
         time = &vtsfile->vts_pgcit->pgci_srp[i].pgc->playback_time;
         fps = (time->frame_u & 0xc0) >> 6;
         playtime = dvdtime2msec(time);
@@ -227,17 +243,17 @@ static PyObject *ifoinfo_read_title(dvd_reader_t *dvd, ifo_handle_t *ifofile,
     }
 
     audio = PyList_New(0);
-    for (i=0; i < vtsfile->vtsi_mat->nr_of_vts_audio_streams; i++) {
-        tmp = ifoinfo_get_audio_tracks(vtsfile, i);
+    for (i=0; i < 8; i++) {
+        tmp = ifoinfo_get_audio_track(vtsfile, ttn, i);
         if (!tmp)
-            break;
+            continue;
         PyList_Append(audio, tmp);
         Py_DECREF(tmp);
     }
 
     subtitles = PyList_New(0);
-    for (i=0; i < vtsfile->vtsi_mat->nr_of_vts_subp_streams; i++) {
-        tmp = ifoinfo_get_subtitle_tracks(vtsfile, i);
+    for (i=0; i < 32; i++) {
+        tmp = ifoinfo_get_subtitle_track(vtsfile, ttn, i);
         if (!tmp)
             break;
         PyList_Append(subtitles, tmp);
