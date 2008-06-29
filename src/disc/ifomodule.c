@@ -255,7 +255,7 @@ static PyObject *ifoinfo_read_title(dvd_reader_t *dvd, ifo_handle_t *ifofile,
     for (i=0; i < 32; i++) {
         tmp = ifoinfo_get_subtitle_track(vtsfile, ttn, i);
         if (!tmp)
-            break;
+            continue;
         PyList_Append(subtitles, tmp);
         Py_DECREF(tmp);
     }
