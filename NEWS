@@ -1,5 +1,13 @@
 Release Notes, see ChangeLog for a detailed list of changes.
 
+0.7.4, 2008-09-09
+
+* Update EXIF.py to a new version
+* Multiple parsers can be registered for the same extension
+* Language code fixes
+* Parser improvements for DVD, Real, MPEG, FLV, MP4
+
+
 0.7.3, 2008-03-24
 
 * Sync with eyeD3 0.6.14
