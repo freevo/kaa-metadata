@@ -1,0 +1,26 @@
+Dynamic loading without importing everything from __init__
+
+Make everything faster :)
+The EXIF parser is way to slow
+
+Add more types and information.
+
+Create a REAME
+
+Update inline docs
+
+Move external submodules like eyeD3 and the discID code to an extra
+dir lib to serperate our code from external modules we just copy.
+
+Create doc in the Wiki and dump it into the doc subdir
+
+Add list of external files kaa.beacon should know about
+
+Check attributes. Some are very similar and could be merged
+
+Make bitrate kbit/s
+
+If possible, attributes should match
+http://www.freedesktop.org/wiki/Standards_2fshared_2dfilemetadata_2dspec
+and mime type should match
+http://www.freedesktop.org/wiki/Standards_2fshared_2dmime_2dinfo_2dspec

@@ -1,0 +1,123 @@
+#!/usr/bin/python
+# -*- coding: iso-8859-1 -*-
+# -----------------------------------------------------------------------------
+# mminfo - sample application for kaa.metadata
+# -----------------------------------------------------------------------------
+# $Id$
+#
+# -----------------------------------------------------------------------------
+# kaa-Metadata - Media Metadata for Python
+# Copyright (C) 2003-2006 Thomas Schueppel, Dirk Meyer
+#
+# First Edition: Thomas Schueppel <stain@acm.org>
+# Maintainer:    Dirk Meyer <dischi@freevo.org>
+#
+# Please see the file AUTHORS for a complete list of authors.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MER-
+# CHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+# Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+#
+# -----------------------------------------------------------------------------
+
+# python imports
+import sys
+import os
+import getopt
+import logging
+import termios
+import fcntl
+import struct
+
+# insert kaa path information
+__site__ = '../lib/python%s.%s/site-packages' % sys.version_info[:2]
+__site__ = os.path.abspath(os.path.join(os.path.dirname(__file__), __site__))
+if not __site__ in sys.path:
+    sys.path.insert(0, __site__)
+
+# kaa.metadata imports
+import kaa.metadata
+
+def usage():
+    print 'Usage: mminfo [options] file...'
+    print
+    print 'options:'
+    print '  -d   turn on debug information. For complete debug set -d 2'
+    print
+    print 'File can be a normal file, a device (DVD, VCD, CD, etc.), or a directory'
+    print
+    print 'Examples:'
+    print '  mminfo foo.avi bar.mpg'
+    print '  mminfo /dev/dvd'
+    print '  mminfo /mnt/dvd/VIDEO_TS'
+    print
+    sys.exit(0)
+
+
+def print_header(filename, info=''):
+    # Get terminal dimensions
+    try:
+        h, w = struct.unpack('hh', fcntl.ioctl(sys.stdin.fileno(), termios.TIOCGWINSZ, 'xxxx'))
+    except:
+        w = 75
+
+    if len(filename) + len(info) > w:
+        n = (w - len(info)) / 2 - 6
+        print "%s[...]%s%s" % (filename[:n], filename[len(filename)-n:], info)
+    else:
+        print "%s%s" % (filename, info)
+
+# create and setup the root logger object.
+logger = logging.getLogger()
+
+# set stdout logging
+formatter = logging.Formatter('%(levelname)s %(module)s'+\
+                              '(%(lineno)s): %(message)s')
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+# set log level
+logger.setLevel(logging.WARNING)
+
+logger = logging.getLogger('metadata')
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:], 'd:', [])
+except getopt.GetoptError:
+    usage()
+
+if not args:
+    usage()
+
+DEBUG_LEVEL = [ logging.WARNING, logging.INFO, logging.DEBUG ]
+
+for o, a in opts:
+    if o == '-d':
+        try:
+            a = max(0, min(int(a), 2))
+        except ValueError:
+            print 'Specify debug level (2 for full debug)'
+            sys.exit(1)
+        print 'setting to log level %s' % a
+        logger.setLevel(DEBUG_LEVEL[a])
+
+
+for file in args:
+    info = kaa.metadata.parse(file)
+    if info:
+        print_header(file)
+        print info
+    else:
+        print_header(file, ': unable to identify file')
+        print
