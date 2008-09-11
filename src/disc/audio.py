@@ -114,7 +114,7 @@ class AudioDisc(core.Disc):
                     mi.genre = query_info['category']
                     mi.year = self.year
                     mi.codec = 'PCM'
-                    mi.samplerate = 44.1
+                    mi.samplerate = 44100
                     mi.trackno = i+1
                     mi.trackof = disc_id[1]
                     self.tracks.append(mi)
@@ -136,7 +136,7 @@ class AudioDisc(core.Disc):
                 mi = AudioTrack()
                 mi.title = 'Track %s' % (i+1)
                 mi.codec = 'PCM'
-                mi.samplerate = 44.1
+                mi.samplerate = 44100
                 mi.trackno = i+1
                 mi.trackof = disc_id[1]
                 self.tracks.append(mi)
