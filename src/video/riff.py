@@ -546,7 +546,12 @@ class Riff(core.AVContainer):
             fmt = struct.unpack("<HHLLHH", data[:16])
             self._set('codec', hex(fmt[0]))
             self._set('samplerate', fmt[2])
-            self._set('bitrate', fmt[3])
+            # fmt[3] is average bytes per second, so we must divide it
+            # by 125 to get kbits per second
+            self._set('bitrate', fmt[3] / 125)
+            # ugly hack: remember original rate in bytes per second
+            # so that the length can be calculated in next elif block
+            self._set('byterate', fmt[3])
             # Set a dummy fourcc so codec will be resolved in finalize.
             self._set('fourcc', 'dummy')
         elif name == 'data':
@@ -555,7 +560,8 @@ class Riff(core.AVContainer):
             # will be off.  The only way to properly deal with this issue
             # is to decode part of the stream based on its codec, but
             # kaa.metadata doesn't have this capability (yet?)
-            self._set('length', size / float(self.bitrate))
+            # ugly hack: use original rate in bytes per second
+            self._set('length', size / float(self.byterate))
             file.seek(size, 1)
         elif not name.strip(string.printable + string.whitespace):
             # check if name is something usefull at all, maybe it is no
