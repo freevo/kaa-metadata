@@ -206,7 +206,10 @@ class MP3(core.Music):
                   try:
                      self.genre = ID3.GENRE_LIST[genre]
                   except KeyError:
-                     self.genre = str(genre)
+                     try:
+                        self.genre = str(genre)
+                     except:
+                        self.genre = str_to_unicode(genre)
             # and some tools store it as trackno/trackof in TRCK
             if not self.trackof and self.trackno and \
                    self.trackno.find('/') > 0:
