@@ -132,6 +132,13 @@ class FlashVideo(core.AVContainer):
                     while metadata:
                         length, value = self._parse_value(metadata)
                         if isinstance(value, dict):
+                            log.info('metadata: %s', value)
+                            if value.get('creator'):
+                                self.copyright = value.get('creator')
+                            if value.get('width'):
+                                self.width = value.get('width')
+                            if value.get('height'):
+                                self.height = value.get('height')
                             if value.get('duration'):
                                 self.length = value.get('duration')
                             self._appendtable('FLVINFO', value)
