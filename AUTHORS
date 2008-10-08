@@ -9,15 +9,11 @@ Jason Tackaberry <tack@urandom.ca>
 Contributions:
 
 Thomas Schueppel <stain@acm.org>
-As founder of mmpython, he wrote many of the info parser modules.
-
 Aubin Paul <aubin@punknews.org>
-
+Duncan Webb <duncan@freevo.org>
+Hans Meine <hans_meine@gmx.net>
 Lars Eggert (FreeBSD support)
-
-Richard Mottershead <richard.mottershead@v21net.co.uk>
-Games support
-
+Richard Mottershead <richard.mottershead@v21net.co.uk> (games)
 Jose Taza <jose4freevo@chello.nl> (m4a parser)
 
 This module is based on mmpython created by Thomas Schueppel and
