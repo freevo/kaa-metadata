@@ -39,6 +39,7 @@ import logging
 import struct
 
 # import kaa.metadata.audio core
+from kaa.strutils import str_to_unicode
 import core
 import ID3 as ID3
 
