@@ -36,7 +36,6 @@ import stat
 import os
 import sys
 import urlparse
-import traceback
 import urllib
 import logging
 
@@ -56,7 +55,7 @@ _factory = None
 TIME_DEBUG = False
 
 R_MIMETYPE  = 0
-R_EXTENTION = 1
+R_EXTENSION = 1
 R_CLASS     = 2
 
 def register(mimetype, extensions, c, magic=None):
