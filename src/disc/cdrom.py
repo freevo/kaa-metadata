@@ -107,6 +107,7 @@ def _drive_status(device, handle_mix = 0):
     CDS_AUDIO=100
     CDS_MIXED=105
     CDS_DISC_OK=4
+    CDS_NO_DISC=0
 
     # FreeBSD ioctls - there is no CDROM.py
     # XXX 0xc0086305 below creates a warning, but 0xc0086305L
