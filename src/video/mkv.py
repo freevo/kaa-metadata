@@ -361,7 +361,7 @@ class Matroska(core.AVContainer):
 
         elif elem_id == MATROSKA_CUES_ID:
             self.has_idx = True
-            
+
         log.debug('END: process element %s' % hex(elem_id))
         return True
 

@@ -39,16 +39,16 @@ import core
 
 class PCM(core.Music):
     def __init__(self,file):
-       core.Music.__init__(self)
-       t = self._what(file)
-       if not t:
-           raise core.ParseError()
-       (self.type, self.samplerate, self.channels, self.bitrate, \
-        self.samplebits) = t
-       if self.bitrate == -1:
-           # doesn't look right
-           raise core.ParseError()
-       self.mime = "audio/%s" % self.type
+        core.Music.__init__(self)
+        t = self._what(file)
+        if not t:
+            raise core.ParseError()
+        (self.type, self.samplerate, self.channels, self.bitrate, \
+         self.samplebits) = t
+        if self.bitrate == -1:
+            # doesn't look right
+            raise core.ParseError()
+        self.mime = "audio/%s" % self.type
 
     def _what(self,f):
         """Recognize sound headers"""

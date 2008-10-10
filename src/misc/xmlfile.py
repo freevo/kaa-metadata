@@ -63,7 +63,7 @@ class XML(core.Media):
 
         self.mime  = 'text/xml'
         self.type  = ''
-        
+
         if ext in ('.html', '.htm'):
             # just believe that it is a html file
             self.mime  = 'text/html'
@@ -81,7 +81,7 @@ class XML(core.Media):
             sys.exit(0)
         except Identified:
             pass
-    
+
 
     def startElement(self, name, attr):
         if name in XML_TAG_INFO:

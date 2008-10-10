@@ -67,14 +67,14 @@ import core
 #
 class ADTS(core.Music):
     def __init__(self,file):
-       core.Music.__init__(self)
-       if not file.name.endswith('aac'):
-           # we have a bad detection here, so if the filename does
-           # not match, we skip.
-           raise core.ParseError()
-       header = struct.unpack('>7B', file.read(7))
-       if header[0] != 255 or (header[1] >> 4) != 15:
-           raise core.ParseError()
-       self.mime = 'audio/aac'
+        core.Music.__init__(self)
+        if not file.name.endswith('aac'):
+            # we have a bad detection here, so if the filename does
+            # not match, we skip.
+            raise core.ParseError()
+        header = struct.unpack('>7B', file.read(7))
+        if header[0] != 255 or (header[1] >> 4) != 15:
+            raise core.ParseError()
+        self.mime = 'audio/aac'
 
 Parser = ADTS

@@ -396,4 +396,3 @@ def Parser(file):
             if not getattr(audio, key, None):
                 setattr(audio, key, getattr(asf, key))
     return audio
-

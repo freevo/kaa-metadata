@@ -47,7 +47,7 @@ class Disc(Collection):
 
     _keys = Collection._keys + [ 'mixed', 'label' ]
     media = MEDIA_DISC
-    
+
     def is_disc(self, device):
         (type, self.id) = cdrom.status(device, handle_mix=1)
         if type != 2:

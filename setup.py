@@ -66,7 +66,7 @@ if not cdrom.has_python_h():
     print "Rom drive support will be unavailable"
     print "---------------------------------------------------------------------"
     ext_modules = [ ]
-    
+
 setup (module      = 'metadata',
        version     = '0.7.4',
        license     = 'GPL',

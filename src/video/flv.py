@@ -166,7 +166,7 @@ class FlashVideo(core.AVContainer):
 
         if ord(data[0]) == FLV_DATA_TYPE_BOOL:
             return 2, bool(data[1])
-            
+
         if ord(data[0]) == FLV_DATA_TYPE_STRING:
             length = (ord(data[1]) << 8) + ord(data[2])
             return length + 3, data[3:length+3]

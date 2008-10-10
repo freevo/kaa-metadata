@@ -67,7 +67,7 @@ class BinsParser(xml.sax.ContentHandler):
 
     def items(self):
         return self.dict.items()
-    
+
     def startElement(self, name, attr):
         if self.mode == 0:
             if name not in ('album', 'image'):
@@ -87,11 +87,11 @@ class BinsParser(xml.sax.ContentHandler):
             if value:
                 self.dict[self.var] = value
             self.var = None
-            
+
     def characters(self, c):
         if self.var:
             self.chars += c
-            
+
 class Image(Media):
     """
     Digital Images, Photos, Pictures.
@@ -99,7 +99,7 @@ class Image(Media):
 
     _keys = Media._keys + ATTRIBUTES
     media = MEDIA_IMAGE
-    
+
     def _finalize(self):
         """
         Add additional information and correct data.

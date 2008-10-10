@@ -73,7 +73,7 @@ class ParseError:
 
 class Media(object):
     media = None
-    
+
     """
     Media is the base class to all Media Metadata Containers. It defines
     the basic structures that handle metadata. Media and its derivates
@@ -92,7 +92,7 @@ class Media(object):
                     value = [ Media(x) for x in value ]
                 self._set(key, value)
             return
-        
+
         self._keys = self._keys[:]
         self._tables = {}
         for key in self._keys:
@@ -233,7 +233,7 @@ class Media(object):
         if 'language' in self._keys:
             self.langcode, self.language = language.resolve(self.language)
 
-            
+
     #
     # data access
     #

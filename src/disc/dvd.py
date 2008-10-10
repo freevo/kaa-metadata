@@ -48,7 +48,7 @@ try:
     import _ifoparser
 except ImportError:
     _ifoparser = None
-    
+
 # get logging object
 log = logging.getLogger('metadata')
 

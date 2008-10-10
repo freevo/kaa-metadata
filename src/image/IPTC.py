@@ -141,7 +141,7 @@ def flatten(list):
 def parseiptc(app):
     iptc = {}
     if app[:14] == "Photoshop 3.0\x00":
-       app = app[14:]
+        app = app[14:]
 
     # parse the image resource block
     offset = 0

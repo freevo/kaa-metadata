@@ -74,7 +74,7 @@ class Subtitle(Media):
         Media.__init__(self)
         self.language = language
 
-        
+
 class AVContainer(Media):
     """
     Container for Audio and Video streams. This is the Container Type for

@@ -91,5 +91,5 @@ class Directory(core.Media):
             self._set('image', folderjpg)
 
         self.mime = 'text/directory'
-            
+
 Parser = Directory

@@ -70,12 +70,12 @@ def audiocd_id(device):
     checksum = 0
 
     for i in range(first, last + 1):
-	(min, sec, frame) = _cdrom.toc_entry(device, i)
+        (min, sec, frame) = _cdrom.toc_entry(device, i)
         n = min*60 + sec
         while n > 0:
             checksum += n % 10
             n = n / 10
-	track_frames.append(min*60*75 + sec*75 + frame)
+        track_frames.append(min*60*75 + sec*75 + frame)
 
     (min, sec, frame) = _cdrom.leadout(device)
     track_frames.append(min*60*75 + sec*75 + frame)
@@ -190,8 +190,8 @@ def _drive_status(device, handle_mix = 0):
         fd.read(1)
     except IOError:
         # not readable
-    	fd.close()
-	return 3
+        fd.close()
+        return 3
 
     # disc ok
     fd.close()
