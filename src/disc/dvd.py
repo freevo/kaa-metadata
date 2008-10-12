@@ -109,7 +109,10 @@ class DVDTitle(video.AVContainer):
 
 
 class DVDInfo(core.Disc):
-
+    """
+    DVD parser for DVD discs, DVD iso files and hard-disc and DVD
+    directory structures with a VIDEO_TS folder.
+    """
     _keys = core.Disc._keys + [ 'length' ]
 
     def __init__(self, device):

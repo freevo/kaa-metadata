@@ -280,7 +280,8 @@ class EbmlEntity:
 
 class Matroska(core.AVContainer):
     """
-    This is the main Matroska object
+    Matroska video and audio parser. If at least one video stream is
+    detected it will set the type to MEDIA_AV.
     """
     media = core.MEDIA_AUDIO
 

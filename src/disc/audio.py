@@ -48,6 +48,10 @@ log = logging.getLogger('metadata')
 
 
 class AudioDisc(core.Disc):
+    """
+    Audio CD support. It provides a list of tracks and if on Internet
+    connection is available it will use CDDB for the metadata.
+    """
     def __init__(self,device):
         core.Disc.__init__(self)
         self.offset = 0

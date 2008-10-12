@@ -71,7 +71,11 @@ EXIFMap = {
 }
 
 class JPG(core.Image):
-
+    """
+    JPEG parser supporting EXIf and IPTC tables. The important
+    information is mapped to match the kaa.metadata key naming, the
+    complete table can be accessed with the _tables variable.
+    """
     table_mapping = { 'EXIF': EXIFMap, 'IPTC': IPTC.mapping }
 
     def __init__(self,file):

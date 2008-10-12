@@ -115,6 +115,10 @@ GUIDS = {
 
 
 class Asf(core.AVContainer):
+    """
+    ASF video parser. The ASF format is also used for Microsft Windows
+    Media files like wmv.
+    """
     def __init__(self, file):
         core.AVContainer.__init__(self)
         self.mime = 'video/x-ms-asf'
@@ -375,6 +379,9 @@ class Asf(core.AVContainer):
 
 
 class AsfAudio(audiocore.Audio):
+    """
+    ASF audio parser for wma files.
+    """
     def __init__(self):
         audiocore.Audio.__init__(self)
         self.mime = 'audio/x-ms-asf'

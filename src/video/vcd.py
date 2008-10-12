@@ -38,6 +38,9 @@ import os
 import core
 
 class VCDFile(core.Collection):
+    """
+    Parser for VCD files on hard-disc. It parses cue/bin file combinations.
+    """
     def __init__(self, file):
         core.Collection.__init__(self)
         self.offset = 0

@@ -136,6 +136,14 @@ ASPECT_RATIO = ( None,     # Forbidden
 
 
 class MPEG(core.AVContainer):
+    """
+    Parser for various MPEG files. This includes MPEG-1 and MPEG-2
+    program streams, elementary streams and transport streams. The
+    reported length differs from the length reported by most video
+    players but the provides length here is correct. An MPEG file has
+    no additional metadata like title, etc; only codecs, length and
+    resolution is reported back.
+    """
     def __init__(self,file):
         core.AVContainer.__init__(self)
         self.sequence_header_offset = 0

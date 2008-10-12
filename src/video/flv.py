@@ -77,7 +77,11 @@ FLVINFO = {
 }
 
 class FlashVideo(core.AVContainer):
-
+    """
+    Experimental parser for Flash videos. It requires certain flags to
+    be set to report video resolutions and in most cases it does not
+    provide that information.
+    """
     table_mapping = { 'FLVINFO' : FLVINFO }
 
     def __init__(self,file):

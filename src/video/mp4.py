@@ -169,7 +169,11 @@ QTLANGUAGES = {
 }
 
 class MPEG4(core.AVContainer):
-
+    """
+    Parser for the MP4 container format. This format is mostly
+    identical to Apple Quicktime and 3GP files. It maps to mp4, mov,
+    qt and some other extensions.
+    """
     table_mapping = { 'QTUDTA': QTUDTA }
 
     def __init__(self,file):

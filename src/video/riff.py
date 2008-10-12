@@ -77,7 +77,9 @@ PIXEL_ASPECT = {
 
 
 class Riff(core.AVContainer):
-
+    """
+    AVI parser also parsing metadata like title, languages, etc.
+    """
     table_mapping = { 'AVIINFO' : AVIINFO }
 
     def __init__(self,file):
