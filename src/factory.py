@@ -191,8 +191,10 @@ class _Factory:
                 return self.get_class(e[R_CLASS])(file)
             except (KeyboardInterrupt, SystemExit):
                 sys.exit(0)
-            except:
+            except core.ParseError:
                 pass
+            except:
+                log.exception('parser error')
         return None
 
 
