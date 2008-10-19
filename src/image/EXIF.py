@@ -1248,8 +1248,14 @@ class EXIF_header:
                 tiff += self.file.read(count * typelen)
 
         # add pixel strips and update strip offset info
-        old_offsets = self.tags['Thumbnail StripOffsets'].values
-        old_counts = self.tags['Thumbnail StripByteCounts'].values
+        # kaa.metadata addition: wrap key access in try/except in case
+        # keys do not exist, in which case we cannot extract TIFF thumbnail
+        try:
+            old_offsets = self.tags['Thumbnail StripOffsets'].values
+            old_counts = self.tags['Thumbnail StripByteCounts'].values
+        except KeyError:
+            return
+
         for i in range(len(old_offsets)):
             # update offset pointer (more nasty "strings are immutable" crap)
             offset = self.n2s(len(tiff), strip_len)
@@ -1464,7 +1470,9 @@ def process_file(f, stop_tag='UNDEF', details=True, debug=False):
         hdr.tags['JPEGThumbnail'] = f.read(size)
 
     # deal with MakerNote contained in EXIF IFD
-    if 'EXIF MakerNote' in hdr.tags and detailed:
+    # kaa.metadata addition: also test 'Image Make' in hdr.tags before
+    # calling decode_maker_note().
+    if 'EXIF MakerNote' in hdr.tags and 'Image Make' in hdr.tags and detailed:
         hdr.decode_maker_note()
 
     # Sometimes in a TIFF file, a JPEG thumbnail is hidden in the MakerNote
