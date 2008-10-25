@@ -11,7 +11,7 @@
 # Fixes for kaa.metadata: unicode support, marked in the source code
 # with the kaa.metadata keyword
 
-import urllib, string, socket, os, struct, re
+import urllib, string, socket, os, re
 
 name = 'CDDB.py'
 version = 1.3
@@ -94,7 +94,7 @@ def query(track_info, server_url=default_server,
     else:
 	return [ header[0], None ]
 
-def read(category, disc_id, server_url=default_server, 
+def read(category, disc_id, server_url=default_server,
 	 user=default_user, host=hostname, client_name=name,
          client_version=version):
 

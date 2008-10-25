@@ -30,11 +30,8 @@
 # -----------------------------------------------------------------------------
 
 # python imports
-import os
 import re
 import logging
-import copy
-import sys
 
 # kaa imports
 import kaa

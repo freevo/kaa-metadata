@@ -32,10 +32,6 @@
 __all__ = ['Parser']
 
 # python imports
-import re
-import struct
-import string
-import time
 import zlib
 import logging
 import StringIO

@@ -31,14 +31,7 @@
 __all__ = ['Parser']
 
 # python imports
-import struct
-import re
-import stat
-import os
-import math
-from types import *
-from struct import *
-from string import *
+from struct import unpack
 import logging
 
 # import kaa.metadata.video core

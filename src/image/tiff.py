@@ -33,7 +33,6 @@ __all__ = ['Parser']
 
 # python imports
 import struct
-import zlib
 import logging
 
 # import kaa.metadata.image core

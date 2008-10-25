@@ -32,11 +32,10 @@
 __all__ = ['Parser']
 
 # python imports
-import struct
 import logging
 import sys
-from struct import *
-from re import *
+from struct import unpack
+from re import match
 
 # kaa.metadata.games core import
 import core

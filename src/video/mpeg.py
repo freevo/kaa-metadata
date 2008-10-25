@@ -32,10 +32,8 @@
 __all__ = ['Parser']
 
 # python imports
-import re
 import os
 import struct
-import string
 import logging
 import stat
 

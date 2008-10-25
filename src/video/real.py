@@ -33,7 +33,6 @@ __all__ = ['Parser']
 
 # python imports
 import struct
-import string
 import logging
 
 # import kaa.metadata.video core

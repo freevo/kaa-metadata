@@ -35,7 +35,7 @@ import re
 import time
 import array
 import md5
-from struct import *
+from struct import pack, unpack
 import logging
 from fcntl import ioctl
 

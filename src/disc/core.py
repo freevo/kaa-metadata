@@ -30,7 +30,6 @@
 # -----------------------------------------------------------------------------
 
 # python imports
-import md5
 import logging
 
 # kaa imports

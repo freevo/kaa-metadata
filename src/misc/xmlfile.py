@@ -33,12 +33,12 @@ __all__ = ['Parser']
 
 # python imports
 import os
+import sys
 import logging
 import xml.sax
 
 # kaa.metadata imports
 import kaa.metadata.core as core
-import kaa.metadata.factory as factory
 
 # get logging object
 log = logging.getLogger('metadata')

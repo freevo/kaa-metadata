@@ -29,6 +29,10 @@
 #
 # -----------------------------------------------------------------------------
 
+# python imports
+import sys
+
+# kaa imports
 from kaa.metadata.core import ParseError, Media, MEDIA_AUDIO
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',

@@ -34,14 +34,12 @@ __all__ = ['Parser']
 # python imports
 import os
 import logging
-import sys
 
 # kaa imports
 import kaa
 
 # kaa.metadata imports
 import kaa.metadata.core as core
-import kaa.metadata.factory as factory
 from kaa.metadata.image.core import BinsParser
 
 # get logging object

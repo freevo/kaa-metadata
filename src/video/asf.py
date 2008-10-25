@@ -35,7 +35,6 @@
 __all__ = ['Parser']
 
 # python imports
-import re
 import struct
 import string
 import logging
