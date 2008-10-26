@@ -47,14 +47,15 @@ MEDIA_VIDEO     = 'MEDIA_VIDEO'
 MEDIA_IMAGE     = 'MEDIA_IMAGE'
 MEDIA_AV        = 'MEDIA_AV'
 MEDIA_SUBTITLE  = 'MEDIA_SUBTITLE'
-MEDIA_CONTAINER = 'MEDIA_CONTAINER'
+MEDIA_CHAPTER   = 'MEDIA_CHAPTER'
 MEDIA_DIRECTORY = 'MEDIA_DIRECTORY'
 MEDIA_DISC      = 'MEDIA_DISC'
 MEDIA_GAME      = 'MEDIA_GAME'
 
 
 MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'timestamp',
-             'keywords', 'country', 'language', 'langcode', 'url', 'media', 'artist', 'mime']
+             'keywords', 'country', 'language', 'langcode', 'url', 'media', 'artist',
+             'mime']
 
 EXTENSION_DEVICE    = 'device'
 EXTENSION_DIRECTORY = 'directory'
@@ -91,7 +92,7 @@ class Media(object):
             return
 
         self._keys = self._keys[:]
-        self._tables = {}
+        self.tables = {}
         for key in self._keys:
             if not key == 'media':
                 setattr(self, key, None)
@@ -129,7 +130,7 @@ class Media(object):
 
         # print tables
         if log.level >= 10:
-            for name, table in self._tables.items():
+            for name, table in self.tables.items():
                 result += '+-- Table %s\n' % str(name)
                 for key, value in table.items():
                     try:
@@ -163,12 +164,12 @@ class Media(object):
         If such a table already exists, the given tables items are
         added to the existing one.
         """
-        if not self._tables.has_key(name):
-            self._tables[name] = hashmap
+        if not self.tables.has_key(name):
+            self.tables[name] = hashmap
         else:
             # Append to the already existing table
             for k in hashmap.keys():
-                self._tables[name][k] = hashmap[k]
+                self.tables[name][k] = hashmap[k]
 
 
     def _set(self, key, value):
@@ -209,7 +210,7 @@ class Media(object):
                     submenu._finalize()
 
         # copy needed tags from tables
-        for name, table in self._tables.items():
+        for name, table in self.tables.items():
             mapping = self.table_mapping.get(name, {})
             for tag, attr in mapping.items():
                 if self.get(attr):
@@ -242,31 +243,31 @@ class Media(object):
         return hasattr(self, key)
 
 
-    def get(self, key, default = None):
+    def get(self, attr, default = None):
         """
-        Returns key in dict, otherwise defaults to 'default' if key doesn't
-        exist.
+        Returns the given attribute. If the attribute is not set by
+        the parser return 'default'.
         """
-        return getattr(self, key, default)
+        return getattr(self, attr, default)
 
 
-    def __getitem__(self, key):
+    def __getitem__(self, attr):
         """
-        get the value of 'key'
+        Get the value of the given attribute
         """
-        return getattr(self, key, None)
+        return getattr(self, attr, None)
 
 
     def __setitem__(self, key, value):
         """
-        set the value of 'key' to 'value'
+        Set the value of 'key' to 'value'
         """
         setattr(self, key, value)
 
 
     def has_key(self, key):
         """
-        check if the object has a key 'key'
+        Check if the object has an attribute 'key'
         """
         return hasattr(self, key)
 
@@ -286,7 +287,7 @@ class Media(object):
 
     def keys(self):
         """
-        Return all keys.
+        Return all keys for the attributes set by the parser.
         """
         return self._keys
 
@@ -296,7 +297,6 @@ class Collection(Media):
     Collection of Digial Media like CD, DVD, Directory, Playlist
     """
     _keys = Media._keys + [ 'id', 'tracks' ]
-    media = MEDIA_CONTAINER
 
     def __init__(self):
         Media.__init__(self)

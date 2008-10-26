@@ -41,6 +41,8 @@ class VCDFile(core.Collection):
     """
     Parser for VCD files on hard-disc. It parses cue/bin file combinations.
     """
+    media = core.MEDIA_DISC
+
     def __init__(self, file):
         core.Collection.__init__(self)
         self.offset = 0

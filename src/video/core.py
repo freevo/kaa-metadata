@@ -29,8 +29,8 @@
 #
 # -----------------------------------------------------------------------------
 
-from kaa.metadata.core import ParseError, Media, MEDIA_VIDEO, \
-     MEDIA_SUBTITLE, MEDIA_AV, MEDIA_AUDIO, Collection
+from kaa.metadata.core import ParseError, Media, MEDIA_VIDEO, MEDIA_SUBTITLE, \
+     MEDIA_CHAPTER, MEDIA_AV, MEDIA_AUDIO, MEDIA_DISC, Collection
 
 from kaa.metadata.audio.core import Audio as AudioStream
 
@@ -55,6 +55,7 @@ class Chapter(Media):
     Chapter in a Multiplexed Container.
     """
     _keys = ['name', 'pos', 'enabled', 'id']
+    media = MEDIA_CHAPTER
 
     def __init__(self, name=None, pos=0):
         Media.__init__(self)
