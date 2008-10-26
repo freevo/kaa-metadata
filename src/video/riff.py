@@ -504,8 +504,11 @@ class Riff(core.AVContainer):
                 self._parseLISTmovi(size-4, file)
                 return True
             elif size > 80000:
-                log.debug('RIFF LIST "%s" to long to parse: %s bytes' % (key, size))
+                log.debug('RIFF LIST "%s" too long to parse: %s bytes' % (key, size))
                 t = file.seek(size-4,1)
+                return True
+            elif size < 4:
+                log.debug('RIFF LIST "%s" too short: %s bytes' % (key, size))
                 return True
 
             t = file.read(size-4)
