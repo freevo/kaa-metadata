@@ -507,7 +507,7 @@ class Riff(core.AVContainer):
                 log.debug('RIFF LIST "%s" too long to parse: %s bytes' % (key, size))
                 t = file.seek(size-4,1)
                 return True
-            elif size < 4:
+            elif size < 5:
                 log.debug('RIFF LIST "%s" too short: %s bytes' % (key, size))
                 return True
 
