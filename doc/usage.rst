@@ -22,7 +22,9 @@ Media class.
 Methods
 -------
 
-The parse result has the following functions:
+The result behaves like a read-only dict in Python with some
+additional methods depending on the parser used. The following
+methods are available.
 
 .. automethod:: metadata.core.Media.get
 .. automethod:: metadata.core.Media.__getitem__
@@ -30,57 +32,94 @@ The parse result has the following functions:
 .. automethod:: metadata.core.Media.keys
 .. automethod:: metadata.core.Media.convert
 
-Attributes / Keys
------------------
-
 The list of keys the Media object supports depends on the type of
 parser. E.g. a video parser supports the attribute audio for the audio
 track information while an image parser does not provide that
-information. The following is a (possible incomplete) list of keys
-available.
+information.
 
-    * artist
-    * bitrate
-    * caption
-    * chapters
-    * comment
-    * copyright
-    * country
-    * delay
-    * encoder
-    * filename
-    * genre
-    * image
-    * keywords
-    * language
-    * length
-    * media
-    * mime
-    * mpeg_version
-    * producer
-    * product
-    * rating
-    * sequence_header_offset
-    * size
-    * software
-    * starring
-    * start
-    * studio
-    * subtype
-    * table_mapping
-    * timestamp
-    * title
-    * trackno
-    * trackof
-    * type
-    * url
-    * writer 
 
-Arrays, e.g. info.video[0].width 
+Attributes / Keys
+-----------------
 
-    * audio
-    * subtitles
-    * video 
+.. attribute:: Media.table
+
+  Some parsers add additional information in the `tables` attribute of
+  the result. This variable contains he EXIF header for JPEG images,
+  the full list of ID3 tags for mp3 files and much more. The tables
+  depend on the parsers and on the files parsed.
+
+.. attribute:: Media.media
+
+  Defines the basic media type.
+
+Based on the media type the object has additional member
+variables. These are also the keys in the dict. If you checked `media`
+to be MEDIA_IMAGE, you can be sure that the object has an attribute
+`people` (but it may be None).
+
+**Media Core**: Basic sets of attributes most media objects have
+
+  Attributes: `title`, `caption`, `comment`, `size`, `type`,
+  `subtype`, `timestamp`, `keywords`, `country`, `language`,
+  `langcode`, `url`, `media`, `artist`, `mime`
+
+**MEDIA_IMAGE**: Image file
+
+  Attributes: Core attributes, `description`, `people`, `location`,
+  `event`, `width`, `height`, `thumbnail`, `software`, `hardware`,
+  `dpi`, `city`, `rotation`, `author`
+
+**MEDIA_AUDIO** Audio file or stream:
+
+  Attributes: Core attributes, `channels`, `samplerate`, `length`,
+  `encoder`, `codec`, `format`, `samplebits`, `bitrate`, `fourcc`,
+  `trackno`, `id`, `userdate`
+
+  Additional attributes for stand-alone audio files not inside a
+  container: `trackof`, `album`, `genre`, `discs`, `thumbnail`
+
+**MEDIA_AV**: A/V container with audio and video content
+
+  Attributes: Core attributes, `length`, `encoder`, `trackno`,
+  `trackof`, `copyright`, `product`, `genre`, `writer`, `producer`,
+  `studio`, `rating`, `starring`, `thumbnail`, `delay`, `image`,
+  `video`, `audio`, `subtitles`, `chapters`, `software`
+
+  The attributes `video`, `audio`, `subtitles` and `chapters` are
+  lists with additional media objects of different types.
+
+  **MEDIA_VIDEO**: Video stream inside MEDIA_AV
+
+    Attributes: Core attributes, `length`, `encoder`, `bitrate`,
+    `samplerate`, `codec`, `format`, `samplebits`, `width`, `height`,
+    `fps`, `aspect`, `trackno`, `fourcc`, `id`
+
+  **MEDIA_CHAPTER**: Chapter in a container (e.g. MEDIA_AV)
+
+    Attributes: `name`, `pos`, `enabled`, `id`
+
+  **MEDIA_SUBTITLE**: Subtitle stream inside MEDIA_AV
+
+    Attributes: `language`, `trackno`, `title`, `id`
+
+**MEDIA_DISC**: Disc (dvd, audio disc, etc)
+
+ DVD rips on hard-disc in iso file, as directory with a VIDEO_TS
+ subtree or VCD cue/bin files are also of this type.
+
+ Basic disc attributes: `id`, `tracks`, `mixed`, `label`
+
+ Additional DVD attributes: `length`
+
+ Additional DVD title (MEDIA_AV) attributes: `angles`
+
+**MEDIA_DIRECTORY**: Directory
+
+  Attributes: Core attributes
+
+**MEDIA_GAME**: Game file on hard-disc
+
+  Attributes: Core attributes
 
 mminfo
 ------
