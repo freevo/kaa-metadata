@@ -86,6 +86,13 @@ class NullParser(object):
     def __init__(self, file):
         raise core.ParseError
 
+class File(file):
+
+    def read(self, bytes=0):
+        if bytes <= 0 or bytes > 1000000:
+            # reading more than 1MB looks like a bug
+            raise IOError('trying to read %s bytes' % bytes)
+        return super(File, self).read(bytes)
 
 class _Factory:
     """
@@ -265,7 +272,7 @@ class _Factory:
             return None
         if os.path.isfile(filename):
             try:
-                f = open(filename,'rb')
+                f = File(filename,'rb')
             except (IOError, OSError), e:
                 log.info('error reading %s: %s' % (filename, e))
                 return None
