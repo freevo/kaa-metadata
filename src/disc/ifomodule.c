@@ -164,7 +164,7 @@ static PyObject * ifoinfo_get_subtitle_track(ifo_handle_t *vtsfile, int ttn, int
          && attr->zero1 == 0
          && attr->zero2 == 0
          && attr->lang_extension == 0 ) {
-        return Py_BuildValue("s", "N/A");
+        return NULL;
     }
 
     if (video->display_aspect_ratio == 0) // 4:3
