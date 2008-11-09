@@ -136,10 +136,13 @@ class Media(object):
                     try:
                         value = unicode(value)
                         if len(value) > 50:
-                            value = '<unprintable data, size=%d>' % len(value)
-                    except UnicodeDecodeError:
-                        value = '<unprintable data, size=%d>' % len(value)
-                    result += u'|    | %s: %s\n' % (unicode(key), unicode(value))
+                            value = u'<unprintable data, size=%d>' % len(value)
+                    except (UnicodeDecodeError, TypeError), e:
+                        try:
+                            value = u'<unprintable data, size=%d>' % len(value)
+                        except AttributeError:
+                            value = u'<unprintable data>'
+                    result += u'|    | %s: %s\n' % (unicode(key), value)
         return result
 
 
