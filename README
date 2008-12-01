@@ -1,0 +1,22 @@
+See http://www.freevo.org/kaa for more information
+
+Requirements:
+
+libxml2 and its python bindings
+kaa-base
+optional: libdvdread for DVD support
+
+
+License: GPL
+
+
+Known Bugs:
+
+Date should be returned as int in seconds since the epoch. This should
+be the case for jpg, avi, mp4 and mkv. The mp3 parser returns the date
+as it was set in the ID3 field. Since there is no real standard, this
+can be everything from the year to a complex string. The current
+possible values for ogg and flac are untested, other parser have no
+date field. But checking date for int should mean that the value is
+seconds since epoch.
+

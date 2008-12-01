@@ -1,0 +1,44 @@
+The module is part of the Kaa Media Repository
+
+Maintainer of this module:
+
+Dirk Meyer <dischi@freevo.org>
+Jason Tackaberry <tack@urandom.ca>
+
+
+Contributions:
+
+Thomas Schueppel <stain@acm.org>
+Aubin Paul <aubin@punknews.org>
+Duncan Webb <duncan@freevo.org>
+Hans Meine <hans_meine@gmx.net>
+Lars Eggert (FreeBSD support)
+Richard Mottershead <richard.mottershead@v21net.co.uk> (games)
+Jose Taza <jose4freevo@chello.nl> (m4a parser)
+
+This module is based on mmpython created by Thomas Schueppel and
+maintained by Thomas Schueppel and Dirk Meyer before it was renamed to
+kaa.metadata. The development of mmpython is discontinued.
+
+
+
+This package also includes some code from the following projects:
+
+src/disc/ifomodule.c is based on ifoinfo from Jens Arnfast
+http://arnfast.net/projects/ifoinfo.php
+
+The Python CDDB module from Ben Gertzfield <che@debian.org>
+http://cddb-py.sourceforge.net/
+
+bins support by John Cooper, made for the Freevo project
+
+code from "exifdump.py" originally written by Thierry Bousch
+<bousch@topo.math.u-psud.fr> and released into the public domain.
+and code by Gene Cash <gcash@cfl.rr.com>
+
+code out of Vivake Guptas mp3info which is to be found at
+http://www.omniscia.org/~vivake/python/MP3Info.py
+
+eyeD3 from Travis Shirk <travis@pobox.com> which is to be found at
+http://eyed3.nicfit.net/ and included completly in the audio parser
+submodule.
