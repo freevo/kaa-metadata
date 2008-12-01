@@ -1,5 +1,13 @@
 Release Notes, see ChangeLog for a detailed list of changes.
 
+0.7.5, 2008-12-01
+
+* Fix DVD detection for discs with bad subtitle mastering
+* Make EXIF parser for JPG files more robust
+* Minor bugfixes
+* Add HTML documentation
+
+
 0.7.4, 2008-09-09
 
 * Update EXIF.py to a new version
