@@ -89,7 +89,8 @@ class NullParser(object):
 class File(file):
 
     def read(self, bytes=0):
-        if bytes <= 0 or bytes > 1000000:
+        if bytes < 0 or bytes > 1000000 or \
+           (bytes == 0 and os.stat(self.name)[stat.ST_SIZE] - self.tell() > 1000000):
             # reading more than 1MB looks like a bug
             raise IOError('trying to read %s bytes' % bytes)
         return super(File, self).read(bytes)
