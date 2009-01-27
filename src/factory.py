@@ -88,9 +88,13 @@ class NullParser(object):
 
 class File(file):
 
-    def read(self, bytes=0):
-        if bytes < 0 or bytes > 1000000 or \
-           (bytes == 0 and os.stat(self.name)[stat.ST_SIZE] - self.tell() > 1000000):
+    def read(self, bytes=-1):
+        """
+        If the size argument is negative or omitted, read until EOF is
+        reached. If more than 1MB is requested, an IOError is
+        raised. This should not mappen for kaa.metadata parsers.
+        """
+        if bytes > 1000000 or (bytes < 0 and os.stat(self.name)[stat.ST_SIZE] - self.tell() > 1000000):
             # reading more than 1MB looks like a bug
             raise IOError('trying to read %s bytes' % bytes)
         return super(File, self).read(bytes)
