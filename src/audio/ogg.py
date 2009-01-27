@@ -135,9 +135,9 @@ class Ogg(core.Music):
             (check, type, granule_position, absPos, serial, pageN, crc, \
              segs) = struct.unpack( '<BBIIIIIB', h[:23] )
             if check != 0:
-                log.info(h[:10])
+                log.debug(h[:10])
                 return
-            log.info("granule = %d / %d" % (granule_position, absPos))
+            log.debug("granule = %d / %d" % (granule_position, absPos))
         # the last one is the one we are interested in
         return float(granule_position) / self.samplerate
 
