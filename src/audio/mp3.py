@@ -111,19 +111,14 @@ class MP3(core.Music):
         id3 = None
         try:
             id3 = eyeD3_tag.Mp3AudioFile(file.name)
-        except (eyeD3_tag.TagException, eyeD3_tag.InvalidAudioFormatException):
-            try:
-                id3 = eyeD3_tag.Mp3AudioFile(file.name)
-            except eyeD3_tag.InvalidAudioFormatException:
-                # File is not an MP3
-                raise core.ParseError()
-            except (KeyboardInterrupt, SystemExit):
-                sys.exit(0)
-            except:
-                # The MP3 tag decoder crashed, assume the file is still
-                # MP3 and try to play it anyway
-                if log.level < 30:
-                    log.exception('mp3 tag parsing %s failed!' % file.name)
+        except eyeD3_tag.InvalidAudioFormatException:
+            # File is not an MP3
+            raise core.ParseError()
+        except eyeD3_tag.TagException:
+            # The MP3 tag decoder crashed, assume the file is still
+            # MP3 and try to play it anyway
+            if log.level < 30:
+                log.exception('mp3 tag parsing %s failed!' % file.name)
         except (KeyboardInterrupt, SystemExit):
             sys.exit(0)
         except:
