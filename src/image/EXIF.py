@@ -1118,6 +1118,12 @@ class EXIF_header:
     # return list of entries in this IFD
     def dump_IFD(self, ifd, ifd_name, dict=EXIF_TAGS, relative=0, stop_tag='UNDEF'):
         entries=self.s2n(ifd, 2)
+        if entries > 100:
+            # kaa.metadata addition: over 100 entries? Are you kidding
+            # me? That takes a very long time to decode. I guess
+            # something went wrong here (e.g. Olympus maker notes may
+            # cause this). Ignore this.
+            return
         for i in range(entries):
             # entry is index of start of this IFD in the file
             entry = ifd + 2 + 12 * i
