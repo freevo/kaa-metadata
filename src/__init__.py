@@ -69,11 +69,16 @@ register('video/vcd', EXTENSION_DEVICE, 'disc.vcd')
 register('cd/unknown', EXTENSION_DEVICE, 'disc.data')
 
 # Image parsers
-register('image/bmp', ('bmp', ), 'image.bmp')
-register('image/gif', ('gif', ), 'image.gif')
-register('image/jpeg', ('jpg','jpeg'), 'image.jpg')
-register('image/png', ('png',), 'image.png')
-register('image/tiff', ('tif','tiff'), 'image.tiff')
+if 0:
+    # exiv2 based generic image parser. Experimental
+    # add list of all supported extensions
+    register('image/tiff', ('tif','tiff', 'jpg'), 'image.generic')
+else:
+    register('image/bmp', ('bmp', ), 'image.bmp')
+    register('image/gif', ('gif', ), 'image.gif')
+    register('image/jpeg', ('jpg','jpeg'), 'image.jpg')
+    register('image/png', ('png',), 'image.png')
+    register('image/tiff', ('tif','tiff'), 'image.tiff')
 
 # Games parsers
 register('games/gameboy', ('gba', 'gb', 'gbc'), 'games.gameboy')
