@@ -73,6 +73,7 @@ if 0:
     # exiv2 based generic image parser. Experimental
     # add list of all supported extensions
     register('image/tiff', ('tif','tiff', 'jpg'), 'image.generic')
+    register('image/png', ('png',), 'image.png')
 else:
     register('image/bmp', ('bmp', ), 'image.bmp')
     register('image/gif', ('gif', ), 'image.gif')
