@@ -389,8 +389,12 @@ class MPEG(core.AVContainer):
                 self.get_time = self.ReadSCRMpeg2
                 return offset + (ord(buffer[offset+13]) & 0x07) + 14
             else:
-                # WTF? Very strange
-                return None
+                # I have no idea what just happened, but for some DVB
+                # recordings done with mencoder this points to a
+                # PACK_PKT describing something odd. Returning 0 here
+                # (let's hope there are no extensions in the header)
+                # fixes it.
+                return 0
 
         if 0xC0 <= id <= 0xDF:
             # code for audio stream
