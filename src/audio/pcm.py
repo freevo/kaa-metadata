@@ -54,7 +54,11 @@ class PCM(core.Music):
         """Recognize sound headers"""
         h = f.read(512)
         for tf in sndhdr.tests:
-            res = tf(h, f)
+            try:
+                res = tf(h, f)
+            except IndexError:
+                # input too small.
+                continue
             if res:
                 return res
         return None
