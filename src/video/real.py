@@ -50,7 +50,12 @@ class RealVideo(core.AVContainer):
         self.mime = 'video/real'
         self.type = 'Real Video'
         h = file.read(10)
-        (object_id,object_size,object_version) = struct.unpack('>4sIH',h)
+        try:
+            (object_id,object_size,object_version) = struct.unpack('>4sIH',h)
+        except struct.error:
+            # EOF.
+            raise core.ParseError()
+
         if not object_id == '.RMF':
             raise core.ParseError()
 

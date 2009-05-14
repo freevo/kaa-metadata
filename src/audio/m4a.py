@@ -130,7 +130,11 @@ class M4ATags(dict):
         super(dict, self).__init__()
         self['FileType'] = 'unknown'
         fp.seek(0,0)
-        size= struct.unpack("!i", fp.read(4))[0]
+        try:
+            size= struct.unpack("!i", fp.read(4))[0]
+        except struct.error:
+            # EOF.
+            return
         type= fp.read(4)
         #check for ftyp identification
         if type == 'ftyp':

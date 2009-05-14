@@ -50,7 +50,12 @@ class GIF(core.Image):
         core.Image.__init__(self)
         self.mime = 'image/gif'
 
-        header = struct.unpack('<6sHH', file.read(10))
+        try:
+            header = struct.unpack('<6sHH', file.read(10))
+        except struct.error:
+            # EOF.
+            raise core.ParseError()
+
         gifType, self.width, self.height = header
 
         if not gifType.startswith('GIF'):

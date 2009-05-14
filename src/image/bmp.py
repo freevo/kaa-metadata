@@ -51,8 +51,11 @@ class BMP(core.Image):
         self.mime = 'image/bmp'
         self.type = 'windows bitmap image'
 
-        (bfType, bfSize, bfZero, bfOffset, biSize, self.width, self.height) = \
-                 struct.unpack('<2sIIIIII', file.read(26))
+        try:
+            (bfType, bfSize, bfZero, bfOffset, biSize, self.width, self.height) = struct.unpack('<2sIIIIII', file.read(26))
+        except struct.error:
+            raise core.ParseError()
+
         # seek to the end to test length
         file.seek(0, 2)
 
