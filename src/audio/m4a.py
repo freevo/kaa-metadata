@@ -89,6 +89,10 @@ def _analyse(fp, offset0, offset1):
         fp.seek(offset)
         atomsize= struct.unpack("!i", fp.read(4))[0]
         atomtype= fp.read(4)
+        if atomsize < 9:
+            # This logic is not likely correct, but at least avoids
+            # an exception from fp.read() below.
+            break
         if atomtype in flagged[CONTAINER]:
             data= ''
             for reply in _analyse(fp, offset+(atomtype in flagged[SKIPPER] and 12 or 8),

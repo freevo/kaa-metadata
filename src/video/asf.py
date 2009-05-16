@@ -280,6 +280,9 @@ class Asf(core.AVContainer):
             (bitrate,) = struct.unpack('<I', s[40:40+4])
             if streamid not in self._extinfo:
                 self._extinfo[streamid] = [None, None, None, {}]
+            if frametime == 0:
+                # Problaby VFR, report as 1000fps (which is what MPlayer does)
+                frametime = 10000.0
             self._extinfo[streamid][:3] = [bitrate, 10000000.0 / frametime, langid]
             self._apply_extinfo(streamid)
 

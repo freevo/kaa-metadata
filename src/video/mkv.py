@@ -137,7 +137,10 @@ class EbmlEntity:
         # Set the CRC len to zero
         self.crc_len = 0
         # Now loop until we find an entity without CRC
-        self.build_entity(inbuf)
+        try:
+            self.build_entity(inbuf)
+        except IndexError:
+            raise core.ParseError()
         while self.get_id() == MATROSKA_CRC32_ID:
             self.crc_len += self.get_total_len()
             inbuf = inbuf[self.get_total_len():]
