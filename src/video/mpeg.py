@@ -838,8 +838,12 @@ class MPEG(core.AVContainer):
         if not hasattr(self, 'filename') or not hasattr(self, 'start'):
             return None
 
+        length = os.stat(self.filename)[stat.ST_SIZE]
+        if length < self.__sample_size__:
+            return
+
         file = open(self.filename)
-        file.seek(os.stat(self.filename)[stat.ST_SIZE]-self.__sample_size__)
+        file.seek(length - self.__sample_size__)
         buffer = file.read(self.__sample_size__)
 
         end = None
