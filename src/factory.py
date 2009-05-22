@@ -154,14 +154,6 @@ class _Factory:
                     return parser(file)
                 except core.ParseError:
                     pass
-                except (KeyboardInterrupt, SystemExit):
-                    # FIXME: kaa.metadata is a library, and it is not its place
-                    # to institute behaviour on these exceptions.  Rather it
-                    # should bubble up these exceptions and let the caller
-                    # deal with them.
-                    sys.exit(0)
-                except:
-                    log.exception('parse error')
 
         # Try to find a parser based on the first bytes of the
         # file (magic header). If a magic header is found but the
@@ -180,10 +172,6 @@ class _Factory:
                         return parser(file)
                     except core.ParseError:
                         pass
-                    except (KeyboardInterrupt, SystemExit):
-                        sys.exit(0)
-                    except:
-                        log.exception('parse error')
                 log.info('Magic header found but parser failed')
                 return None
 
@@ -201,12 +189,8 @@ class _Factory:
             file.seek(0,0)
             try:
                 return self.get_class(e[R_CLASS])(file)
-            except (KeyboardInterrupt, SystemExit):
-                sys.exit(0)
             except core.ParseError:
                 pass
-            except:
-                log.exception('parser error')
         return None
 
 
