@@ -79,6 +79,8 @@ class XML(core.Media):
             parser.parse(file)
         except Identified:
             pass
+        except xml.sax.SAXParseException:
+            raise core.ParseError()
 
 
     def startElement(self, name, attr):
