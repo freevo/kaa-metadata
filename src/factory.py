@@ -121,7 +121,7 @@ class _Factory:
             try:
                 exec('from %s import Parser' % name)
                 self.classmap[name] = Parser
-            except:
+            except Exception:
                 # Something failed while trying to import this parser.  Rather
                 # than bail altogher, just log the error and use NullParser.
                 log.exception('Error importing parser %s' % name)
@@ -154,6 +154,8 @@ class _Factory:
                     return parser(file)
                 except core.ParseError:
                     pass
+                except Exception:
+                    log.exception('parse error')
 
         # Try to find a parser based on the first bytes of the
         # file (magic header). If a magic header is found but the
@@ -172,6 +174,8 @@ class _Factory:
                         return parser(file)
                     except core.ParseError:
                         pass
+                    except Exception:
+                        log.exception('parse error')
                 log.info('Magic header found but parser failed')
                 return None
 
@@ -191,6 +195,8 @@ class _Factory:
                 return self.get_class(e[R_CLASS])(file)
             except core.ParseError:
                 pass
+            except Exception:
+                log.exception('parser error')
         return None
 
 
@@ -224,8 +230,6 @@ class _Factory:
                     return self.get_class(e[R_CLASS])(url)
                 except core.ParseError:
                     pass
-                except (KeyboardInterrupt, SystemExit):
-                    sys.exit(0)
 
         elif scheme == 'dvd':
             path = split[2]
@@ -247,10 +251,7 @@ class _Factory:
                     return self.get_class(self.mimemap[mime][R_CLASS])(file)
                 except core.ParseError:
                     pass
-                except (KeyboardInterrupt, SystemExit):
-                    sys.exit(0)
             # XXX Todo: Try other types
-        pass
 
 
     def create_from_filename(self, filename, force=True):
@@ -265,8 +266,6 @@ class _Factory:
             except (IOError, OSError), e:
                 log.info('error reading %s: %s' % (filename, e))
                 return None
-            except (KeyboardInterrupt, SystemExit):
-                sys.exit(0)
             r = self.create_from_file(f, force)
             f.close()
             if r:
@@ -288,8 +287,6 @@ class _Factory:
                 return t
             except core.ParseError:
                 pass
-            except (KeyboardInterrupt, SystemExit):
-                sys.exit(0)
         return None
 
 
@@ -303,8 +300,6 @@ class _Factory:
                 return self.get_class(e[R_CLASS])(dirname)
             except core.ParseError:
                 pass
-            except (KeyboardInterrupt, SystemExit):
-                sys.exit(0)
         return None
 
 
@@ -325,8 +320,11 @@ class _Factory:
             if os.path.isdir(name):
                 return self.create_from_directory(name)
             return self.create_from_filename(name, force)
-        except (KeyboardInterrupt, SystemExit):
-            sys.exit(0)
+        except Exception:
+            log.exception('kaa.metadata.create error')
+            log.warning('Please report this bug to the Freevo mailing list')
+            return None
+
 
 
     def register(self, mimetype, extensions, c, magic=None):

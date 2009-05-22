@@ -57,8 +57,6 @@ class BinsParser(xml.sax.ContentHandler):
         parser.setContentHandler(self)
         try:
             parser.parse(filename)
-        except (KeyboardInterrupt, SystemExit):
-            sys.exit(0)
         except ParseError:
             pass
         except Exception, e:

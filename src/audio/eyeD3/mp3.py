@@ -571,7 +571,7 @@ class LameTag(dict):
    def decode(self, frame):
       """Decode the LAME info tag."""
       try: pos = frame.index("LAME")
-      except: return
+      except (ValueError, AttributeError): return
 
       # check the info tag crc.  if it's not valid, no point parsing much more.
       lamecrc = bin2dec(bytes2bin(frame[190:192]))

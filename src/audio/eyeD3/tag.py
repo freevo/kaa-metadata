@@ -1427,7 +1427,7 @@ class Genre:
          id = genres[name];
          # Get titled case.
          name = genres[id];
-      except:
+      except (KeyError, IndexError, TypeError):
           if utils.strictID3():
               raise GenreException("Invalid genre name: " + name);
           id = None;
@@ -1450,15 +1450,11 @@ class Genre:
          self.id = id;
          self.name = name;
       else:
-         try:
-            if genres[name] != id:
-               raise GenreException("eyeD3.genres[" + str(id) + "] " +\
-                                    "does not match " + name);
-            self.id = id;
-            self.name = name;
-         except:
-            raise GenreException("eyeD3.genres[" + str(id) + "] " +\
-                                 "does not match " + name);
+        if genres[name] != id:
+           raise GenreException("eyeD3.genres[" + str(id) + "] " +\
+                                "does not match " + name);
+        self.id = id;
+        self.name = name;
 
    # Parses genre information from genreStr. 
    # The following formats are supported:
@@ -1885,7 +1881,7 @@ class LinkedFile:
        if isinstance(fileName, str):
            try:
                self.name = unicode(fileName, sys.getfilesystemencoding());
-           except:
+           except (UnicodeError, LookupError):
                # Work around the local encoding not matching that of a mounted
                # filesystem
                self.name = fileName

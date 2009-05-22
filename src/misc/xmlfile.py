@@ -77,8 +77,6 @@ class XML(core.Media):
         parser.setContentHandler(handler)
         try:
             parser.parse(file)
-        except (KeyboardInterrupt, SystemExit):
-            sys.exit(0)
         except Identified:
             pass
 

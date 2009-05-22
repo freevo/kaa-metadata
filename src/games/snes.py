@@ -68,8 +68,6 @@ class SNES(core.Game):
                 (romName, romHL, rom_type, romROM, romSRAM, romCountry,
                  romLic, romVer, romICHK, romCHK) = \
                  unpack('21sBBcccccHH', romHeader)
-            except (KeyboardInterrupt, SystemExit):
-                sys.exit(0)
             except Exception, e:
                 continue
 

@@ -65,7 +65,7 @@ class RealVideo(core.AVContainer):
         for i in range(0,num_headers):
             try:
                 oi = struct.unpack('>4sIH',file.read(10))
-            except:
+            except (struct.error, IOError):
                 # Header data we expected wasn't there.  File may be
                 # only partially complete.
                 break

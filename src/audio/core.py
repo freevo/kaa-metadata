@@ -65,7 +65,5 @@ class Music(Audio):
                 # XXX Why is this needed anyway?
                 if int(self.trackno) < 10:
                     self.trackno = u'0%s' % int(self.trackno)
-            except (KeyboardInterrupt, SystemExit):
-                sys.exit(0)
-            except:
+            except (AttributeError, ValueError):
                 pass

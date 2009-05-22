@@ -1531,7 +1531,7 @@ if __name__ == '__main__':
     for filename in args:
         try:
             file=open(filename, 'rb')
-        except:
+        except (IOError, OSError):
             print "'%s' is unreadable\n"%filename
             continue
         print filename + ':'
@@ -1549,7 +1549,7 @@ if __name__ == '__main__':
             try:
                 print '   %s (%s): %s' % \
                       (i, FIELD_TYPES[data[i].field_type][2], data[i].printable)
-            except:
+            except (KeyError, IndexError):
                 print 'error', i, '"', data[i], '"'
         if 'JPEGThumbnail' in data:
             print 'File has JPEG thumbnail'

@@ -689,7 +689,7 @@ class MPEG(core.AVContainer):
         file.seek(0, 0)
         try:
             header = struct.unpack('>LL', file.read(8))
-        except:
+        except (struct.error, IOError):
             return False
 
         if header[0] != 0x1B3:

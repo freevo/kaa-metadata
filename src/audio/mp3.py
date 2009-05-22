@@ -119,9 +119,7 @@ class MP3(core.Music):
             # MP3 and try to play it anyway
             if log.level < 30:
                 log.exception('mp3 tag parsing %s failed!' % file.name)
-        except (KeyboardInterrupt, SystemExit):
-            sys.exit(0)
-        except:
+        except Exception:
             # The MP3 tag decoder crashed, assume the file is still
             # MP3 and try to play it anyway
             if log.level < 30:
@@ -202,9 +200,9 @@ class MP3(core.Music):
                             self.genre = ID3.GENRE_LIST[genre]
                         except KeyError:
                             try:
-                                self.genre = str(genre)
-                            except:
                                 self.genre = str_to_unicode(genre)
+                            except UnicodeError:
+                                self.genre = str(genre)
                 # and some tools store it as trackno/trackof in TRCK
                 if not self.trackof and self.trackno and \
                        self.trackno.find('/') > 0:
@@ -212,9 +210,7 @@ class MP3(core.Music):
                     self.trackno = self.trackno[:self.trackno.find('/')]
             if id3:
                 self.length = id3.getPlayTime()
-        except (KeyboardInterrupt, SystemExit):
-            sys.exit(0)
-        except:
+        except Exception:
             if log.level < 30:
                 log.exception('parse error')
 

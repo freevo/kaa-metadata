@@ -149,9 +149,7 @@ class FlashVideo(core.AVContainer):
                             # parse error
                             break
                         metadata = metadata[length:]
-                except (KeyboardInterrupt, SystemExit):
-                    sys.exit(0)
-                except:
+                except (IndexError, struct.error, TypeError):
                     pass
             else:
                 log.info('unkown %s', str(chunk))
