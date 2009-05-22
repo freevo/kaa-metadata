@@ -188,21 +188,26 @@ class MP3(core.Music):
                 if id3.tag.frames['TCON']:
                     genre = None
                     tcon = id3.tag.frames['TCON'][0].text
+                    # TODO: could handle id3v2 genre refinements.
                     try:
+                        # Assume integer.
                         genre = int(tcon)
                     except ValueError:
+                        # Nope, maybe it's in '(N)' format.
                         try:
                             genre = int(tcon[1:tcon.find(')')])
                         except ValueError:
-                            genre = tcon
+                            # Nope.  Treat as a string.
+                            self.genre = str_to_unicode(tcon)
+
                     if genre is not None:
                         try:
                             self.genre = ID3.GENRE_LIST[genre]
                         except KeyError:
-                            try:
-                                self.genre = str_to_unicode(genre)
-                            except UnicodeError:
-                                self.genre = str(genre)
+                            # Numeric genre specified but not one of the known genres,
+                            # use 'Unknown' as per ID3v1.
+                            self.genre = u'Unknown'
+
                 # and some tools store it as trackno/trackof in TRCK
                 if not self.trackof and self.trackno and \
                        self.trackno.find('/') > 0:
