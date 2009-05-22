@@ -343,11 +343,6 @@ class _Factory:
             return self.create_from_filename(name, force)
         except (KeyboardInterrupt, SystemExit):
             sys.exit(0)
-        except:
-            log.exception('kaa.metadata.create error')
-            log.warning('Please report this bug to the Freevo mailing list')
-            return None
-
 
 
     def register(self, mimetype, extensions, c, magic=None):
