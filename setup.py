@@ -73,7 +73,7 @@ if exiv2.check_cc([], '', '-lexiv2'):
     ext_modules.append(exiv2)
     
 setup (module      = 'metadata',
-       version     = '0.7.5',
+       version     = '0.7.6',
        license     = 'GPL',
        summary     = 'Module for retrieving information about media files',
        author      = 'Thomas Schueppel, Dirk Meyer, Jason Tackaberry',
