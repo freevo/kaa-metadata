@@ -180,10 +180,10 @@ class _Factory:
                 return None
 
         if not force:
-            log.info('No Type found by Extension. Give up')
+            log.info('No Type found by Extension (%s). Giving up.' % e)
             return None
 
-        log.info('No Type found by Extension. Trying all')
+        log.info('No Type found by Extension (%s). Trying all parsers.' % e)
 
         for e in self.types:
             if self.get_class(e[R_CLASS]) == parser:
