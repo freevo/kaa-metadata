@@ -129,9 +129,9 @@ def find_header(fp, start_pos=0):
                 break
             elif pos+4 <= len(data):
                 header_bytes = data[pos:pos+4]
-                header = struct.unpack('I', header_bytes)[0]
+                header = struct.unpack('!I', header_bytes)[0]
                 if is_valid_mp_header(header):
-                    return pos, header, header_bytes
+                    return pos + start_pos, header, header_bytes
             else:
                 carry = data[pos+1:]
 
