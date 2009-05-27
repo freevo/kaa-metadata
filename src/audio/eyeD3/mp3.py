@@ -114,6 +114,7 @@ def find_header(fp, start_pos=0):
     fp.seek(start_pos)
     data = carry = ''
     while True:
+        # Offset start_pos with any data we've already processed.
         start_pos += len(data) - len(carry)
         data, carry = carry + fp.read(64*1024), ''
         if not data:
@@ -134,6 +135,8 @@ def find_header(fp, start_pos=0):
                 if is_valid_mp_header(header):
                     return pos + start_pos, header, header_bytes
             else:
+                # Carry over all remaining data starting at the '\xff' we just
+                # found, in order to catch headers spanning a block boundary.
                 carry = data[pos:]
 
     return None, None, None
