@@ -112,8 +112,9 @@ def is_valid_mp_header(header):
 def find_header(fp, start_pos=0):
     import struct
     fp.seek(start_pos)
-    carry = ''
+    data = carry = ''
     while True:
+        start_pos += len(data) - len(carry)
         data, carry = carry + fp.read(64*1024), ''
         if not data:
             break
@@ -133,7 +134,7 @@ def find_header(fp, start_pos=0):
                 if is_valid_mp_header(header):
                     return pos + start_pos, header, header_bytes
             else:
-                carry = data[pos+1:]
+                carry = data[pos:]
 
     return None, None, None
 
