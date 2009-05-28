@@ -205,7 +205,7 @@ class MPEG4(core.AVContainer):
             (size,type) = struct.unpack('>I4s',h)
 
         if not type in ('moov', 'wide', 'free'):
-            log.debug('invalid header: %s' % type)
+            log.debug('invalid header: %r' % type)
             raise core.ParseError()
 
         # Extended size
