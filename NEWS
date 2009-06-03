@@ -1,5 +1,10 @@
 Release Notes, see ChangeLog for a detailed list of changes.
 
+0.7.7, 2009-06-02
+
+* Fix bug in mp3 parser
+
+
 0.7.6, 2009-05-26
 
 * Experimental exiv2 based parser for all images
