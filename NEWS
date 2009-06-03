@@ -1,0 +1,63 @@
+Release Notes, see ChangeLog for a detailed list of changes.
+
+0.7.7, 2009-06-02
+
+* Fix bug in mp3 parser
+
+
+0.7.6, 2009-05-26
+
+* Experimental exiv2 based parser for all images
+* Enhance exception handling
+* Make parser more robust
+
+
+0.7.5, 2008-12-01
+
+* Fix DVD detection for discs with bad subtitle mastering
+* Make EXIF parser for JPG files more robust
+* Minor bugfixes
+* Add HTML documentation
+
+
+0.7.4, 2008-09-09
+
+* Update EXIF.py to a new version
+* Multiple parsers can be registered for the same extension
+* Language code fixes
+* Parser improvements for DVD, Real, MPEG, FLV, MP4
+
+
+0.7.3, 2008-03-24
+
+* Sync with eyeD3 0.6.14
+* Handle WMA files as MEDIA_AUDIO
+* Better detection of DVD directory
+* Bugfixes
+
+
+0.7.2, 2008-02-04
+
+* EXIF date updates
+* Improved VCD parser
+
+
+0.7.1, 2007-12-25
+
+* Bugfix to enable force on parse()
+
+
+0.7.0, 2007-12-22
+
+* Return date as timestamp (int) or userdate (str)
+* Parser selection by first bytes
+* Support Windows style folger.jpg in a directory
+* Matroska, mp3 parser enhancements
+
+
+0.6.1, 2007-04-18
+
+* update mkv parser
+* update ogg parser to show bitrate as kbit/s
+* remove libxml2 dependency
+* load parser on demand
