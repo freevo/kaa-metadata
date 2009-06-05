@@ -67,8 +67,8 @@ if not cdrom.has_python_h():
     print "---------------------------------------------------------------------"
     ext_modules = [ ]
 
-exiv2 = Extension('kaa.metadata.image.exiv2', ['src/image/exiv2.cpp'], libraries=[ 'exiv2' ])
-if exiv2.check_cc([], '', '-lexiv2'):
+exiv2 = Extension('kaa.metadata.image.exiv2', ['src/image/exiv2.cpp'])
+if exiv2.check_library('exiv2', '0.18'):
     print 'Building experimental exiv2 parser'
     ext_modules.append(exiv2)
     

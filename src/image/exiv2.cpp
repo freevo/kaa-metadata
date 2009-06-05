@@ -47,7 +47,8 @@ PyObject *parse(PyObject *self, PyObject *args)
 		Py_DECREF(entry);
 	    }
 
-	    Exiv2::DataBuf databuf = exifData.copyThumbnail();
+	    Exiv2::ExifThumbC ExifThumb(exifData);
+	    Exiv2::DataBuf databuf = ExifThumb.copy();
 	    if (databuf.pData_) {
 		entry = PyBuffer_New(databuf.size_);
 		PyObject_AsWriteBuffer(entry, (void **)&data, &len);
