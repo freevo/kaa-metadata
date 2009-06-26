@@ -72,16 +72,19 @@ if exiv2.check_library('exiv2', '0.18'):
     print 'Building experimental exiv2 parser'
     ext_modules.append(exiv2)
     
-setup (module      = 'metadata',
-       version     = '0.7.7',
-       license     = 'GPL',
-       summary     = 'Module for retrieving information about media files',
-       author      = 'Thomas Schueppel, Dirk Meyer, Jason Tackaberry',
-       scripts     = [ 'bin/mminfo' ],
-       rpminfo = {
-           'requires':        'python-kaa-base >= 0.1.2, libdvdread >= 0.9.4',
-           'build_requires':  'python-kaa-base >= 0.1.2, libdvdread-devel >= 0.9.4, python-devel >= 2.3.0',
-           'obsoletes':       'mmpython'
-       },
-       ext_modules = ext_modules
-      )
+setup(
+    module = 'metadata',
+    version = '0.7.7',
+    license = 'GPL',
+    summary = 'Module for retrieving information about media files',
+    author = 'Thomas Schueppel, Dirk Meyer, Jason Tackaberry',
+    scripts = [ 'bin/mminfo' ],
+    rpminfo = {
+        'requires': 'python-kaa-base >= 0.1.2, libdvdread >= 0.9.4',
+        'build_requires': 'python-kaa-base >= 0.1.2, libdvdread-devel >= 0.9.4, python-devel >= 2.3.0',
+        'obsoletes': 'mmpython'
+    },
+    ext_modules = ext_modules,
+    namespace_packages = ['kaa']
+)
+
