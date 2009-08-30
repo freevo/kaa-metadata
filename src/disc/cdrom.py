@@ -34,7 +34,7 @@ import os
 import re
 import time
 import array
-import md5
+import hashlib
 from struct import pack, unpack
 import logging
 from fcntl import ioctl
@@ -242,9 +242,7 @@ def status(device, handle_mix=0):
             label = f.read(32)
 
         if CREATE_MD5_ID:
-            id_md5 = md5.new()
-            id_md5.update(f.read(51200))
-            id = id_md5.hexdigest()
+            id = hashlib.md5(f.read(51200)).hexdigest()
 
         f.close()
 
