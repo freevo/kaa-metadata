@@ -175,6 +175,7 @@ class MP3(core.Music):
                         tab[f.header.id] = f.date_str
                     elif f.__class__ is eyeD3_frames.CommentFrame:
                         tab[f.header.id] = f.comment
+                        self.comment = str_to_unicode(f.comment)
                     elif f.__class__ is eyeD3_frames.URLFrame:
                         tab[f.header.id] = f.url
                     elif f.__class__ is eyeD3_frames.UserURLFrame:
