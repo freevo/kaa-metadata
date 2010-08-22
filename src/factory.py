@@ -145,7 +145,7 @@ class _Factory:
         e = os.path.splitext(file.name)[1].lower()
         parser = None
         if e and e.startswith('.') and e[1:] in self.extmap:
-            log.debug("trying ext %s" % e[1:])
+            log.debug("trying ext %s on file %s", e[1:], file.name)
             parsers = self.extmap[e[1:]]
             for info in parsers:
                 file.seek(0,0)
