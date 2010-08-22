@@ -247,25 +247,23 @@ class Riff(core.AVContainer):
         retval = {}
         size = len(t)
         i = 0
-        key = t[i:i+4]
-        sz = struct.unpack('<I',t[i+4:i+8])[0]
-        i+=8
-        value = t[i:]
 
-        if key == 'strh':
-            retval[key] = self._parseSTRH(value)
-            i += sz
-        else:
-            log.debug("_parseSTRL: Error")
-        key = t[i:i+4]
-        sz = struct.unpack('<I',t[i+4:i+8])[0]
-        i+=8
-        value = t[i:]
+        while i < len(t) - 8:
+            key = t[i:i+4]
+            sz = struct.unpack('<I',t[i+4:i+8])[0]
+            i+=8
+            value = t[i:]
 
-        if key == 'strf':
-            retval[key] = self._parseSTRF(value, retval['strh'])
+            if key == 'strh':
+                retval[key] = self._parseSTRH(value)
+            elif key == 'strf':
+                retval[key] = self._parseSTRF(value, retval['strh'])
+            else:
+                log.debug("_parseSTRL: unsupported stream tag '%s'", key)
+
             i += sz
-        return ( retval, i )
+
+        return retval, i
 
 
     def _parseODML(self,t):
@@ -464,29 +462,28 @@ class Riff(core.AVContainer):
                 if value:
                     retval[key] = value
                     if key in ('IDIT', 'ICRD'):
-                        # Timestamp the video was created
-                        try:
-                            # The doc says it should be a format like
-                            # "Wed Jan 02 02:03:55 1990"
-                            t = time.strptime(value, "%a %b %d %H:%M:%S %Y")
-                        except ValueError:
+                        # Timestamp the video was created.  Spec says it
+                        # should be a format like "Wed Jan 02 02:03:55 1990"
+                        # Casio S500 uses "2005/12/24/ 14:11", but I've
+                        # also seen "December 24, 2005"
+                        specs = ('%a %b %d %H:%M:%S %Y', '%Y/%m/%d/ %H:%M', '%B %d, %Y')
+                        for tmspec in specs:
                             try:
-                                # The Casio S500 uses "2005/12/24/ 14:11"
-                                t = time.strptime(value, "%Y/%m/%d/ %H:%M")
-                            except ValueError, e:
-                                # FIXME: something different
-                                log.debug('no support for time format %s', value)
-                                t = 0
-                        if t:
-                            # save timestamp as int
-                            self.timestamp = int(time.mktime(t))
+                                tm = time.strptime(value, tmspec)
+                                # save timestamp as int
+                                self.timestamp = int(time.mktime(tm))
+                                break
+                            except ValueError:
+                                pass
+                        else:
+                            log.debug('no support for time format %s', value)
                 i+=sz
         return retval
 
 
     def _parseRIFFChunk(self,file):
         h = file.read(8)
-        if len(h) < 4:
+        if len(h) < 8:
             return False
         name = h[:4]
         size = struct.unpack('<I',h[4:8])[0]
