@@ -298,13 +298,23 @@ class MPEG4(core.AVContainer):
                     while datasize:
                         mdia = struct.unpack('>I4s', atomdata[pos:pos+8])
                         if mdia[1] == 'mdhd':
-                            mdhd = struct.unpack('>IIIIIhh', atomdata[pos+8:pos+8+24])
-                            # duration / time scale
-                            trackinfo['length'] = mdhd[4] / mdhd[3]
-                            if mdhd[5] in QTLANGUAGES:
-                                trackinfo['language'] = QTLANGUAGES[mdhd[5]]
-                            # mdhd[6] == quality
-                            self.length = max(self.length, mdhd[4] / mdhd[3])
+                            # Parse based on version of mdhd header.  See
+                            # http://wiki.multimedia.cx/index.php?title=QuickTime_container#mdhd
+                            ver = ord(atomdata[pos + 8])
+                            if ver == 0:
+                                mdhd = struct.unpack('>IIIIIhh', atomdata[pos+8:pos+8+24])
+                            elif ver == 1:
+                                mdhd = struct.unpack('>IQQIQhh', atomdata[pos+8:pos+8+36])
+                            else:
+                                mdhd = None
+
+                            if mdhd:
+                                # duration / time scale
+                                trackinfo['length'] = mdhd[4] / mdhd[3]
+                                if mdhd[5] in QTLANGUAGES:
+                                    trackinfo['language'] = QTLANGUAGES[mdhd[5]]
+                                # mdhd[6] == quality
+                                self.length = max(self.length, mdhd[4] / mdhd[3])
                         elif mdia[1] == 'minf':
                             # minf has only atoms inside
                             pos -=      (mdia[0] - 8)
