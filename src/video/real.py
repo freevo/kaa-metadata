@@ -69,8 +69,17 @@ class RealVideo(core.AVContainer):
                 # Header data we expected wasn't there.  File may be
                 # only partially complete.
                 break
+
+            if object_id == 'DATA' and oi[0] != 'INDX':
+                log.debug('INDX chunk expected after DATA but not found -- file corrupt')
+                break
+
             (object_id,object_size,object_version) = oi
-            self._read_header(object_id, file.read(object_size-10))
+            if object_id == 'DATA':
+                # Seek over the data chunk rather than reading it in.
+                file.seek(object_size - 10, 1)
+            else:
+                self._read_header(object_id, file.read(object_size-10))
             log.debug("%s [%d]" % (object_id,object_size-10))
         # Read all the following headers
 
