@@ -35,6 +35,7 @@ import logging
 
 # kaa imports
 import kaa
+from kaa.utils import property
 
 import fourcc
 import language
@@ -55,7 +56,7 @@ MEDIA_GAME      = 'MEDIA_GAME'
 
 MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'timestamp',
              'keywords', 'country', 'language', 'langcode', 'url', 'media', 'artist',
-             'mime']
+             'mime', 'datetime', 'tags']
 
 EXTENSION_DEVICE    = 'device'
 EXTENSION_DIRECTORY = 'directory'
@@ -93,8 +94,15 @@ class Media(object):
 
         self._keys = self._keys[:]
         self.tables = {}
+        # Tags, unlike tables, are more well-defined dicts whose values are
+        # either Tag objects, other dicts (for nested tags), or lists of either
+        # (for multiple instances of the tag, e.g. actor).  Where possible,
+        # parsers should transform tag names to conform to the Official
+        # Matroska tags defined at http://www.matroska.org/technical/specs/tagging/index.html
+        # All tag names will be lower-cased.
+        self.tags = Tags()
         for key in self._keys:
-            if not key == 'media':
+            if key not in ('media', 'tags'):
                 setattr(self, key, None)
 
 
@@ -112,12 +120,35 @@ class Media(object):
             if value == None or key == 'url':
                 continue
             if isinstance(value, list):
-                if value:
+                if not value:
+                    continue
+                elif isinstance(value[0], basestring):
+                    # Just a list of strings (keywords?), so don't treat it specially.
+                    value = u', '.join(value)
+                else:
                     lists.append((key, value))
+                    continue
+            elif isinstance(value, dict):
+                # Tables or tags treated separately.
                 continue
             if key in UNPRINTABLE_KEYS:
                 value = '<unprintable data, size=%d>' % len(value)
             result += u'| %10s: %s\n' % (unicode(key), unicode(value))
+
+        # print tags (recursively, to support nested tags).
+        def print_tags(tags, suffix, show_label):
+            result = ''
+            for n, (name, tag) in enumerate(tags.items()):
+                result += u'| %12s%s%s = ' % (u'tags: ' if n == 0 and show_label else '', suffix, name)
+                if isinstance(tag, list):
+                    # TODO: doesn't support lists/dicts within lists.
+                    result += u'%s\n' % ', '.join(subtag.value for subtag in tag)
+                else:
+                    result += u'%s\n' % (tag.value or '')
+                if isinstance(tag, dict):
+                    result += print_tags(tag, '    ', False)
+            return result
+        result += print_tags(self.tags, '', True)
 
         # print lists
         for key, l in lists:
@@ -304,3 +335,66 @@ class Collection(Media):
     def __init__(self):
         Media.__init__(self)
         self.tracks = []
+
+
+class Tag(object):
+    """
+    An individual tag, which will be a value stored in a Tags object.
+
+    Tag values are strings (for binary data), unicode objects, or datetime
+    objects for tags that represent dates or times.
+    """
+    def __init__(self, value=None, langcode='und', binary=False):
+        super(Tag, self).__init__()
+        self.value = value
+        self.langcode = langcode
+        self.binary = binary
+
+    def __unicode__(self):
+        return unicode(self.value)
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        if not self.binary:
+            return '<Tag object: %s>' % repr(self.value)
+        else:
+            return '<Binary Tag object: size=%d>' % len(self.value)
+
+    @property
+    def langcode(self):
+        return self._langcode
+
+    @langcode.setter
+    def langcode(self, code):
+        self._langcode, self.language = language.resolve(code)
+
+
+
+class Tags(dict, Tag):
+    """
+    A dictionary containing Tag objects.  Values can be other Tags objects
+    (for nested tags), lists, or Tag objects.
+
+    A Tags object is more or less a dictionary but it also contains a value.
+    This is necessary in order to represent this kind of tag specification
+    (e.g. for Matroska)::
+
+        <Simple>
+          <Name>LAW_RATING</Name>
+          <String>PG</String>
+            <Simple>
+              <Name>COUNTRY</Name>
+              <String>US</String>
+            </Simple>
+        </Simple>
+
+    The attribute RATING has a value (PG), but it also has a child tag
+    COUNTRY that specifies the country code the rating belongs to.
+    """
+    def __init__(self, value=None, langcode='und', binary=False):
+        super(Tags, self).__init__()
+        self.value = value
+        self.langcode = langcode
+        self.binary = False

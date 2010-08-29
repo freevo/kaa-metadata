@@ -30,7 +30,7 @@
 # -----------------------------------------------------------------------------
 
 from kaa.metadata.core import ParseError, Media, MEDIA_VIDEO, MEDIA_SUBTITLE, \
-     MEDIA_CHAPTER, MEDIA_AV, MEDIA_AUDIO, MEDIA_DISC, Collection
+     MEDIA_CHAPTER, MEDIA_AV, MEDIA_AUDIO, MEDIA_DISC, Collection, Tag, Tags
 
 from kaa.metadata.audio.core import Audio as AudioStream
 
@@ -39,8 +39,9 @@ VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
              'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno', 'fourcc', 'id' ]
 
 AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
-             'genre', 'writer', 'producer', 'studio', 'rating', 'starring', 'thumbnail',
-             'delay', 'image', 'video', 'audio', 'subtitles', 'chapters', 'software' ]
+             'genre', 'writer', 'producer', 'studio', 'rating', 'actors', 'thumbnail',
+             'delay', 'image', 'video', 'audio', 'subtitles', 'chapters', 'software',
+             'summary', 'synopsis' ]
 
 class VideoStream(Media):
     """

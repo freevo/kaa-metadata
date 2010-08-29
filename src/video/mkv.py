@@ -33,6 +33,8 @@ __all__ = ['Parser']
 # python imports
 from struct import unpack
 import logging
+import re
+from datetime import datetime
 
 # import kaa.metadata.video core
 import core
@@ -81,6 +83,7 @@ MATROSKA_DATE_UTC_ID              = 0x4461
 MATROSKA_NAME_ID                  = 0x536E
 
 MATROSKA_CHAPTERS_ID              = 0x1043A770
+MATROSKA_CHAPTER_UID_ID           = 0x73C4
 MATROSKA_EDITION_ENTRY_ID         = 0x45B9
 MATROSKA_CHAPTER_ATOM_ID          = 0xB6
 MATROSKA_CHAPTER_TIME_START_ID    = 0x91
@@ -101,6 +104,22 @@ MATROSKA_SEEKHEAD_ID              = 0x114D9B74
 MATROSKA_SEEK_ID                  = 0x4DBB
 MATROSKA_SEEKID_ID                = 0x53AB
 MATROSKA_SEEK_POSITION_ID         = 0x53AC
+
+MATROSKA_TAGS_ID                  = 0x1254C367
+MATROSKA_TAG_ID                   = 0x7373
+MATROSKA_TARGETS_ID               = 0x63C0
+MATROSKA_TARGET_TYPE_VALUE_ID     = 0x68CA
+MATROSKA_TARGET_TYPE_ID           = 0x63CA
+MATRSOKA_TAGS_TRACK_UID_ID        = 0x63C5
+MATRSOKA_TAGS_EDITION_UID_ID      = 0x63C9
+MATRSOKA_TAGS_CHAPTER_UID_ID      = 0x63C4
+MATRSOKA_TAGS_ATTACHMENT_UID_ID   = 0x63C6
+MATROSKA_SIMPLE_TAG_ID            = 0x67C8
+MATROSKA_TAG_NAME_ID              = 0x45A3
+MATROSKA_TAG_LANGUAGE_ID          = 0x447A
+MATROSKA_TAG_STRING_ID            = 0x4487
+MATROSKA_TAG_BINARY_ID            = 0x4485
+
 
 # See mkv spec for details:
 # http://www.matroska.org/technical/specs/index.html
@@ -126,6 +145,80 @@ FOURCCMap = {
     'A_AAC': 0x00ff,
     'A_AAC/': 0x00ff
 }
+
+
+def matroska_date_to_datetime(date):
+    """
+    Converts a date in Matroska's date format to a python datetime object.
+    Returns the given date string if it could not be converted.
+    """
+    # From the specs:
+    #   The fields with dates should have the following format: YYYY-MM-DD
+    #   HH:MM:SS.MSS [...] To store less accuracy, you remove items starting
+    #   from the right. To store only the year, you would use, "2004". To store
+    #   a specific day such as May 1st, 2003, you would use "2003-05-01". 
+    format = re.split(r'([-:. ])', '%Y-%m-%d %H:%M:%S.%f')
+    while format:
+        try:
+            return datetime.strptime(date, ''.join(format))
+        except ValueError:
+            format = format[:-2]
+    return date
+
+
+def matroska_bps_to_bitrate(bps):
+    """
+    Tries to convert a free-form bps string into a bitrate (bits per second).
+    """
+    m = re.search('([\d.]+)\s*(\D.*)', bps)
+    if m:
+        bps, suffix = m.groups()
+        if 'kbit' in suffix:
+            return float(bps) * 1024
+        elif 'kbyte' in suffix:
+            return float(bps) * 1024 * 8
+        elif 'byte' in suffix:
+            return float(bps) * 8
+        elif 'bps' in suffix or 'bit' in suffix:
+            return float(bps)
+    if bps.replace('.', '').isdigit():
+        if float(bps) < 30000:
+            # Assume kilobits and convert to bps
+            return float(bps) * 1024
+        return float(bps)
+
+
+# Used to convert the official matroska tag names (only lower-cased) to core
+# attributes.  tag name -> attr, filter
+TAGS_MAP = {
+    # From Media core
+    u'title': ('title', None),
+    u'subtitle': ('caption', None),
+    u'comment': ('comment', None),
+    u'url': ('url', None),
+    u'artist': ('artist', None),
+    u'keywords': ('keywords', lambda s: [word.strip() for word in s.split(',')]),
+    u'composer_nationality': ('country', None),
+    u'date_released': ('datetime', None),
+    u'date_recorded': ('datetime', None),
+    u'date_written': ('datetime', None),
+
+    # From Video core
+    u'encoder': ('encoder', None),
+    u'bps': ('bitrate', matroska_bps_to_bitrate),
+    u'part_number': ('trackno', int),
+    u'total_parts': ('trackof', int),
+    u'copyright': ('copyright', None),
+    u'genre': ('genre', None),
+    u'actor': ('actors', None),
+    u'written_by': ('writer', None),
+    u'producer': ('producer', None),
+    u'production_studio': ('studio', None),
+    u'law_rating': ('rating', None),
+    u'summary': ('summary', None),
+    u'synopsis': ('synopsis', None),
+}
+
 
 class EbmlEntity:
     """
@@ -301,6 +394,7 @@ class Matroska(core.AVContainer):
         self.mime = 'application/mkv'
         self.type = 'Matroska'
         self.has_idx = False
+        self.objects_by_uid = {}
 
         # Now get the segment
         self.segment = segment = EbmlEntity(buffer[header.get_total_len():])
@@ -355,6 +449,9 @@ class Matroska(core.AVContainer):
 
         elif elem_id == MATROSKA_SEEKHEAD_ID:
             self.process_seekhead(elem)
+
+        elif elem_id == MATROSKA_TAGS_ID:
+            self.process_tags(elem)
 
         elif elem_id == MATROSKA_CUES_ID:
             self.has_idx = True
@@ -445,6 +542,8 @@ class Matroska(core.AVContainer):
             track.title = elem.get_utf8()
         elif elem_id == MATROSKA_TRACK_NUMBER_ID:
             track.trackno = elem.get_value()
+        elif elem_id == MATROSKA_TRACK_UID_ID:
+            self.objects_by_uid[elem.get_value()] = track
 
 
     def process_video_track(self, elements):
@@ -572,6 +671,8 @@ class Matroska(core.AVContainer):
                 for display_elem in self.process_one_level(elem):
                     if display_elem.get_id() == MATROSKA_CHAPTER_STRING_ID:
                         chap.name = display_elem.get_utf8()
+            elif elem_id == MATROSKA_CHAPTER_UID_ID:
+                self.objects_by_uid[elem.get_value()] = chap
 
         log.debug('Chapter "%s" found', chap.name)
         chap.id = len(self.chapters)
@@ -610,6 +711,120 @@ class Matroska(core.AVContainer):
             self.thumbnail = data
 
         log.debug('Attachment "%s" found' % name)
+
+
+    def process_tags(self, tags):
+        # Tags spec: http://www.matroska.org/technical/specs/tagging/index.html
+        # Iterate over Tags children.  Tags element children is a
+        # Tag element (whose children are SimpleTags) and a Targets element
+        # whose children specific what objects the tags apply to.
+        for tag_elem in self.process_one_level(tags):
+            # Start a new dict to hold all SimpleTag elements.
+            tags_dict = core.Tags()
+            # A list of target uids this tags dict applies too.  If empty,
+            # tags are global.
+            targets = []
+            for sub_elem in self.process_one_level(tag_elem):
+                if sub_elem.get_id() == MATROSKA_SIMPLE_TAG_ID:
+                    self.process_simple_tag(sub_elem, tags_dict)
+                elif sub_elem.get_id() == MATROSKA_TARGETS_ID:
+                    # Targets element: if there is no uid child (track uid,
+                    # chapter uid, etc.) then the tags dict applies to the
+                    # whole file (top-level Media object).
+                    for target_elem in self.process_one_level(sub_elem):
+                        target_elem_id = target_elem.get_id()
+                        if target_elem_id in (MATRSOKA_TAGS_TRACK_UID_ID, MATRSOKA_TAGS_EDITION_UID_ID,
+                                              MATRSOKA_TAGS_CHAPTER_UID_ID, MATRSOKA_TAGS_ATTACHMENT_UID_ID):
+                            targets.append(target_elem.get_value())
+                        elif target_elem_id == MATROSKA_TARGET_TYPE_VALUE_ID:
+                            # Target types not supported for now.  (Unclear how this
+                            # would fit with kaa.metadata.)
+                            pass
+            if targets:
+                # Assign tags to all listed uids
+                for target in targets:
+                    try:
+                        self.objects_by_uid[target].tags.update(tags_dict)
+                        self.tags_to_attributes(self.objects_by_uid[target], tags_dict)
+                    except KeyError:
+                        log.warning('Tags assigned to unknown/unsupported target uid %d', target)
+            else:
+                self.tags.update(tags_dict)
+                self.tags_to_attributes(self, tags_dict)
+
+
+    def process_simple_tag(self, simple_tag_elem, tags_dict):
+        """
+        Returns a dict representing the Tag element.
+        """
+        name = lang = value = children = None
+        binary = False
+        for elem in self.process_one_level(simple_tag_elem):
+            elem_id = elem.get_id()
+            if elem_id == MATROSKA_TAG_NAME_ID:
+                name = elem.get_utf8().lower()
+            elif elem_id == MATROSKA_TAG_STRING_ID:
+                value = elem.get_utf8()
+            elif elem_id == MATROSKA_TAG_BINARY_ID:
+                value = elem.get_data()
+                binary = True
+            elif elem_id == MATROSKA_TAG_LANGUAGE_ID:
+                lang = elem.get_utf8()
+            elif elem_id == MATROSKA_SIMPLE_TAG_ID:
+                if children is None:
+                    children = core.Tags()
+                self.process_simple_tag(elem, children)
+
+        if children:
+            # Convert ourselves to a Tags object.
+            children.value = value
+            children.langcode = lang
+            value = children
+        else:
+            if name.startswith('date_'):
+                # Try to convert date to a datetime object.
+                value = matroska_date_to_datetime(value)
+            value = core.Tag(value, lang, binary)
+
+        if name in tags_dict:
+            # Multiple items of this tag name.
+            if not isinstance(tags_dict[name], list):
+                # Convert to a list
+                tags_dict[name] = [tags_dict[name]]
+            # Append to list
+            tags_dict[name].append(value)
+        else:
+            tags_dict[name] = value
+
+
+    def tags_to_attributes(self, obj, tags):
+        # Convert tags to core attributes.
+        for name, tag in tags.items():
+            if isinstance(tag, dict):
+                # Nested tags dict, recurse.
+                self.tags_to_attributes(obj, tag)
+                continue
+            elif name not in TAGS_MAP:
+                continue
+
+            attr, filter = TAGS_MAP[name]
+            if attr not in obj._keys and attr not in self._keys:
+                # Tag is not in any core attribute for this object or global,
+                # so skip.
+                continue
+
+            # Pull value out of Tag object or list of Tag objects.
+            value = [item.value for item in tag] if isinstance(tag, list) else tag.value
+            if filter:
+                try:
+                    value = [filter(item) for item in value] if isinstance(value, list) else filter(value)
+                except Exception, e:
+                    log.warning('Failed to convert tag to core attribute: %s', e)
+
+            if attr in obj._keys:
+                setattr(obj, attr, value)
+            else:
+                setattr(self, attr, value)
 
 
 Parser = Matroska
