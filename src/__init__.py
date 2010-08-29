@@ -52,7 +52,7 @@ register('application/pcm', ('aif','voc','au'), 'audio.pcm')
 # Video parsers
 register('video/asf', ('asf','wmv','wma'), 'video.asf')
 register('video/flv', ('flv',), 'video.flv')
-register('application/mkv', ('mkv', 'mka'), 'video.mkv')
+register('application/mkv', ('mkv', 'mka', 'webm'), 'video.mkv')
 register('video/quicktime', ('mov', 'qt', 'mp4', 'mp4a', '3gp', '3gp2', 'mk2'), 'video.mp4')
 register('video/mpeg', ('mpeg','mpg','mp4', 'ts'), 'video.mpeg')
 register('application/ogg', ('ogm', 'ogg'), 'video.ogm')
