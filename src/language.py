@@ -8,9 +8,11 @@ def resolve(code):
     language name.  The return value is a 2-tuple containing the given
     language code and the language name.  If the language code cannot be
     resolved, name will be 'Unknown (<code>)'.
+
+    If code is None, this function returns ('und', u'Undetermined')
     """
     if not code:
-        return None, None
+        return 'und', u'Undetermined'
     if not isinstance(code, basestring):
         raise ValueError('Invalid language code specified by parser')
 
