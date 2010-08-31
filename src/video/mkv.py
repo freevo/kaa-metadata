@@ -534,10 +534,8 @@ class Matroska(core.AVContainer):
     def process_track_common(self, elem, track):
         elem_id = elem.get_id()
         if elem_id == MATROSKA_TRACK_LANGUAGE_ID:
-            lang = elem.get_str()
-            if lang != u'und':
-                track.language = lang
-                log.debug("Track language found: %s" % track.language)
+            track.language = elem.get_str()
+            log.debug("Track language found: %s" % track.language)
         elif elem_id == MATROSKA_NAME_ID:
             track.title = elem.get_utf8()
         elif elem_id == MATROSKA_TRACK_NUMBER_ID:
