@@ -170,25 +170,21 @@ class Mpeg4Audio(core.Music):
 
     def __init__(self, file):
         core.Music.__init__(self)
-        self.valid = 0
-        returnval = 0
         tags = M4ATags(file)
-        if tags['FileType'] == 'M4A ':
-            try:
-                self.title = tags['Title']
-                self.artist = tags['Artist']
-                self.album = tags['Album']
-                self.trackno = tags['Track']
-                self.year = tags['Year']
-                self.encoder = tags['Tool']
-                self.length = tags['Length']
-                self.samplerate = tags['SampleRate']
-                self.valid = 1
-                self.mime = 'audio/mp4'
-                self.filename = file.name
-            except ValueError:
-                returnval = 1
-        if not self.valid:
+        if tags.get('FileType') != 'M4A ':
             raise core.ParseError()
+
+        self.valid = True
+        self.mime = 'audio/mp4'
+        self.filename = getattr(file, 'name', None)
+        # Initialize core attributes from available tag values.
+        self.title = tags.get('Title')
+        self.artist = tags.get('Artist')
+        self.album = tags.get('Album')
+        self.trackno = tags.get('Track')
+        self.year = tags.get('Year')
+        self.encoder = tags.get('Tool')
+        self.length = tags.get('Length')
+        self.samplerate = tags.get('SampleRate')
 
 Parser = Mpeg4Audio
