@@ -36,7 +36,8 @@ from kaa.metadata.audio.core import Audio as AudioStream
 
 
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
-             'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno', 'fourcc', 'id' ]
+             'samplebits', 'width', 'height', 'fps', 'aspect', 'trackno',
+             'fourcc', 'id', 'enabled', 'default', 'codec_private' ]
 
 AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'genre', 'writer', 'producer', 'studio', 'rating', 'actors', 'thumbnail',
@@ -55,7 +56,7 @@ class Chapter(Media):
     """
     Chapter in a Multiplexed Container.
     """
-    _keys = ['name', 'pos', 'enabled', 'id']
+    _keys = ['enabled', 'name', 'pos', 'id']
     media = MEDIA_CHAPTER
 
     def __init__(self, name=None, pos=0):
@@ -69,7 +70,8 @@ class Subtitle(Media):
     """
     Subtitle Tracks in a Multiplexed Container.
     """
-    _keys = ['language', 'trackno', 'title', 'id']
+    _keys = ['enabled', 'default', 'langcode', 'language', 'trackno', 'title',
+             'id', 'codec']
     media = MEDIA_SUBTITLE
 
     def __init__(self, language=None):

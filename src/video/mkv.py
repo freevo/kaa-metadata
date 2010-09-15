@@ -65,11 +65,11 @@ MATROSKA_CODEC_ID                 = 0x86
 MATROSKA_CODEC_PRIVATE_ID         = 0x63A2
 MATROSKA_FRAME_DURATION_ID        = 0x23E383
 MATROSKA_VIDEO_SETTINGS_ID        = 0xE0
-MATROSKA_VID_WIDTH_ID             = 0xB0
-MATROSKA_VID_HEIGHT_ID            = 0xBA
-MATROSKA_VID_INTERLACED           = 0x9A
-MATROSKA_DISPLAY_VID_WIDTH_ID     = 0x54B0
-MATROSKA_DISPLAY_VID_HEIGHT_ID    = 0x54BA
+MATROSKA_VIDEO_WIDTH_ID           = 0xB0
+MATROSKA_VIDEO_HEIGHT_ID          = 0xBA
+MATROSKA_VIDEO_INTERLACED_ID      = 0x9A
+MATROSKA_VIDEO_DISPLAY_WIDTH_ID   = 0x54B0
+MATROSKA_VIDEO_DISPLAY_HEIGHT_ID  = 0x54BA
 MATROSKA_AUDIO_SETTINGS_ID        = 0xE1
 MATROSKA_AUDIO_SAMPLERATE_ID      = 0xB5
 MATROSKA_AUDIO_CHANNELS_ID        = 0x9F
@@ -78,6 +78,8 @@ MATROSKA_TRACK_NUMBER_ID          = 0xD7
 MATROSKA_TRACK_TYPE_ID            = 0x83
 MATROSKA_TRACK_LANGUAGE_ID        = 0x22B59C
 MATROSKA_TRACK_OFFSET             = 0x537F
+MATROSKA_TRACK_FLAG_DEFAULT_ID    = 0x88
+MATROSKA_TRACK_FLAG_ENABLED_ID    = 0xB9
 MATROSKA_TITLE_ID                 = 0x7BA9
 MATROSKA_DATE_UTC_ID              = 0x4461
 MATROSKA_NAME_ID                  = 0x536E
@@ -540,13 +542,20 @@ class Matroska(core.AVContainer):
             track.title = elem.get_utf8()
         elif elem_id == MATROSKA_TRACK_NUMBER_ID:
             track.trackno = elem.get_value()
+        elif elem_id == MATROSKA_TRACK_FLAG_ENABLED_ID:
+            track.enabled = bool(elem.get_value())
+        elif elem_id == MATROSKA_TRACK_FLAG_DEFAULT_ID:
+            track.default = bool(elem.get_value())
+        elif elem_id == MATROSKA_CODEC_ID:
+            track.codec = elem.get_str()
+        elif elem_id == MATROSKA_CODEC_PRIVATE_ID:
+            track.codec_private = elem.get_data()
         elif elem_id == MATROSKA_TRACK_UID_ID:
             self.objects_by_uid[elem.get_value()] = track
 
 
     def process_video_track(self, elements):
         track = core.VideoStream()
-        codec_private_id = ''
         # Defaults
         track.codec = u'Unknown'
         track.fps = 0
@@ -566,23 +575,20 @@ class Matroska(core.AVContainer):
                 d_width = d_height = None
                 for settings_elem in self.process_one_level(elem):
                     settings_elem_id = settings_elem.get_id()
-                    if settings_elem_id == MATROSKA_VID_WIDTH_ID:
+                    if settings_elem_id == MATROSKA_VIDEO_WIDTH_ID:
                         track.width = settings_elem.get_value()
-                    elif settings_elem_id == MATROSKA_VID_HEIGHT_ID:
+                    elif settings_elem_id == MATROSKA_VIDEO_HEIGHT_ID:
                         track.height = settings_elem.get_value()
-                    elif settings_elem_id == MATROSKA_DISPLAY_VID_WIDTH_ID:
+                    elif settings_elem_id == MATROSKA_VIDEO_DISPLAY_WIDTH_ID:
                         d_width = settings_elem.get_value()
-                    elif settings_elem_id == MATROSKA_DISPLAY_VID_HEIGHT_ID:
+                    elif settings_elem_id == MATROSKA_VIDEO_DISPLAY_HEIGHT_ID:
                         d_height = settings_elem.get_value()
-                    elif settings_elem_id == MATROSKA_VID_INTERLACED:
+                    elif settings_elem_id == MATROSKA_VIDEO_INTERLACED_ID:
                         value = int(settings_elem.get_value())
                         self._set('interlaced', value)
 
                 if None not in (d_width, d_height):
                     track.aspect = float(d_width) / d_height
-
-            elif elem_id == MATROSKA_CODEC_PRIVATE_ID:
-                codec_private_id = elem.get_data()
 
             else:
                 self.process_track_common(elem, track)
@@ -593,8 +599,8 @@ class Matroska(core.AVContainer):
             track.codec = FOURCCMap[track.codec]
         elif '/' in track.codec and track.codec.split('/')[0] + '/' in FOURCCMap:
             track.codec = FOURCCMap[track.codec.split('/')[0] + '/']
-        elif track.codec.endswith('FOURCC') and len(codec_private_id) == 40:
-            track.codec = codec_private_id[16:20]
+        elif track.codec.endswith('FOURCC') and len(track.codec_private or '') == 40:
+            track.codec = track.codec_private[16:20]
         elif track.codec.startswith('V_REAL/'):
             track.codec = track.codec[7:]
         elif track.codec.startswith('V_'):

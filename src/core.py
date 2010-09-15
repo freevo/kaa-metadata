@@ -40,7 +40,7 @@ from kaa.utils import property
 import fourcc
 import language
 
-UNPRINTABLE_KEYS = [ 'thumbnail', 'url' ]
+UNPRINTABLE_KEYS = [ 'thumbnail', 'url', 'codec_private' ]
 
 # media type definitions
 MEDIA_AUDIO     = 'MEDIA_AUDIO'
