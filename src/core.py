@@ -70,6 +70,43 @@ class ParseError:
     pass
 
 
+_features = {}
+
+def enable_feature(var, value=None):
+    """
+    Enable optional features defined in the _feature variable. Some
+    feature have a value. These values are set to reasonable default
+    values but can be overwritten by setting the optional parameter
+    value.
+    """
+    _features[var][0] = True
+    if value:
+        _features[var][1] = value
+
+def register_feature(var, value):
+    """
+    Register a new feature. Called by the different parser modules
+    """
+    _features[var] = [ False, value ]
+
+def features():
+    """
+    List all optional features
+    """
+    return _features.keys()
+
+def feature_enabled(feature):
+    """
+    Returns if a feature was activated
+    """
+    return _features[feature][0]
+
+def feature_config(feature):
+    """
+    Returns the configuration of the given feature
+    """
+    return _features[feature][1]
+
 class Media(object):
     media = None
 

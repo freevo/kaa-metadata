@@ -214,7 +214,7 @@ class _Factory:
         elif scheme == 'cdda':
             r = self.create_from_filename(split[4], force)
             if r:
-                r.url = url
+                r._set_url(url)
             return r
 
         elif scheme == 'http' and False:
@@ -269,7 +269,7 @@ class _Factory:
             r = self.create_from_file(f, force)
             f.close()
             if r:
-                r.url = '%s://%s' % (self.get_scheme_from_info(r), os.path.abspath(filename))
+                r._set_url('%s://%s' % (self.get_scheme_from_info(r), os.path.abspath(filename)))
                 return r
         return None
 
@@ -283,7 +283,7 @@ class _Factory:
             log.debug('Trying %s' % e[R_MIMETYPE])
             try:
                 t = self.get_class(e[R_CLASS])(devicename)
-                t.url = '%s://%s' % (self.get_scheme_from_info(t), os.path.abspath(devicename))
+                t._set_url('%s://%s' % (self.get_scheme_from_info(t), os.path.abspath(devicename)))
                 return t
             except core.ParseError:
                 pass
