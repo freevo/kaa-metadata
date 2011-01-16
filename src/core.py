@@ -256,6 +256,11 @@ class Media(object):
         if not key in self._keys:
             self._keys.append(key)
 
+    def _set_url(self, url):
+        """
+        Set the URL of the source
+        """
+        self.url = url
 
     def _finalize(self):
         """
