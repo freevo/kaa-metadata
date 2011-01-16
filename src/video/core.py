@@ -42,7 +42,7 @@ VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
 AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'genre', 'writer', 'producer', 'studio', 'rating', 'actors', 'thumbnail',
              'delay', 'image', 'video', 'audio', 'subtitles', 'chapters', 'software',
-             'summary', 'synopsis' ]
+             'summary', 'synopsis', 'season', 'episode', 'show' ]
 
 class VideoStream(Media):
     """
