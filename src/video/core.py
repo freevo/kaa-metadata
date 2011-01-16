@@ -33,7 +33,7 @@ import re
 
 from kaa.metadata.core import ParseError, Media, MEDIA_VIDEO, MEDIA_SUBTITLE, \
      MEDIA_CHAPTER, MEDIA_AV, MEDIA_AUDIO, MEDIA_DISC, Collection, Tag, Tags, \
-     feature_enabled, feature_config, register_feature
+     feature_enabled, feature_config
 
 from kaa.metadata.audio.core import Audio as AudioStream
 
@@ -46,12 +46,6 @@ AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'genre', 'writer', 'producer', 'studio', 'rating', 'actors', 'thumbnail',
              'delay', 'image', 'video', 'audio', 'subtitles', 'chapters', 'software',
              'summary', 'synopsis', 'season', 'episode', 'show' ]
-
-# Guess if a file is a recording of a TV show. It matches names in the
-# style of 'show 1x01 episode' and show s1e01 episode' where the
-# delimiter may not be a space but also point or minus.
-register_feature('VIDEO_SHOW_PARSER',
-    '.*/([^/]+)[ \._]+s?([0-9]|[0-9][0-9])[xe]([0-9]|[0-9][0-9])[ \-\._]+([^/]*)\.[^/\.]+$')
 
 class VideoStream(Media):
     """
@@ -114,7 +108,11 @@ class AVContainer(Media):
             # name and number
             match = re.split(feature_config('VIDEO_SHOW_PARSER'), url)
             if match and len(match) == 6:
-                self.show, self.season, self.episode, self.title = match[1:-1]
+                try:
+                    self.season, self.episode = int(match[2]), int(match[3])
+                    self.show, self.title = match[1], match[4]
+                except ValueError:
+                    pass
 
     def _finalize(self):
         """

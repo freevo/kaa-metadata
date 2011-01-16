@@ -70,7 +70,13 @@ class ParseError:
     pass
 
 
-_features = {}
+_features = {
+    # Guess if a file is a recording of a TV show. It matches names in the
+    # style of 'show 1x01 episode' and show s1e01 episode' where the
+    # delimiter may not be a space but also point or minus.
+    'VIDEO_SHOW_PARSER':
+        [ False, '.*/([^/]+)[ \._]+s?([0-9]|[0-9][0-9])[xe]([0-9]|[0-9][0-9])[ \-\._]+([^/]*)\.[^/\.]+$' ]
+}
 
 def enable_feature(var, value=None):
     """
@@ -82,12 +88,6 @@ def enable_feature(var, value=None):
     _features[var][0] = True
     if value:
         _features[var][1] = value
-
-def register_feature(var, value):
-    """
-    Register a new feature. Called by the different parser modules
-    """
-    _features[var] = [ False, value ]
 
 def features():
     """
