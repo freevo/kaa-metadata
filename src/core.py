@@ -71,10 +71,10 @@ class ParseError:
 
 
 _features = {
-    # Guess if a file is a recording of a TV show. It matches names in the
-    # style of 'show 1x01 episode' and show s1e01 episode' where the
+    # Guess if a file is a recording of a TV series. It matches names in the
+    # style of 'series 1x01 episode' and 'series s1e01 episode' where the
     # delimiter may not be a space but also point or minus.
-    'VIDEO_SHOW_PARSER':
+    'VIDEO_SERIES_PARSER':
         [ False, '.*/([^/]+)[ \._]+s?([0-9]|[0-9][0-9])[xe]([0-9]|[0-9][0-9])[ \-\._]+([^/]*)\.[^/\.]+$' ]
 }
 

@@ -824,8 +824,8 @@ class Matroska(core.AVContainer):
                     value = [filter(item) for item in value] if isinstance(value, list) else filter(value)
                 except Exception, e:
                     log.warning('Failed to convert tag to core attribute: %s', e)
-            # Special handling for tv show recordings. The 'title' tag
-            # can be used for both the show and the episode name. The
+            # Special handling for tv series recordings. The 'title' tag
+            # can be used for both the series and the episode name. The
             # same is true for trackno which may refer to the season
             # and the episode number. Therefore, if we find these
             # attributes already set we try some guessing.
@@ -836,9 +836,9 @@ class Matroska(core.AVContainer):
                 self.trackno = None
                 continue
             if attr == 'title' and getattr(self, attr) is not None:
-                # store current value of title as show and use current
+                # store current value of title as series and use current
                 # value of title as title
-                self.show = self.title
+                self.series = self.title
             if attr in obj._keys:
                 setattr(obj, attr, value)
             else:

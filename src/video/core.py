@@ -45,7 +45,7 @@ VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',
 AVCORE    = ['length', 'encoder', 'trackno', 'trackof', 'copyright', 'product',
              'genre', 'writer', 'producer', 'studio', 'rating', 'actors', 'thumbnail',
              'delay', 'image', 'video', 'audio', 'subtitles', 'chapters', 'software',
-             'summary', 'synopsis', 'season', 'episode', 'show' ]
+             'summary', 'synopsis', 'season', 'episode', 'series' ]
 
 class VideoStream(Media):
     """
@@ -103,14 +103,14 @@ class AVContainer(Media):
         Set the URL of the source
         """
         Media._set_url(self, url)
-        if feature_enabled('VIDEO_SHOW_PARSER') and not self.show:
-            # special tv show handling to detect the series and episode
+        if feature_enabled('VIDEO_SERIES_PARSER') and not self.series:
+            # special tv series handling to detect the series and episode
             # name and number
-            match = re.split(feature_config('VIDEO_SHOW_PARSER'), url)
+            match = re.split(feature_config('VIDEO_SERIES_PARSER'), url)
             if match and len(match) == 6:
                 try:
                     self.season, self.episode = int(match[2]), int(match[3])
-                    self.show, self.title = match[1], match[4]
+                    self.series, self.title = match[1], match[4]
                 except ValueError:
                     pass
 
