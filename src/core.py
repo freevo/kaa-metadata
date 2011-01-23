@@ -56,7 +56,7 @@ MEDIA_GAME      = 'MEDIA_GAME'
 
 MEDIACORE = ['title', 'caption', 'comment', 'size', 'type', 'subtype', 'timestamp',
              'keywords', 'country', 'language', 'langcode', 'url', 'media', 'artist',
-             'mime', 'datetime', 'tags']
+             'mime', 'datetime', 'tags', 'hash']
 
 EXTENSION_DEVICE    = 'device'
 EXTENSION_DIRECTORY = 'directory'

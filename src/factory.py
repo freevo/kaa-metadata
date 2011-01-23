@@ -35,6 +35,7 @@ __all__ = [ 'Factory', 'register', 'gettype', 'parse' ]
 import stat
 import os
 import sys
+import struct
 import urlparse
 import urllib
 import logging
@@ -266,11 +267,28 @@ class _Factory:
             except (IOError, OSError), e:
                 log.info('error reading %s: %s' % (filename, e))
                 return None
-            r = self.create_from_file(f, force)
+            result = self.create_from_file(f, force)
+            # create a hash for the file based on hashes from
+            # http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
+            bytesize = struct.calcsize('q')
+            filesize = os.path.getsize(filename)
+            filehash = 0
+            if filesize >= 65536 * 2:
+                filehash = filesize
+                f.seek(0)
+                for x in range(65536/bytesize):
+                    filehash += struct.unpack('q', f.read(bytesize))[0]
+                    filehash = filehash & 0xFFFFFFFFFFFFFFFF
+                f.seek(max(0,filesize-65536),0)
+                for x in range(65536/bytesize):
+                    filehash += struct.unpack('q', f.read(bytesize))[0]
+                    filehash = filehash & 0xFFFFFFFFFFFFFFFF
+            filehash =  "%016x" % filehash
             f.close()
-            if r:
-                r._set_url('%s://%s' % (self.get_scheme_from_info(r), os.path.abspath(filename)))
-                return r
+            if result:
+                result._set_url('%s://%s' % (self.get_scheme_from_info(result), os.path.abspath(filename)))
+                result.hash = filehash
+                return result
         return None
 
 
