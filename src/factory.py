@@ -270,19 +270,16 @@ class _Factory:
             result = self.create_from_file(f, force)
             # create a hash for the file based on hashes from
             # http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
-            bytesize = struct.calcsize('q')
+            qwsize = struct.calcsize('q')
             filesize = os.path.getsize(filename)
-            filehash = 0
             if filesize >= 65536 * 2:
                 filehash = filesize
-                f.seek(0)
-                for x in range(65536/bytesize):
-                    filehash += struct.unpack('q', f.read(bytesize))[0]
-                    filehash = filehash & 0xFFFFFFFFFFFFFFFF
-                f.seek(max(0,filesize-65536),0)
-                for x in range(65536/bytesize):
-                    filehash += struct.unpack('q', f.read(bytesize))[0]
-                    filehash = filehash & 0xFFFFFFFFFFFFFFFF
+                for fpos in (0, filesize - 65536):
+                    f.seek(fpos)
+                    for qw in struct.unpack('%dq' % (65536/qwsize), f.read(65536)):
+                        filehash = (filehash + qw) & 0xFFFFFFFFFFFFFFFF
+            else:
+                filehash = 0
             filehash =  "%016x" % filehash
             f.close()
             if result:
