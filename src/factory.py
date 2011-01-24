@@ -271,15 +271,14 @@ class _Factory:
             # create a hash for the file based on hashes from
             # http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
             qwsize = struct.calcsize('q')
-            filesize = os.path.getsize(filename)
-            if filesize >= 65536 * 2:
-                filehash = filesize
-                for fpos in (0, filesize - 65536):
-                    f.seek(fpos)
-                    for qw in struct.unpack('%dq' % (65536/qwsize), f.read(65536)):
-                        filehash = (filehash + qw) & 0xFFFFFFFFFFFFFFFF
-            else:
-                filehash = 0
+            filehash = filesize = os.path.getsize(filename)
+            for fpos in (0, max(0, filesize - 65536)):
+                f.seek(fpos)
+                # Read up to 64k, but skip the last few bytes if we can't get a
+                # full 64-bit value.
+                buf = f.read(65536)
+                for qw in struct.unpack('%dq' % (len(buf) / qwsize), buf[:len(buf) & ~7]):
+                    filehash = (filehash + qw) & 0xFFFFFFFFFFFFFFFF
             filehash =  "%016x" % filehash
             f.close()
             if result:
