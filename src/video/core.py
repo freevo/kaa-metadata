@@ -30,6 +30,7 @@
 # -----------------------------------------------------------------------------
 
 import re
+import os
 
 from kaa.metadata.core import ParseError, Media, MEDIA_VIDEO, MEDIA_SUBTITLE, \
      MEDIA_CHAPTER, MEDIA_AV, MEDIA_AUDIO, MEDIA_DISC, Collection, Tag, Tags, \
@@ -106,7 +107,8 @@ class AVContainer(Media):
         if feature_enabled('VIDEO_SERIES_PARSER') and not self.series:
             # special tv series handling to detect the series and episode
             # name and number
-            match = re.split(feature_config('VIDEO_SERIES_PARSER'), url)
+            basename = os.path.basename(os.path.splitext(url)[0])
+            match = re.split(feature_config('VIDEO_SERIES_PARSER'), basename)
             if match and len(match) == 6:
                 try:
                     self.season, self.episode = int(match[2]), int(match[3])

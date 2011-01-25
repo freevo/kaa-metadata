@@ -75,7 +75,7 @@ _features = {
     # style of 'series 1x01 episode' and 'series s1e01 episode' where the
     # delimiter may not be a space but also point or minus.
     'VIDEO_SERIES_PARSER':
-        [ False, '.*/([^/]+)[ \._]+s?([0-9]|[0-9][0-9])[xe]([0-9]|[0-9][0-9])[ \-\._]+([^/]*)\.[^/\.]+$' ]
+        [ False, '(.+?)[\. _-]+[sS]?([0-9]|[0-9][0-9])[xeE]([0-9]|[0-9][0-9])[\. _-]+(.+)' ]
 }
 
 def enable_feature(var, value=None):
