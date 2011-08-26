@@ -323,6 +323,9 @@ class _Factory:
         'create_from_'-functions.
         """
         try:
+            if hasattr(name, 'seek'):
+                # a file-like object
+                return self.create_from_file(name, force)
             if name.find('://') > 0:
                 return self.create_from_url(name)
             if not os.path.exists(name):
