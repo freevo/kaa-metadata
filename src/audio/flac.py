@@ -51,7 +51,8 @@ class Flac(core.Music):
             raise core.ParseError()
 
         # http://wiki.xiph.org/index.php/MIME_Types_and_File_Extensions
-        self.mime = 'application/flac'
+        self.mime = 'audio/flac'
+        self.codec = 0xF1AC # fourcc code of flac
 
         while 1:
             (blockheader,) = struct.unpack('>I',file.read(4))
