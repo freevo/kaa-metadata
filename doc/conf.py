@@ -11,12 +11,12 @@
 # All configuration values have a default value; values that are commented out
 # serve to show the default value.
 
-import sys, os
+import sys, os, glob
 
 # If your extensions are in another directory, add it here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
-sys.path.append(os.path.abspath('../build/lib.linux-i686-2.5/kaa'))
+sys.path.append(os.path.abspath(glob.glob('../build/lib.*/kaa')[0]))
 from metadata.version import VERSION
 
 # General configuration
