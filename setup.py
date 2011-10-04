@@ -29,15 +29,28 @@
 #
 # -----------------------------------------------------------------------------
 
+MODULE = 'metadata'
+VERSION = '0.7.8'
+REQUIRES = ['kaa-base']
+
+
 # python imports
 import sys
 
+if 'pip-egg-info' in sys.argv:
+    # Installing via pip; ensure dependencies are visible.
+    from setuptools import setup
+    setup(name='kaa-' + MODULE, version=VERSION, install_requires=REQUIRES)
+    sys.exit(0)
+
+
 try:
     # kaa base imports
-    from kaa.distribution.core import Extension, setup
+    from kaa.base.distribution.core import Extension, setup
 except ImportError:
     print 'kaa.base not installed'
     sys.exit(1)
+
 
 # cdrom extension, FIXME: check if it will compile
 cdrom = Extension('kaa/metadata/disc/_cdrom', ['src/disc/cdrommodule.c'])
@@ -73,8 +86,8 @@ if exiv2.check_library('exiv2', '0.18'):
     ext_modules.append(exiv2)
     
 setup(
-    module = 'metadata',
-    version = '0.7.7',
+    module = MODULE,
+    version = VERSION,
     license = 'GPL',
     summary = 'Module for retrieving information about media files',
     author = 'Thomas Schueppel, Dirk Meyer, Jason Tackaberry',
@@ -85,6 +98,7 @@ setup(
         'obsoletes': 'mmpython'
     },
     ext_modules = ext_modules,
+    install_requires = REQUIRES,
     namespace_packages = ['kaa']
 )
 
