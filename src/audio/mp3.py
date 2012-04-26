@@ -96,12 +96,12 @@ _MP3_HEADER_SEEK_LIMIT = 4096
 
 class MP3(core.Music):
 
-    fileName       = str();
-    fileSize       = int();
+    fileName       = str()
+    fileSize       = int()
 
     def __init__(self, file, tagVersion = eyeD3_tag.ID3_ANY_VERSION):
         core.Music.__init__(self)
-        self.fileName = file.name;
+        self.fileName = file.name
         self.codec = 0x0055 # fourcc code of mp3
         self.mime = 'audio/mpeg'
 
