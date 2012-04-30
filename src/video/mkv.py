@@ -341,11 +341,12 @@ class EbmlEntity:
 
 
     def get_utf8(self):
-        return unicode(self.entity_data, 'utf-8', 'replace')
+        # EBML RFC says "A string MAY be zero padded at the end."
+        return unicode(self.entity_data.rstrip('\x00'), 'utf-8', 'replace')
 
 
     def get_str(self):
-        return unicode(self.entity_data, 'ascii', 'replace')
+        return unicode(self.entity_data.rstrip('\x00'), 'ascii', 'replace')
 
 
     def get_id(self):
