@@ -788,9 +788,13 @@ class Matroska(core.AVContainer):
             children.langcode = lang
             value = children
         else:
-            if name.startswith('date_'):
-                # Try to convert date to a datetime object.
-                value = matroska_date_to_datetime(value)
+            # XXX: Python datetime objects have no way to express partial dates
+            # (e.g. only year), which the Matroska spec allows.  Therefore datetime
+            # is not suitable for this.  Until we figure out a proper way to express
+            # dates, just pass the tag value directly.
+            #if name.startswith('date_'):
+            #    # Try to convert date to a datetime object.
+            #    value = matroska_date_to_datetime(value)
             value = core.Tag(value, lang, binary)
 
         if name in tags_dict:
