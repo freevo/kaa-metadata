@@ -38,7 +38,7 @@ import logging
 import struct
 
 # import kaa.metadata.audio core
-from kaa.strutils import str_to_unicode
+from kaa.strutils import py3_str
 import core
 import ID3 as ID3
 
@@ -51,7 +51,7 @@ from eyeD3 import frames as eyeD3_frames
 log = logging.getLogger('metadata')
 
 # http://www.omniscia.org/~vivake/python/MP3Info.py
-
+# This maps ID3 frames to core attributes.
 MP3_INFO_TABLE = { "LINK": "link",
                    "TALB": "album",
                    "TCOM": "composer",
@@ -68,6 +68,33 @@ MP3_INFO_TABLE = { "LINK": "link",
                    "TRCK": "trackno",
                    "TPOS": "discs",
                    "TPUB": "publisher"}
+
+# This maps ID3 frames to tag names (as per the Matroska Tags specification)
+# to support the new core Tags API.  tag name -> attr, filter
+ID3_TAGS_MAP = {
+    'COMM': (u'comment', py3_str),
+    'TALB': (u'album', py3_str),
+    'TYER': (u'date_recorded', None),
+    'TDRC': (u'date_recorded', None),
+    'TDRL': (u'date_released', None),
+    'TDEN': (u'date_encoded', None),
+    'TENC': (u'encoded_by', py3_str),
+    'TMOO': (u'mood', py3_str),
+    'WXXX': (u'url', py3_str),
+    'TIT2': (u'title', py3_str),
+    'TOPE': (u'artist', py3_str),
+    'TCOM': (u'composer', py3_str),
+    'TEXT': (u'lyricist', py3_str),
+    'TPE1': (u'lead_performer', py3_str),
+    'TPE2': (u'accompaniment', py3_str),
+    'TPE3': (u'conductor', py3_str),
+    'TRCK': (u'part_number', int),
+    'TPOS': (u'total_parts', int),
+    'TCOP': (u'copyright', py3_str),
+    'TPUB': (u'publisher', py3_str),
+    # Treated specially
+    #'TCON': (u'genre', py3_str),
+}
 
 _bitrates = [
    [ # MPEG-2 & 2.5
@@ -138,6 +165,7 @@ class MP3(core.Music):
 
         try:
             if id3 and id3.tag:
+                self.tags = core.Tags()
                 log.debug(id3.tag.frames)
 
                 # Grip unicode bug workaround: Grip stores text data as UTF-8
@@ -165,25 +193,45 @@ class MP3(core.Music):
                     self.userdate = id3.tag.getYear()
                 tab = {}
                 for f in id3.tag.frames:
+                    tag = core.Tag()
                     if f.__class__ is eyeD3_frames.TextFrame:
                         tab[f.header.id] = f.text
+                        tag.value = f.text
                     elif f.__class__ is eyeD3_frames.UserTextFrame:
                         #userTextFrames : debug: id  starts with _
                         self._set('_'+f.description,f.text)
                         tab['_'+f.description] = f.text
+                        tag.value = f.text
                     elif f.__class__ is eyeD3_frames.DateFrame:
                         tab[f.header.id] = f.date_str
+                        tag.value = f.date_str
                     elif f.__class__ is eyeD3_frames.CommentFrame:
                         tab[f.header.id] = f.comment
-                        self.comment = str_to_unicode(f.comment)
+                        self.comment = py3_str(f.comment)
+                        tag.value = f.comment
                     elif f.__class__ is eyeD3_frames.URLFrame:
                         tab[f.header.id] = f.url
+                        tag.value = f.url
                     elif f.__class__ is eyeD3_frames.UserURLFrame:
                         tab[f.header.id] = f.url
+                        tag.value = f.url
                     elif f.__class__ is eyeD3_frames.ImageFrame:
                         tab[f.header.id] = f
+                        if f.imageData:
+                            tag.binary = True
+                            tag.value = f.imageData
                     else:
                         log.debug(f.__class__)
+
+                    if f.header.id in ID3_TAGS_MAP and tag.value:
+                        tagname, filter = ID3_TAGS_MAP[f.header.id]
+                        try:
+                            if filter:
+                                tag.value = filter(tag.value)
+                        except Exception, e:
+                            log.warning('skipping tag %s: %s', tagname, e)
+                        else:
+                            self.tags[tagname] = tag
                 self._appendtable('id3v2', tab)
 
                 if id3.tag.frames['TCON']:
@@ -199,7 +247,7 @@ class MP3(core.Music):
                             genre = int(tcon[1:tcon.find(')')])
                         except ValueError:
                             # Nope.  Treat as a string.
-                            self.genre = str_to_unicode(tcon)
+                            self.genre = py3_str(tcon)
 
                     if genre is not None:
                         try:
@@ -208,6 +256,8 @@ class MP3(core.Music):
                             # Numeric genre specified but not one of the known genres,
                             # use 'Unknown' as per ID3v1.
                             self.genre = u'Unknown'
+
+                    self.tags[u'genre'] = core.Tag(self.genre)
 
                 # and some tools store it as trackno/trackof in TRCK
                 if not self.trackof and self.trackno and \

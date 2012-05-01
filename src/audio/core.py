@@ -33,7 +33,7 @@
 import sys
 
 # kaa imports
-from kaa.metadata.core import ParseError, Media, MEDIA_AUDIO
+from kaa.metadata.core import ParseError, Media, Tags, Tag, MEDIA_AUDIO
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
              'samplebits', 'bitrate', 'fourcc', 'trackno', 'id', 'userdate',
