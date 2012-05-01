@@ -1,11 +1,12 @@
-Dynamic loading without importing everything from __init__
+Misc
+----
 
 Make everything faster :)
 The EXIF parser is way to slow
 
 Add more types and information.
 
-Create a REAME
+Create a README
 
 Update inline docs
 
@@ -16,11 +17,29 @@ Create doc in the Wiki and dump it into the doc subdir
 
 Add list of external files kaa.beacon should know about
 
-Check attributes. Some are very similar and could be merged
-
 Make bitrate kbit/s
 
 If possible, attributes should match
 http://www.freedesktop.org/wiki/Standards_2fshared_2dfilemetadata_2dspec
 and mime type should match
 http://www.freedesktop.org/wiki/Standards_2fshared_2dmime_2dinfo_2dspec
+
+
+
+Attributes overhaul
+-------------------
+
+Many of the core attributes are poorly named or redundant.  There is a new tags
+interface introduced with the Matroska parser that other parsers should make
+use if, in lieu of assigning to core attributes.
+
+In general, all parsers should model the Matroska parser in terms of what
+attributes are core and which are left to tags, since Matroska is fairly well
+specified and sensible.
+
+Also date-related attributes/tags need to be thoroughly reviewed.  Parsers
+should ensure they are well-formed (preferably according to the Matroska spec).
+Ideally they would be exposed as datetime objects, but datetime objects can't
+express partial dates (e.g. just year) so that will need to be thought out.
+
+Core attributes that survive should be converted to properties with docstrings.
