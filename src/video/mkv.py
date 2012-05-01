@@ -190,13 +190,15 @@ def matroska_bps_to_bitrate(bps):
         return float(bps)
 
 
-# Used to convert the official matroska tag names (only lower-cased) to core
+# Used to convert the official matroska tag names (and some unofficial ones) to core
 # attributes.  tag name -> attr, filter
 TAGS_MAP = {
     # From Media core
+    u'album': ('album', None),
     u'title': ('title', None),
     u'subtitle': ('caption', None),
     u'comment': ('comment', None),
+    u'comments': ('comment', None),
     u'url': ('url', None),
     u'artist': ('artist', None),
     u'keywords': ('keywords', lambda s: [word.strip() for word in s.split(',')]),
