@@ -108,7 +108,7 @@ class Ogg(core.Music):
         self.encoder = self._popHeaderFromPacket(packet)
         for i in range(self._popSizeFromPacket(packet)):
             s = self._popHeaderFromPacket(packet)
-            a = re.split('=',s)
+            a = re.split('=', s, 1)
             header[(a[0]).upper()]=a[1]
 
         # Put Header fields into info fields
