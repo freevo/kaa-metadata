@@ -97,6 +97,7 @@ class Flac(core.Music):
                 map = {
                     u'TITLE': 'title', u'ALBUM': 'album', u'ARTIST': 'artist', u'COMMENT': 'comment',
                     u'ENCODER': 'encoder', u'TRACKNUMBER': 'trackno', u'TRACKTOTAL': 'trackof',
+                    u'GENRE': 'genre',
                     # FIXME: try to convert userdate to timestamp
                     u'DATE': 'userdate',
                 }
