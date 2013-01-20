@@ -109,6 +109,23 @@ class Flac(core.Music):
             elif type == 5:
                 # CUESHEET
                 pass
+            elif type == 6:
+                # PICTURE
+                picture_type = struct.unpack('>L', data[:4])[0]
+                mime_len = struct.unpack('>L', data[4:8])[0]
+                desc_len = struct.unpack('>L', data[8+mime_len:8+mime_len+4])[0]
+                data_offset = 8 + mime_len + 4 + desc_len + 20
+                self._appendtable('PICTURE', {
+                    picture_type: {
+                        'mime': data[8:8+mime_len],
+                        'desc': data[8+mime_len+4:8+mime_len+4+desc_len],
+                        'data': data[data_offset:]
+                    },
+                })
+                # Set the thumbnail to this picture data, preferring type 3 (front cover)
+                # over others.
+                if not self.thumbnail or picture_type == 3:
+                    self.thumbnail = data[data_offset:]
             else:
                 # UNKNOWN TYPE
                 pass
