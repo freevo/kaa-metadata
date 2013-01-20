@@ -37,6 +37,7 @@ import os
 import stat
 import struct
 import logging
+import base64
 try:
     from io import BytesIO
 except ImportError:
@@ -114,6 +115,16 @@ class Ogg(core.Music):
         for field, attr in FIELD_MAP.items():
             if field in header:
                 setattr(self, attr, header[field])
+
+        if 'COVERART' in header:
+            # http://wiki.xiph.org/VorbisComment#Unofficial_COVERART_field_.28deprecated.29
+            try:
+                imgdata = base64.b64decode(header['COVERART'])
+            except TypeError:
+                # Decode failed.
+                pass
+            else:
+                self.thumbnail = imgdata
 
         self.type = 'OGG Vorbis'
         self.subtype = ''
