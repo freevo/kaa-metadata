@@ -37,6 +37,10 @@ import os
 import stat
 import struct
 import logging
+try:
+    from io import BytesIO
+except ImportError:
+    from cStringIO import StringIO as BytesIO
 
 # import kaa.metadata.audio core
 import core
@@ -47,6 +51,15 @@ log = logging.getLogger('metadata')
 VORBIS_PACKET_INFO = '\01vorbis'
 VORBIS_PACKET_HEADER = '\03vorbis'
 VORBIS_PACKET_SETUP = '\05vorbis'
+FIELD_MAP = {
+    u'TITLE': 'title',
+    u'ALBUM': 'album',
+    u'ARTIST': 'artist',
+    u'COMMENT': 'comment',
+    u'DATE': 'userdate',
+    u'ENCODER': 'encoder',
+    u'TRACKNUMBER': 'tracknumber'
+}
 
 class Ogg(core.Music):
     def __init__(self,file):
@@ -73,49 +86,46 @@ class Ogg(core.Music):
                       self.bitrate, bitrate_min, blocksize, \
                       framing = struct.unpack('<IBIiiiBB',info[:23])
         self.bitrate = self.bitrate / 1000
+
         # INFO Header, read Oggs and skip 10 bytes
-        h = file.read(4+10+13)
-        if h[:4] == 'OggS':
+        packet = BytesIO()
+        packetContd = True
+        while packetContd:
+            h = file.read(4+10+13)
+            if h[:4] != 'OggS':
+                break
             (serial, pagesequence, checksum, numEntries) = \
                      struct.unpack( '<14xIIIB', h )
-            # skip past numEntries
-            file.seek(numEntries,1)
-            h = file.read(7)
-            if h != VORBIS_PACKET_HEADER:
-                # Not a corrent info header
+            segmentSizes = struct.unpack('%dB' % numEntries, file.read(numEntries))
+            packetContd = segmentSizes[-1] == 255
+            page = file.read(sum(segmentSizes))
+            if pagesequence == 1 and not page.startswith(VORBIS_PACKET_HEADER):
                 return
-            self.encoder = self._extractHeaderString(file)
-            numItems = struct.unpack('<I',file.read(4))[0]
-            for i in range(numItems):
-                s = self._extractHeaderString(file)
-                a = re.split('=',s)
-                header[(a[0]).upper()]=a[1]
-            # Put Header fields into info fields
-            if header.has_key('TITLE'):
-                self.title = header['TITLE']
-            if header.has_key('ALBUM'):
-                self.album = header['ALBUM']
-            if header.has_key('ARTIST'):
-                self.artist = header['ARTIST']
-            if header.has_key('COMMENT'):
-                self.comment = header['COMMENT']
-            if header.has_key('DATE'):
-                # FIXME: try to convert to timestamp
-                self.userdate = header['DATE']
-            if header.has_key('ENCODER'):
-                self.encoder = header['ENCODER']
-            if header.has_key('TRACKNUMBER'):
-                self.trackno = header['TRACKNUMBER']
-            self.type = 'OGG Vorbis'
-            self.subtype = ''
-            self.length = self._calculateTrackLength(file)
-            self._appendtable('VORBISCOMMENT',header)
+            packet.write(page)
 
+        packet.seek(len(VORBIS_PACKET_HEADER))
+        self.encoder = self._popHeaderFromPacket(packet)
+        for i in range(self._popSizeFromPacket(packet)):
+            s = self._popHeaderFromPacket(packet)
+            a = re.split('=',s)
+            header[(a[0]).upper()]=a[1]
 
-    def _extractHeaderString(self,f):
-        len = struct.unpack( '<I', f.read(4) )[0]
-        return unicode(f.read(len), 'utf-8')
+        # Put Header fields into info fields
+        for field, attr in FIELD_MAP.items():
+            if field in header:
+                setattr(self, attr, header[field])
 
+        self.type = 'OGG Vorbis'
+        self.subtype = ''
+        self.length = self._calculateTrackLength(file)
+        self._appendtable('VORBISCOMMENT',header)
+
+    def _popSizeFromPacket(self, packet):
+        return struct.unpack('<I', packet.read(4))[0]
+
+    def _popHeaderFromPacket(self, packet):
+        size = self._popSizeFromPacket(packet)
+        return packet.read(size).decode('utf-8')
 
     def _calculateTrackLength(self,f):
         # seek to the end of the stream, to avoid scanning the whole file
