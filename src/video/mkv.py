@@ -70,6 +70,7 @@ MATROSKA_VIDEO_HEIGHT_ID          = 0xBA
 MATROSKA_VIDEO_INTERLACED_ID      = 0x9A
 MATROSKA_VIDEO_DISPLAY_WIDTH_ID   = 0x54B0
 MATROSKA_VIDEO_DISPLAY_HEIGHT_ID  = 0x54BA
+MATROSKA_VIDEO_STEREO             = 0x53B8
 MATROSKA_AUDIO_SETTINGS_ID        = 0xE1
 MATROSKA_AUDIO_SAMPLERATE_ID      = 0xB5
 MATROSKA_AUDIO_CHANNELS_ID        = 0x9F
@@ -148,6 +149,22 @@ FOURCCMap = {
     'A_AAC/': 0x00ff
 }
 
+stereo_map = { 
+    1: 'side by side (left eye is first)',
+    2: 'top-bottom (right eye is first)',
+    3: 'top-bottom (left eye is first)',
+    4: 'checkboard (right is first)', 
+    5: 'checkboard (left is first)', 
+    6: 'row interleaved (right is first)',
+    7: 'row interleaved (left is first)', 
+    8: 'column interleaved (right is first)', 
+    9: 'column interleaved (left is first)', 
+    10: 'anaglyph (cyan/red)', 
+    11: 'side by side (right eye is first)', 
+    12: 'anaglyph (green/magenta)', 
+    13: 'both eyes laced in one Block (left eye is first)', 
+    14: 'both eyes laced in one Block (right eye is first)'
+}
 
 def matroska_date_to_datetime(date):
     """
@@ -589,6 +606,10 @@ class Matroska(core.AVContainer):
                     elif settings_elem_id == MATROSKA_VIDEO_INTERLACED_ID:
                         value = int(settings_elem.get_value())
                         self._set('interlaced', value)
+                    elif settings_elem_id == MATROSKA_VIDEO_STEREO:
+                        value = stereo_map.get(int(settings_elem.get_value()), None)
+                        if value:
+                            self._set('3D', value)
 
                 if None not in (d_width, d_height):
                     track.aspect = float(d_width) / d_height
