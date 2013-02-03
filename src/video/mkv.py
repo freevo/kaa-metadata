@@ -609,7 +609,7 @@ class Matroska(core.AVContainer):
                     elif settings_elem_id == MATROSKA_VIDEO_STEREO:
                         value = stereo_map.get(int(settings_elem.get_value()), None)
                         if value:
-                            self._set('3D', value)
+                            self._set('stereo', value)
 
                 if None not in (d_width, d_height):
                     track.aspect = float(d_width) / d_height
