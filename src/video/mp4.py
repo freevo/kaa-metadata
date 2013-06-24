@@ -198,7 +198,7 @@ class MPEG4(core.AVContainer):
             h = file.read(8)
             (size,type) = struct.unpack('>I4s',h)
 
-        while type in ('mdat', 'skip'):
+        while type in ('mdat', 'skip', 'pnot', 'PICT') and size > 0:
             # movie data at the beginning, skip
             file.seek(size-8, 1)
             h = file.read(8)
