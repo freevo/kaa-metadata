@@ -129,13 +129,13 @@ class FlashVideo(core.AVContainer):
                 file.seek(size - 1, 1)
 
             elif chunk[0] == FLV_TAG_TYPE_META:
-                log.info('metadata %s', str(chunk))
+                log.debug('metadata %s', str(chunk))
                 metadata = file.read(size)
                 try:
                     while metadata:
                         length, value = self._parse_value(metadata)
                         if isinstance(value, dict):
-                            log.info('metadata: %s', value)
+                            log.debug('metadata: %s', value)
                             if value.get('creator'):
                                 self.copyright = value.get('creator')
                             if value.get('width'):
@@ -152,7 +152,7 @@ class FlashVideo(core.AVContainer):
                 except (IndexError, struct.error, TypeError):
                     pass
             else:
-                log.info('unkown %s', str(chunk))
+                log.debug('unkown %s', str(chunk))
                 file.seek(size, 1)
 
             file.seek(4, 1)
