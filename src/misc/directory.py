@@ -83,10 +83,12 @@ class Directory(core.Media):
                     continue
                 self._set(key, value)
 
-        # find folder.jpg (windows style cover)
-        folderjpg = os.path.join(directory, 'folder.jpg')
-        if os.path.isfile(folderjpg):
-            self._set('image', folderjpg)
+        # find (folder|cover).(jpg|jpeg|png)
+        for basename in ('folder', 'cover'):
+            for ext in ('png', 'jpg', 'jpeg'):
+                folder = os.path.join(directory, basename + '.' + ext)
+                if os.path.isfile(folder):
+                    self._set('image', folder)
 
         self.mime = 'text/directory'
 
