@@ -229,7 +229,8 @@ class MP3(core.Music):
                             if filter:
                                 tag.value = filter(tag.value)
                         except Exception, e:
-                            log.warning('skipping tag %s: %s', tagname, e)
+                            if f.header.id != 'TRCK':
+                                log.warning('skipping tag %s: %s', tagname, e)
                         else:
                             self.tags[tagname] = tag
                 self._appendtable('id3v2', tab)
