@@ -35,7 +35,6 @@ import logging
 
 # kaa imports
 import kaa
-from kaa.utils import property
 
 import fourcc
 import language
