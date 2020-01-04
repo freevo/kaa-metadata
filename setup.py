@@ -31,7 +31,7 @@ VERSION = '0.7.8'
 
 # python imports
 import os
-from setuptools import setup
+from setuptools import setup, Extension
 
 packages = []
 package_dir = {}
@@ -41,6 +41,10 @@ for dirpath, dirnames, files in os.walk('src'):
         package_dir[python_dirpath] = dirpath
         packages.append(python_dirpath)
 
+ext_modules = []
+if os.system('pkg-config --exists dvdread dvdnav') == 0:
+    ext_modules.append(Extension('kaa.metadata.disc.ifoparser', ['src/disc/ifomodule.c'], libraries=['dvdread', 'dvdnav']))
+
 setup(
     name = 'kaa-metadata',
     version = VERSION,
@@ -49,5 +53,6 @@ setup(
     package_dir = package_dir,
     packages = packages,
     scripts = [ 'bin/mminfo' ],
+    ext_modules = ext_modules,
     zip_safe=False,
 )

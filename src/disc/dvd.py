@@ -44,10 +44,11 @@ from ..audio import core as audio
 
 # kaa.metadata.disc imports
 from . import core
+
 try:
-    import _ifoparser
+    from . import ifoparser
 except ImportError:
-    _ifoparser = None
+    ifoparser = None
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -144,10 +145,10 @@ class DVDInfo(core.Disc):
 
 
     def _parse(self, device):
-        if not _ifoparser:
+        if not ifoparser:
             log.debug("kaa.metadata not compiled with DVD support")
             raise core.ParseError()
-        info = _ifoparser.parse(device)
+        info = ifoparser.parse(device)
         if not info:
             raise core.ParseError()
         for pos, title in enumerate(info):
