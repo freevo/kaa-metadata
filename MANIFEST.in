@@ -1,6 +1,5 @@
 recursive-include src *.py
-recursive-include src *.c
 recursive-include doc *
 
 include bin/mminfo
-include ChangeLog MANIFEST README COPYING TODO AUTHORS NEWS
+include README COPYING TODO AUTHORS NEWS
