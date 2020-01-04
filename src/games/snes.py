@@ -75,7 +75,7 @@ class SNES(core.Game):
                 # invalid acording to the doc at www.classicgaming.com
                 continue
 
-            if not match('[a-zA-Z0-9 ]{21}', romName):
+            if not match('[a-zA-Z0-9 ]{21}', str(romName)):
                 # FIXME: bad hack, but it shoudl work. If not, send some
                 # rom files to me. Without that many normal files are
                 # detect as ROM
