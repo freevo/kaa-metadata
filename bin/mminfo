@@ -39,28 +39,22 @@ import termios
 import fcntl
 import struct
 
-# insert kaa path information
-__site__ = '../lib/python%s.%s/site-packages' % sys.version_info[:2]
-__site__ = os.path.abspath(os.path.join(os.path.dirname(__file__), __site__))
-if not __site__ in sys.path:
-    sys.path.insert(0, __site__)
-
 # kaa.metadata imports
 import kaa.metadata
 
 def usage():
-    print 'Usage: mminfo [options] file...'
-    print
-    print 'options:'
-    print '  -d   turn on debug information. For complete debug set -d 2'
-    print
-    print 'File can be a normal file, a device (DVD, VCD, CD, etc.), or a directory'
-    print
-    print 'Examples:'
-    print '  mminfo foo.avi bar.mpg'
-    print '  mminfo /dev/dvd'
-    print '  mminfo /mnt/dvd/VIDEO_TS'
-    print
+    print('Usage: mminfo [options] file...')
+    print()
+    print('options:')
+    print('  -d   turn on debug information. For complete debug set -d 2')
+    print()
+    print('File can be a normal file, a device (DVD, VCD, CD, etc.), or a directory')
+    print()
+    print('Examples:')
+    print('  mminfo foo.avi bar.mpg')
+    print('  mminfo /dev/dvd')
+    print('  mminfo /mnt/dvd/VIDEO_TS')
+    print()
     sys.exit(0)
 
 
@@ -73,9 +67,9 @@ def print_header(filename, info=''):
 
     if len(filename) + len(info) > w:
         n = (w - len(info)) / 2 - 6
-        print "%s[...]%s%s" % (filename[:n], filename[len(filename)-n:], info)
+        print("%s[...]%s%s" % (filename[:n], filename[len(filename)-n:], info))
     else:
-        print "%s%s" % (filename, info)
+        print("%s%s" % (filename, info))
 
 # create and setup the root logger object.
 logger = logging.getLogger()
@@ -107,9 +101,9 @@ for o, a in opts:
         try:
             a = max(0, min(int(a), 2))
         except ValueError:
-            print 'Specify debug level (2 for full debug)'
+            print('Specify debug level (2 for full debug)')
             sys.exit(1)
-        print 'setting to log level %s' % a
+        print('setting to log level %s' % a)
         logger.setLevel(DEBUG_LEVEL[a])
 
 
@@ -117,7 +111,7 @@ for file in args:
     info = kaa.metadata.parse(file)
     if info:
         print_header(file)
-        print info
+        print(info)
     else:
         print_header(file, ': unable to identify file')
-        print
+        print()
