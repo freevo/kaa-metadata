@@ -2,9 +2,6 @@
 # -----------------------------------------------------------------------------
 # setup.py - Setup script for kaa.metadata
 # -----------------------------------------------------------------------------
-# $Id$
-#
-# -----------------------------------------------------------------------------
 # kaa-Metadata - Media Metadata for Python
 # Copyright (C) 2003-2006 Thomas Schueppel, Dirk Meyer
 #
@@ -31,74 +28,26 @@
 
 MODULE = 'metadata'
 VERSION = '0.7.8'
-REQUIRES = ['kaa-base']
-
 
 # python imports
-import sys
+import os
+from setuptools import setup
 
-if 'pip-egg-info' in sys.argv:
-    # Installing via pip; ensure dependencies are visible.
-    from setuptools import setup
-    setup(name='kaa-' + MODULE, version=VERSION, install_requires=REQUIRES)
-    sys.exit(0)
+packages = []
+package_dir = {}
+for dirpath, dirnames, files in os.walk('src'):
+    python_dirpath = 'kaa.metadata' + dirpath.replace('/', '.')[3:]
+    if '__init__.py' in files:
+        package_dir[python_dirpath] = dirpath
+        packages.append(python_dirpath)
 
-
-try:
-    # kaa base imports
-    from kaa.base.distribution.core import Extension, setup
-except ImportError:
-    print 'kaa.base not installed'
-    sys.exit(1)
-
-
-# cdrom extension, FIXME: check if it will compile
-cdrom = Extension('kaa/metadata/disc/_cdrom', ['src/disc/cdrommodule.c'])
-
-# check for libdvdread
-ifoparser = Extension('kaa.metadata.disc._ifoparser', ['src/disc/ifomodule.c'],
-                      libraries=[ 'dvdread' ])
-
-try:
-    if not ifoparser.check_cc([], '', '-ldvdread'):
-        print 'Warning: libdvdread is missing.'
-        raise AttributeError()
-
-    if not ifoparser.check_cc(['<dvdread/dvd_reader.h>'], '', '-ldvdread'):
-        print 'Warning: libdvdread header file is missing.'
-        raise AttributeError()
-
-    ext_modules = [ cdrom, ifoparser ]
-except AttributeError:
-    print 'The DVD parser will be disabled'
-    ext_modules = [ cdrom ]
-
-if not cdrom.has_python_h():
-    print "---------------------------------------------------------------------"
-    print "Python headers not found; please install python development package."
-    print "Rom drive support will be unavailable"
-    print "---------------------------------------------------------------------"
-    ext_modules = [ ]
-
-exiv2 = Extension('kaa.metadata.image.exiv2', ['src/image/exiv2.cpp'])
-if exiv2.check_library('exiv2', '0.18'):
-    print 'Building experimental exiv2 parser'
-    ext_modules.append(exiv2)
-    
 setup(
-    module = MODULE,
+    name = 'kaa-metadata',
     version = VERSION,
     license = 'GPL',
-    summary = 'Module for retrieving information about media files',
     author = 'Thomas Schueppel, Dirk Meyer, Jason Tackaberry',
+    package_dir = package_dir,
+    packages = packages,
     scripts = [ 'bin/mminfo' ],
-    rpminfo = {
-        'requires': 'python-kaa-base >= 0.1.2, libdvdread >= 0.9.4',
-        'build_requires': 'python-kaa-base >= 0.1.2, libdvdread-devel >= 0.9.4, python-devel >= 2.3.0',
-        'obsoletes': 'mmpython'
-    },
-    ext_modules = ext_modules,
-    install_requires = REQUIRES,
-    namespace_packages = ['kaa']
+    zip_safe=False,
 )
-
