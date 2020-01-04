@@ -40,7 +40,7 @@ __all__ = ['Parser']
 import time
 
 # import kaa.metadata.image core
-import core
+from . import core
 import exiv2
 
 mapping = {

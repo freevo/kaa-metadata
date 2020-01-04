@@ -35,7 +35,7 @@ __all__ = ['Parser']
 import sndhdr
 
 # import kaa.metadata.audio core
-import core
+from . import core
 
 class PCM(core.Music):
     def __init__(self,file):

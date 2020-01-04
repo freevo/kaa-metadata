@@ -29,7 +29,7 @@
 #
 # -----------------------------------------------------------------------------
 
-from kaa.metadata.core import ParseError, Media, MEDIA_GAME
+from ..core import ParseError, Media, MEDIA_GAME
 
 class Game(Media):
     media = MEDIA_GAME

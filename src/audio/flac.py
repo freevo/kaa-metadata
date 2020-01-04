@@ -37,7 +37,7 @@ import re
 import logging
 
 # import kaa.metadata.audio core
-import core
+from . import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -47,7 +47,7 @@ log = logging.getLogger('metadata')
 class Flac(core.Music):
     def __init__(self,file):
         core.Music.__init__(self)
-        if file.read(4) != 'fLaC':
+        if file.read(4) != b'fLaC':
             raise core.ParseError()
 
         # http://wiki.xiph.org/index.php/MIME_Types_and_File_Extensions
@@ -71,7 +71,7 @@ class Flac(core.Music):
                 self.samplebits = ((bits >> 4) & 0x1F) + 1
                 md5 = data[18:34]
                 # Number of samples is bits 108-144 in block.
-                samples = ((ord(data[13]) & 0x0f) << 32) + struct.unpack('>L', data[14:18])[0]
+                samples = ((data[13] & 0x0f) << 32) + struct.unpack('>L', data[14:18])[0]
                 self.length = float(samples) / self.samplerate
             elif type == 1:
                 # PADDING
@@ -95,13 +95,13 @@ class Flac(core.Music):
                     header[(a[0]).upper()]=a[1]
 
                 map = {
-                    u'TITLE': 'title', u'ALBUM': 'album', u'ARTIST': 'artist', u'COMMENT': 'comment',
-                    u'ENCODER': 'encoder', u'TRACKNUMBER': 'trackno', u'TRACKTOTAL': 'trackof',
-                    u'GENRE': 'genre',
+                    'TITLE': 'title', 'ALBUM': 'album', 'ARTIST': 'artist', 'COMMENT': 'comment',
+                    'ENCODER': 'encoder', 'TRACKNUMBER': 'trackno', 'TRACKTOTAL': 'trackof',
+                    'GENRE': 'genre',
                     # FIXME: try to convert userdate to timestamp
-                    u'DATE': 'userdate',
+                    'DATE': 'userdate',
                 }
-                for key, attr in map.items():
+                for key, attr in list(map.items()):
                     if key in header:
                         setattr(self, attr, header[key])
 
@@ -134,7 +134,7 @@ class Flac(core.Music):
 
     def _extractHeaderString(self,header):
         len = struct.unpack( '<I', header[:4] )[0]
-        return (len+4,unicode(header[4:4+len], 'utf-8'))
+        return (len+4,str(header[4:4+len], 'utf-8'))
 
 
 Parser = Flac

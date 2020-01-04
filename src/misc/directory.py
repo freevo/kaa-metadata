@@ -75,7 +75,7 @@ class Directory(core.Media):
         binsxml = os.path.join(directory, 'album.xml')
         if os.path.isfile(binsxml):
             bins = BinsParser(binsxml)
-            for key, value in bins.items():
+            for key, value in list(bins.items()):
                 if key == 'sampleimage':
                     image = os.path.join(directory, kaa.unicode_to_str(value))
                     if os.path.isfile(image):
@@ -83,12 +83,10 @@ class Directory(core.Media):
                     continue
                 self._set(key, value)
 
-        # find (folder|cover).(jpg|jpeg|png)
-        for basename in ('folder', 'cover'):
-            for ext in ('png', 'jpg', 'jpeg'):
-                folder = os.path.join(directory, basename + '.' + ext)
-                if os.path.isfile(folder):
-                    self._set('image', folder)
+        # find folder.jpg (windows style cover)
+        folderjpg = os.path.join(directory, 'folder.jpg')
+        if os.path.isfile(folderjpg):
+            self._set('image', folderjpg)
 
         self.mime = 'text/directory'
 

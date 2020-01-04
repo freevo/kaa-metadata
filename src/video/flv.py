@@ -37,7 +37,7 @@ import struct
 import logging
 
 # import kaa.metadata.video core
-import core
+from . import core
 
 # get logging object
 log = logging.getLogger('metadata')

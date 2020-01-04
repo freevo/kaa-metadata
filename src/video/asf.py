@@ -36,28 +36,21 @@ __all__ = ['Parser']
 
 # python imports
 import struct
+import uuid
 import string
 import logging
 
 # import kaa.metadata.video core
-import core
+from . import core
 # import kaa.metadata.audio for asf files without video stream
-import kaa.metadata.audio.core as audiocore
+from ..audio import core as audiocore
 
 # get logging object
 log = logging.getLogger('metadata')
 
 def _guid(input):
-    # Remove any '-'
-    s = string.join(string.split(input,'-'), '')
-    r = ''
-    if len(s) != 32:
-        return ''
-    x = ''
-    for i in range(0,16):
-        r+=chr(int(s[2*i:2*i+2],16))
-    guid = struct.unpack('>IHHBB6s',r)
-    return guid
+    u = uuid.UUID(input)
+    return u.fields[:-1] + (struct.pack('>q', u.node)[2:],)
 
 GUIDS = {
     'ASF_Header_Object' : _guid('75B22630-668E-11CF-A6D9-00AA0062CE6C'),
@@ -340,7 +333,7 @@ class Asf(core.AVContainer):
                 streams[strno][key] = value
                 pos += size
 
-            for strno, metadata in streams.items():
+            for strno, metadata in list(streams.items()):
                 if strno not in self._extinfo:
                     self._extinfo[strno] = [None, None, None, {}]
                 self._extinfo[strno][3].update(metadata)
@@ -352,7 +345,7 @@ class Asf(core.AVContainer):
             for i in range(0, count):
                 idlen = struct.unpack('<B', s[pos:pos+1])[0]
                 idstring = s[pos+1:pos+1+idlen]
-                idstring = unicode(idstring, 'utf-16').replace('\0', '')
+                idstring = str(idstring, 'utf-16').replace('\0', '')
                 log.debug("Language: %d/%d: %s" % (i+1, count, idstring))
                 self._languages.append(idstring)
                 pos += 1+idlen
@@ -370,7 +363,7 @@ class Asf(core.AVContainer):
             self._set('encrypted', True)
         else:
             # Just print the type:
-            for h in GUIDS.keys():
+            for h in list(GUIDS.keys()):
                 if GUIDS[h] == guid:
                     log.debug("Unparsed %s [%d]" % (h,objsize))
                     break

@@ -35,12 +35,12 @@ __all__ = ['Parser']
 import struct
 import time
 import logging
-import cStringIO
+import io
 
 # import kaa.metadata.image core
-import core
-import EXIF
-import IPTC
+from . import core
+from . import EXIF
+from . import IPTC
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -102,7 +102,7 @@ class JPG(core.Image):
             if segtype == 0xd9:
                 break
 
-            elif SOF.has_key(segtype):
+            elif segtype in SOF:
                 data = file.read(seglen-2)
                 (precision,self.height,self.width,\
                  num_comp) = struct.unpack('>BHHB', data[:6])
@@ -113,7 +113,7 @@ class JPG(core.Image):
                 if type == 'Exif':
                     # create a fake file from the data we have to
                     # pass it to the EXIF parser
-                    fakefile = cStringIO.StringIO()
+                    fakefile = io.StringIO()
                     fakefile.write('\xFF\xD8')
                     fakefile.write(app)
                     fakefile.write(data)
@@ -182,10 +182,10 @@ class JPG(core.Image):
                 file.seek(seglen-2,1)
             app = file.read(4)
 
-        if len(self.meta.keys()):
+        if len(list(self.meta.keys())):
             self._appendtable( 'JPGMETA', self.meta )
 
-        for key, value in self.meta.items():
+        for key, value in list(self.meta.items()):
             if key.startswith('Thumb:') or key == 'Software':
                 self._set(key, value)
 

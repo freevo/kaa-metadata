@@ -32,11 +32,11 @@
 import re
 import os
 
-from kaa.metadata.core import ParseError, Media, MEDIA_VIDEO, MEDIA_SUBTITLE, \
+from ..core import ParseError, Media, MEDIA_VIDEO, MEDIA_SUBTITLE, \
      MEDIA_CHAPTER, MEDIA_AV, MEDIA_AUDIO, MEDIA_DISC, Collection, Tag, Tags, \
      feature_enabled, feature_config
 
-from kaa.metadata.audio.core import Audio as AudioStream
+from ..audio.core import Audio as AudioStream
 
 
 VIDEOCORE = ['length', 'encoder', 'bitrate', 'samplerate', 'codec', 'format',

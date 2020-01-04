@@ -114,7 +114,7 @@ def _drive_status(device, handle_mix = 0):
     # doesn't work. Suppress that warning for Linux users,
     # until a better solution can be found.
     if os.uname()[0] == 'FreeBSD':
-        CDIOREADTOCENTRYS = 0xc0086305L
+        CDIOREADTOCENTRYS = 0xc0086305
         CD_MSF_FORMAT = 2
 
     fd = None

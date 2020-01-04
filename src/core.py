@@ -33,11 +33,9 @@
 import re
 import logging
 
-# kaa imports
-import kaa
-
-import fourcc
-import language
+from . import fourcc
+from . import language
+from . import utils
 
 UNPRINTABLE_KEYS = [ 'thumbnail', 'url', 'codec_private' ]
 
@@ -65,9 +63,8 @@ EXTENSION_STREAM    = 'stream'
 log = logging.getLogger('metadata')
 
 
-class ParseError:
+class ParseError(Exception):
     pass
-
 
 _features = {
     # Guess if a file is a recording of a TV series. It matches names in the
@@ -92,7 +89,7 @@ def features():
     """
     List all optional features
     """
-    return _features.keys()
+    return list(_features.keys())
 
 def feature_enabled(feature):
     """
@@ -122,7 +119,7 @@ class Media(object):
     def __init__(self, hash=None):
         if hash is not None:
             # create Media based on dict
-            for key, value in hash.items():
+            for key, value in list(hash.items()):
                 if isinstance(value, list) and value and isinstance(value[0], dict):
                     value = [ Media(x) for x in value ]
                 self._set(key, value)
@@ -146,8 +143,8 @@ class Media(object):
     # unicode and string convertion for debugging
     #
 
-    def __unicode__(self):
-        result = u''
+    def __str__(self):
+        result = ''
 
         # print normal attributes
         lists = []
@@ -158,9 +155,9 @@ class Media(object):
             if isinstance(value, list):
                 if not value:
                     continue
-                elif isinstance(value[0], basestring):
+                elif isinstance(value[0], str):
                     # Just a list of strings (keywords?), so don't treat it specially.
-                    value = u', '.join(value)
+                    value = ', '.join(value)
                 else:
                     lists.append((key, value))
                     continue
@@ -169,18 +166,18 @@ class Media(object):
                 continue
             if key in UNPRINTABLE_KEYS:
                 value = '<unprintable data, size=%d>' % len(value)
-            result += u'| %10s: %s\n' % (unicode(key), unicode(value))
+            result += '| %10s: %s\n' % (str(key), str(value))
 
         # print tags (recursively, to support nested tags).
         def print_tags(tags, suffix, show_label):
             result = ''
             for n, (name, tag) in enumerate(tags.items()):
-                result += u'| %12s%s%s = ' % (u'tags: ' if n == 0 and show_label else '', suffix, name)
+                result += '| %12s%s%s = ' % ('tags: ' if n == 0 and show_label else '', suffix, name)
                 if isinstance(tag, list):
                     # TODO: doesn't support lists/dicts within lists.
-                    result += u'%s\n' % ', '.join(subtag.value for subtag in tag)
+                    result += '%s\n' % ', '.join(subtag.value for subtag in tag)
                 else:
-                    result += u'%s\n' % (tag.value or '')
+                    result += '%s\n' % (tag.value or '')
                 if isinstance(tag, dict):
                     result += print_tags(tag, '    ', False)
             return result
@@ -192,29 +189,25 @@ class Media(object):
                 label = '+-- ' + key.rstrip('s').capitalize()
                 if key not in ('tracks', 'subtitles', 'chapters'):
                     label += ' Track'
-                result += u'%s #%d\n' % (label, n+1)
-                result += '|    ' + re.sub(r'\n(.)', r'\n|    \1', unicode(item))
+                result += '%s #%d\n' % (label, n+1)
+                result += '|    ' + re.sub(r'\n(.)', r'\n|    \1', str(item))
 
         # print tables
         if log.level >= 10:
-            for name, table in self.tables.items():
+            for name, table in list(self.tables.items()):
                 result += '+-- Table %s\n' % str(name)
-                for key, value in table.items():
+                for key, value in list(table.items()):
                     try:
-                        value = unicode(value)
+                        value = str(value)
                         if len(value) > 50:
-                            value = u'<unprintable data, size=%d>' % len(value)
-                    except (UnicodeDecodeError, TypeError), e:
+                            value = '<unprintable data, size=%d>' % len(value)
+                    except (UnicodeDecodeError, TypeError) as e:
                         try:
-                            value = u'<unprintable data, size=%d>' % len(value)
+                            value = '<unprintable data, size=%d>' % len(value)
                         except AttributeError:
-                            value = u'<unprintable data>'
-                    result += u'|    | %s: %s\n' % (unicode(key), value)
+                            value = '<unprintable data>'
+                    result += '|    | %s: %s\n' % (str(key), value)
         return result
-
-
-    def __str__(self):
-        return kaa.unicode_to_str(unicode(self))
 
 
     def __repr__(self):
@@ -234,11 +227,11 @@ class Media(object):
         If such a table already exists, the given tables items are
         added to the existing one.
         """
-        if not self.tables.has_key(name):
+        if name not in self.tables:
             self.tables[name] = hashmap
         else:
             # Append to the already existing table
-            for k in hashmap.keys():
+            for k in list(hashmap.keys()):
                 self.tables[name][k] = hashmap[k]
 
 
@@ -250,7 +243,7 @@ class Media(object):
         if value is None and getattr(self, key, None) is None:
             return
         if isinstance(value, str):
-            value = kaa.str_to_unicode(value)
+            value = utils.tostr(value)
         setattr(self, key, value)
         if not key in self._keys:
             self._keys.append(key)
@@ -273,30 +266,30 @@ class Media(object):
             if value is None:
                 continue
             if key == 'image':
-                if isinstance(value, unicode):
-                    setattr(self, key, kaa.unicode_to_str(value))
+                if isinstance(value, str):
+                    setattr(self, key, utils.tobytes(value))
                 continue
             if isinstance(value, str):
-                setattr(self, key, kaa.str_to_unicode(value))
-            if isinstance(value, unicode):
-                setattr(self, key, value.strip().rstrip().replace(u'\0', u''))
+                setattr(self, key, utils.tostr(value))
+            if isinstance(value, str):
+                setattr(self, key, value.strip().rstrip().replace('\0', ''))
             if isinstance(value, list) and value and isinstance(value[0], Media):
                 for submenu in value:
                     submenu._finalize()
 
         # copy needed tags from tables
-        for name, table in self.tables.items():
+        for name, table in list(self.tables.items()):
             mapping = self.table_mapping.get(name, {})
-            for tag, attr in mapping.items():
+            for tag, attr in list(mapping.items()):
                 if self.get(attr):
                     continue
                 value = table.get(tag, None)
                 if value is not None:
-                    if not isinstance(value, (str, unicode)):
-                        value = kaa.str_to_unicode(str(value))
+                    if not isinstance(value, str):
+                        value = utils.tostr(str(value))
                     elif isinstance(value, str):
-                        value = kaa.str_to_unicode(value)
-                    value = value.strip().rstrip().replace(u'\0', u'')
+                        value = utils.tostr(value)
+                    value = value.strip().rstrip().replace('\0', '')
                     setattr(self, attr, value)
 
         if 'fourcc' in self._keys and 'codec' in self._keys and self.codec is not None:
@@ -392,7 +385,7 @@ class Tag(object):
         self.binary = binary
 
     def __unicode__(self):
-        return unicode(self.value)
+        return str(self.value)
 
     def __str__(self):
         return str(self.value)

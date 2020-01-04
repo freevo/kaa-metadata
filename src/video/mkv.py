@@ -37,7 +37,7 @@ import re
 from datetime import datetime
 
 # import kaa.metadata.video core
-import core
+from . import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -149,20 +149,20 @@ FOURCCMap = {
     'A_AAC/': 0x00ff
 }
 
-stereo_map = { 
+stereo_map = {
     1: 'side by side (left eye is first)',
     2: 'top-bottom (right eye is first)',
     3: 'top-bottom (left eye is first)',
-    4: 'checkboard (right is first)', 
-    5: 'checkboard (left is first)', 
+    4: 'checkboard (right is first)',
+    5: 'checkboard (left is first)',
     6: 'row interleaved (right is first)',
-    7: 'row interleaved (left is first)', 
-    8: 'column interleaved (right is first)', 
-    9: 'column interleaved (left is first)', 
-    10: 'anaglyph (cyan/red)', 
-    11: 'side by side (right eye is first)', 
-    12: 'anaglyph (green/magenta)', 
-    13: 'both eyes laced in one Block (left eye is first)', 
+    7: 'row interleaved (left is first)',
+    8: 'column interleaved (right is first)',
+    9: 'column interleaved (left is first)',
+    10: 'anaglyph (cyan/red)',
+    11: 'side by side (right eye is first)',
+    12: 'anaglyph (green/magenta)',
+    13: 'both eyes laced in one Block (left eye is first)',
     14: 'both eyes laced in one Block (right eye is first)'
 }
 
@@ -175,7 +175,7 @@ def matroska_date_to_datetime(date):
     #   The fields with dates should have the following format: YYYY-MM-DD
     #   HH:MM:SS.MSS [...] To store less accuracy, you remove items starting
     #   from the right. To store only the year, you would use, "2004". To store
-    #   a specific day such as May 1st, 2003, you would use "2003-05-01". 
+    #   a specific day such as May 1st, 2003, you would use "2003-05-01".
     format = re.split(r'([-:. ])', '%Y-%m-%d %H:%M:%S.%f')
     while format:
         try:
@@ -189,7 +189,7 @@ def matroska_bps_to_bitrate(bps):
     """
     Tries to convert a free-form bps string into a bitrate (bits per second).
     """
-    m = re.search('([\d.]+)\s*(\D.*)', bps)
+    m = re.search(r'([\d.]+)\s*(\D.*)', bps)
     if m:
         bps, suffix = m.groups()
         if 'kbit' in suffix:
@@ -211,33 +211,33 @@ def matroska_bps_to_bitrate(bps):
 # attributes.  tag name -> attr, filter
 TAGS_MAP = {
     # From Media core
-    u'album': ('album', None),
-    u'title': ('title', None),
-    u'subtitle': ('caption', None),
-    u'comment': ('comment', None),
-    u'comments': ('comment', None),
-    u'url': ('url', None),
-    u'artist': ('artist', None),
-    u'keywords': ('keywords', lambda s: [word.strip() for word in s.split(',')]),
-    u'composer_nationality': ('country', None),
-    u'date_released': ('datetime', None),
-    u'date_recorded': ('datetime', None),
-    u'date_written': ('datetime', None),
+    'album': ('album', None),
+    'title': ('title', None),
+    'subtitle': ('caption', None),
+    'comment': ('comment', None),
+    'comments': ('comment', None),
+    'url': ('url', None),
+    'artist': ('artist', None),
+    'keywords': ('keywords', lambda s: [word.strip() for word in s.split(',')]),
+    'composer_nationality': ('country', None),
+    'date_released': ('datetime', None),
+    'date_recorded': ('datetime', None),
+    'date_written': ('datetime', None),
 
     # From Video core
-    u'encoder': ('encoder', None),
-    u'bps': ('bitrate', matroska_bps_to_bitrate),
-    u'part_number': ('trackno', int),
-    u'total_parts': ('trackof', int),
-    u'copyright': ('copyright', None),
-    u'genre': ('genre', None),
-    u'actor': ('actors', None),
-    u'written_by': ('writer', None),
-    u'producer': ('producer', None),
-    u'production_studio': ('studio', None),
-    u'law_rating': ('rating', None),
-    u'summary': ('summary', None),
-    u'synopsis': ('synopsis', None),
+    'encoder': ('encoder', None),
+    'bps': ('bitrate', matroska_bps_to_bitrate),
+    'part_number': ('trackno', int),
+    'total_parts': ('trackof', int),
+    'copyright': ('copyright', None),
+    'genre': ('genre', None),
+    'actor': ('actors', None),
+    'written_by': ('writer', None),
+    'producer': ('producer', None),
+    'production_studio': ('studio', None),
+    'law_rating': ('rating', None),
+    'summary': ('summary', None),
+    'synopsis': ('synopsis', None),
 }
 
 
@@ -275,8 +275,8 @@ class EbmlEntity:
         # if the data size is 8 or less, it could be a numeric value
         self.value = 0
         if self.entity_len <= 8:
-            for pos, shift in zip(range(self.entity_len), range((self.entity_len-1)*8, -1, -8)):
-                self.value |= ord(self.entity_data[pos]) << shift
+            for pos, shift in zip(list(range(self.entity_len)), list(range((self.entity_len-1)*8, -1, -8))):
+                self.value |= self.entity_data[pos] << shift
 
 
     def add_data(self, data):
@@ -291,7 +291,7 @@ class EbmlEntity:
         self.id_len = 0
         if len(inbuf) < 1:
             return 0
-        first = ord(inbuf[0])
+        first = inbuf[0]
         if first & 0x80:
             self.id_len = 1
             self.entity_id = first
@@ -299,19 +299,17 @@ class EbmlEntity:
             if len(inbuf) < 2:
                 return 0
             self.id_len = 2
-            self.entity_id = ord(inbuf[0])<<8 | ord(inbuf[1])
+            self.entity_id = inbuf[0]<<8 | inbuf[1]
         elif first & 0x20:
             if len(inbuf) < 3:
                 return 0
             self.id_len = 3
-            self.entity_id = (ord(inbuf[0])<<16) | (ord(inbuf[1])<<8) | \
-                             (ord(inbuf[2]))
+            self.entity_id = (inbuf[0]<<16) | (inbuf[1]<<8) | inbuf[2]
         elif first & 0x10:
             if len(inbuf) < 4:
                 return 0
             self.id_len = 4
-            self.entity_id = (ord(inbuf[0])<<24) | (ord(inbuf[1])<<16) | \
-                             (ord(inbuf[2])<<8) | (ord(inbuf[3]))
+            self.entity_id = (inbuf[0]<<24) | (inbuf[1]<<16) | (inbuf[2]<<8) | inbuf[3]
         self.entity_str = inbuf[0:self.id_len]
 
 
@@ -320,7 +318,7 @@ class EbmlEntity:
             return 0, 0
         i = num_ffs = 0
         len_mask = 0x80
-        len = ord(inbuf[0])
+        len = inbuf[0]
         while not len & len_mask:
             i += 1
             len_mask >>= 1
@@ -331,7 +329,7 @@ class EbmlEntity:
         if len == len_mask - 1:
             num_ffs += 1
         for p in range(i):
-            len = (len << 8) | ord(inbuf[p + 1])
+            len = (len << 8) | inbuf[p + 1]
             if len & 0xff == 0xff:
                 num_ffs += 1
         if num_ffs == i + 1:
@@ -361,11 +359,11 @@ class EbmlEntity:
 
     def get_utf8(self):
         # EBML RFC says "A string MAY be zero padded at the end."
-        return unicode(self.entity_data.rstrip('\x00'), 'utf-8', 'replace')
+        return str(self.entity_data.rstrip(b'\x00'), 'utf-8', 'replace')
 
 
     def get_str(self):
-        return unicode(self.entity_data.rstrip('\x00'), 'ascii', 'replace')
+        return str(self.entity_data.rstrip(b'\x00'), 'ascii', 'replace')
 
 
     def get_id(self):
@@ -401,9 +399,11 @@ class Matroska(core.AVContainer):
         self.samplerate = 1
 
         self.file = file
-        # Read enough that we're likely to get the full seekhead (FIXME: kludge)
-        buffer = file.read(2000)
-        if len(buffer) == 0:
+        # Read enough that we're likely to get the full seekhead and elements after
+        # the seekhead (but before clusters) in case the file is truncated.
+        # (FIXME: kludge.)
+        buffer = file.read(100000)
+        if not buffer:
             # Regular File end
             raise core.ParseError()
 
@@ -417,6 +417,7 @@ class Matroska(core.AVContainer):
         self.type = 'Matroska'
         self.has_idx = False
         self.objects_by_uid = {}
+        self._in_seekhead = False
 
         # Now get the segment
         self.segment = segment = EbmlEntity(buffer[header.get_total_len():])
@@ -425,12 +426,40 @@ class Matroska(core.AVContainer):
         if segment.get_id() != MATROSKA_SEGMENT_ID:
             log.debug("SEGMENT ID not found %08X" % segment.get_id())
             return
-
         log.debug("SEGMENT ID found %08X" % segment.get_id())
+
+        # The parsing strategy for mkv is to first process the seekhead (which is
+        # at the top of the file), which points to all top-level elements we're
+        # interested in parsing.  Seekhead parsing is more robust as it seeks
+        # across the file as needed and reads all data.  If this succeeds, then
+        # we stop processing everything else in the segment as we're done.
+        #
+        # If the seekhead parsing fails, this is usually because the file is
+        # incomplete/corrupt.  In this case, we clear out anything that might
+        # have been processed from the seekhead and continue on with the
+        # other elements in the segment that might be in our pre-read buffer.
         try:
             for elem in self.process_one_level(segment):
-                if elem.get_id() == MATROSKA_SEEKHEAD_ID:
+                log.debug("Segment level id: %x", elem.get_id())
+                try:
                     self.process_elem(elem)
+                    if elem.get_id() == MATROSKA_SEEKHEAD_ID:
+                        # Seekhead was successfully processed so we're done.
+                        break
+                except core.ParseError:
+                    if elem.get_id() == MATROSKA_SEEKHEAD_ID:
+                        # We couldn't finish processing the seekhead.  Clear
+                        # out all metadata and keep processing the segment.
+                        log.debug("Failed to process seekhead, continuing with segment")
+                        del self.audio[:]
+                        del self.video[:]
+                        del self.subtitles[:]
+                        del self.chapters[:]
+                        self.objects_by_uid.clear()
+                        continue
+                    else:
+                        # Some other error, stop processing.
+                        break
         except core.ParseError:
             pass
 
@@ -440,7 +469,7 @@ class Matroska(core.AVContainer):
 
     def process_elem(self, elem):
         elem_id = elem.get_id()
-        log.debug('BEGIN: process element %s' % hex(elem_id))
+        log.debug('BEGIN: process element %x size %d', elem_id, elem.entity_len)
         if elem_id == MATROSKA_SEGMENT_INFO_ID:
             duration = 0
             scalecode = 1000000.0
@@ -478,31 +507,27 @@ class Matroska(core.AVContainer):
         elif elem_id == MATROSKA_CUES_ID:
             self.has_idx = True
 
-        log.debug('END: process element %s' % hex(elem_id))
+        log.debug('END: process element %x', elem_id)
         return True
 
 
     def process_seekhead(self, elem):
+        if self._in_seekhead:
+            return log.debug('skipping recursive seekhead processing')
+        self._in_seekhead = True
         for seek_elem in self.process_one_level(elem):
             if seek_elem.get_id() != MATROSKA_SEEK_ID:
                 continue
             for sub_elem in self.process_one_level(seek_elem):
-                if sub_elem.get_id() == MATROSKA_SEEKID_ID:
-                    if sub_elem.get_value() == MATROSKA_CLUSTER_ID:
-                        # Not interested in these.
-                        return
-
-                elif sub_elem.get_id() == MATROSKA_SEEK_POSITION_ID:
+                if sub_elem.get_id() == MATROSKA_SEEK_POSITION_ID:
                     self.file.seek(self.segment.offset + sub_elem.get_value())
                     buffer = self.file.read(100)
-                    try:
-                        elem = EbmlEntity(buffer)
-                    except core.ParseError:
-                        continue
-
+                    elem = EbmlEntity(buffer)
                     # Fetch all data necessary for this element.
-                    elem.add_data(self.file.read(elem.ebml_length))
+                    if elem.ebml_length > 100:
+                        elem.add_data(self.file.read(elem.ebml_length - 100))
                     self.process_elem(elem)
+        self._in_seekhead = False
 
 
     def process_tracks(self, tracks):
@@ -510,7 +535,6 @@ class Matroska(core.AVContainer):
         index = 0
         while index < tracks.get_len():
             trackelem = EbmlEntity(tracksbuf[index:])
-            log.debug ("ELEMENT %X found" % trackelem.get_id())
             self.process_track(trackelem)
             index += trackelem.get_total_len() + trackelem.get_crc_len()
 
@@ -577,7 +601,7 @@ class Matroska(core.AVContainer):
     def process_video_track(self, elements):
         track = core.VideoStream()
         # Defaults
-        track.codec = u'Unknown'
+        track.codec = 'Unknown'
         track.fps = 0
 
         for elem in elements:
@@ -639,7 +663,7 @@ class Matroska(core.AVContainer):
 
     def process_audio_track(self, elements):
         track = core.AudioStream()
-        track.codec = u'Unknown'
+        track.codec = 'Unknown'
 
         for elem in elements:
             elem_id = elem.get_id()
@@ -719,7 +743,8 @@ class Matroska(core.AVContainer):
 
     def process_attachment(self, attachment):
         elements = self.process_one_level(attachment)
-        name = desc = mimetype = ""
+        name = desc = ''
+        mimetype = b''
         data = None
 
         for elem in elements:
@@ -735,7 +760,7 @@ class Matroska(core.AVContainer):
 
         # Right now we only support attachments that could be cover images.
         # Make a guess to see if this attachment is a cover image.
-        if mimetype.startswith("image/") and u"cover" in (name+desc).lower() and data:
+        if mimetype.startswith(b"image/") and "cover" in (name+desc).lower() and data:
             self.thumbnail = data
 
         log.debug('Attachment "%s" found' % name)
@@ -831,7 +856,7 @@ class Matroska(core.AVContainer):
 
     def tags_to_attributes(self, obj, tags):
         # Convert tags to core attributes.
-        for name, tag in tags.items():
+        for name, tag in list(tags.items()):
             if isinstance(tag, dict):
                 # Nested tags dict, recurse.
                 self.tags_to_attributes(obj, tag)
@@ -845,12 +870,15 @@ class Matroska(core.AVContainer):
                 # so skip.
                 continue
 
-            # Pull value out of Tag object or list of Tag objects.
-            value = [item.value for item in tag] if isinstance(tag, list) else tag.value
+            # Pull value out of Tag object or list of Tag objects.  We expect scalar values
+            # so in the case of lists (because there was more than one tag of the same name)
+            # just pick the first.
+            value = tag[0].value if isinstance(tag, list) else tag.value
+
             if filter:
                 try:
-                    value = [filter(item) for item in value] if isinstance(value, list) else filter(value)
-                except Exception, e:
+                    value = filter(value)
+                except Exception as e:
                     log.warning('Failed to convert tag to core attribute: %s', e)
             # Special handling for tv series recordings. The 'title' tag
             # can be used for both the series and the episode name. The

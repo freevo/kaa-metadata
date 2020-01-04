@@ -36,7 +36,7 @@ import struct
 import logging
 
 # import kaa.metadata.image core
-import core
+from . import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -58,7 +58,7 @@ class GIF(core.Image):
 
         gifType, self.width, self.height = header
 
-        if not gifType.startswith('GIF'):
+        if not gifType.startswith(b'GIF'):
             raise core.ParseError()
 
         self.type = gifType.lower()

@@ -39,11 +39,11 @@ import logging
 import glob
 
 # kaa.metadata imports
-import kaa.metadata.video.core as video
-import kaa.metadata.audio.core as audio
+from ..video import core as video
+from ..audio import core as audio
 
 # kaa.metadata.disc imports
-import core
+from . import core
 try:
     import _ifoparser
 except ImportError:
@@ -119,7 +119,7 @@ class DVDInfo(core.Disc):
         core.Disc.__init__(self)
         self.offset = 0
 
-        if isinstance(device, file):
+        if hasattr(device, 'read'):
             self.parseDVDiso(device)
         elif os.path.isdir(device):
             self.parseDVDdir(device)
@@ -182,7 +182,7 @@ class DVDInfo(core.Disc):
         f.seek(32768, 0)
         buffer = f.read(60000)
 
-        if buffer.find('UDF') == -1:
+        if buffer.find(b'UDF') == -1:
             f.close()
             raise core.ParseError()
 
@@ -190,9 +190,9 @@ class DVDInfo(core.Disc):
         buffer += f.read(550000)
         f.close()
 
-        if buffer.find('VIDEO_TS') == -1 and \
-               buffer.find('VIDEO_TS.IFO') == -1 and \
-               buffer.find('OSTA UDF Compliant') == -1:
+        if buffer.find(b'VIDEO_TS') == -1 and \
+               buffer.find(b'VIDEO_TS.IFO') == -1 and \
+               buffer.find(b'OSTA UDF Compliant') == -1:
             raise core.ParseError()
 
         # OK, try libdvdread
@@ -204,15 +204,15 @@ class DVDInfo(core.Disc):
         f.seek(32768, 0)
         buffer = f.read(60000)
 
-        if buffer.find('UDF') == -1:
+        if buffer.find(b'UDF') == -1:
             raise core.ParseError()
 
         # seems to be a DVD, read a little bit more
         buffer += f.read(550000)
 
-        if buffer.find('VIDEO_TS') == -1 and \
-               buffer.find('VIDEO_TS.IFO') == -1 and \
-               buffer.find('OSTA UDF Compliant') == -1:
+        if buffer.find(b'VIDEO_TS') == -1 and \
+               buffer.find(b'VIDEO_TS.IFO') == -1 and \
+               buffer.find(b'OSTA UDF Compliant') == -1:
             raise core.ParseError()
 
         # OK, try libdvdread

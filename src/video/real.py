@@ -36,7 +36,7 @@ import struct
 import logging
 
 # import kaa.metadata.video core
-import core
+from . import core
 
 # http://www.pcisys.net/~melanson/codecs/rmff.htm
 # http://www.pcisys.net/~melanson/codecs/

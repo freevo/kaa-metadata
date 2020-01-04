@@ -35,7 +35,7 @@ __all__ = ['Parser']
 import os
 
 # import kaa.metadata.video core
-import core
+from . import core
 
 class VCDFile(core.Collection):
     """

@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # -----------------------------------------------------------------------------
-# mp3.py - mp3 file parser using eyeD3
+# mp3.py - mp3 file parser
 # -----------------------------------------------------------------------------
 # $Id$
 #
@@ -34,17 +34,18 @@ __all__ = ['Parser']
 # python imports
 import re
 import sys
+import os
 import logging
 import struct
 
 # import kaa.metadata.audio core
-from kaa.strutils import py3_str
-import core
-import ID3 as ID3
+from ..utils import tostr
+from . import core
+from . import ID3 as ID3
 
-# eyeD3 imports
-from eyeD3 import tag as eyeD3_tag
-from eyeD3 import frames as eyeD3_frames
+# stagger imports
+sys.path.insert(0, os.path.dirname(__file__))
+from . import stagger
 
 
 # get logging object
@@ -72,28 +73,28 @@ MP3_INFO_TABLE = { "LINK": "link",
 # This maps ID3 frames to tag names (as per the Matroska Tags specification)
 # to support the new core Tags API.  tag name -> attr, filter
 ID3_TAGS_MAP = {
-    'COMM': (u'comment', py3_str),
-    'TALB': (u'album', py3_str),
-    'TYER': (u'date_recorded', None),
-    'TDRC': (u'date_recorded', None),
-    'TDRL': (u'date_released', None),
-    'TDEN': (u'date_encoded', None),
-    'TENC': (u'encoded_by', py3_str),
-    'TMOO': (u'mood', py3_str),
-    'WXXX': (u'url', py3_str),
-    'TIT2': (u'title', py3_str),
-    'TOPE': (u'artist', py3_str),
-    'TCOM': (u'composer', py3_str),
-    'TEXT': (u'lyricist', py3_str),
-    'TPE1': (u'lead_performer', py3_str),
-    'TPE2': (u'accompaniment', py3_str),
-    'TPE3': (u'conductor', py3_str),
-    'TRCK': (u'part_number', int),
-    'TPOS': (u'total_parts', int),
-    'TCOP': (u'copyright', py3_str),
-    'TPUB': (u'publisher', py3_str),
+    'COMM': ('comment', tostr),
+    'TALB': ('album', tostr),
+    'TYER': ('date_recorded', None),
+    'TDRC': ('date_recorded', None),
+    'TDRL': ('date_released', None),
+    'TDEN': ('date_encoded', None),
+    'TENC': ('encoded_by', tostr),
+    'TMOO': ('mood', tostr),
+    'WXXX': ('url', tostr),
+    'TIT2': ('title', tostr),
+    'TOPE': ('artist', tostr),
+    'TCOM': ('composer', tostr),
+    'TEXT': ('lyricist', tostr),
+    'TPE1': ('lead_performer', tostr),
+    'TPE2': ('accompaniment', tostr),
+    'TPE3': ('conductor', tostr),
+    'TRCK': ('part_number', int),
+    'TPOS': ('total_parts', int),
+    'TCOP': ('copyright', tostr),
+    'TPUB': ('publisher', tostr),
     # Treated specially
-    #'TCON': (u'genre', py3_str),
+    #'TCON': (u'genre', tostr),
 }
 
 _bitrates = [
@@ -126,26 +127,25 @@ class MP3(core.Music):
     fileName       = str()
     fileSize       = int()
 
-    def __init__(self, file, tagVersion = eyeD3_tag.ID3_ANY_VERSION):
+    def __init__(self, file):
         core.Music.__init__(self)
         self.fileName = file.name
         self.codec = 0x0055 # fourcc code of mp3
         self.mime = 'audio/mpeg'
 
-        #if not eyeD3_tag.isMp3File(file.name):
-        #   raise core.ParseError()
-
         id3 = None
         try:
-            id3 = eyeD3_tag.Mp3AudioFile(file.name)
-        except eyeD3_tag.InvalidAudioFormatException:
+            id3 = stagger.read_tag(file.name)
+        except stagger.NoTagError:
             # File is not an MP3
             raise core.ParseError()
-        except eyeD3_tag.TagException:
+        #except eyeD3_tag.TagException:
+        except stagger.TagError:
             # The MP3 tag decoder crashed, assume the file is still
             # MP3 and try to play it anyway
             if log.level < 30:
                 log.exception('mp3 tag parsing %s failed!' % file.name)
+            log.exception('mp3 tag parsing %s failed!' % file.name)
         except Exception:
             # The MP3 tag decoder crashed, assume the file is still
             # MP3 and try to play it anyway
@@ -155,89 +155,76 @@ class MP3(core.Music):
         if not id3:
             # let's take a look at the header
             s = file.read(4096)
-            if not s[:3] == 'ID3':
+            if not s[:3] == b'ID3':
                 # no id3 tag header, not good
-                if not re.compile(r'0*\xFF\xFB\xB0\x04$').search(s):
+                if not re.compile(rb'0*\xFF\xFB\xB0\x04$').search(s):
                     # again, not good
-                    if not re.compile(r'0*\xFF\xFA\xB0\x04$').search(s):
+                    if not re.compile(rb'0*\xFF\xFA\xB0\x04$').search(s):
                         # that's it, it is no mp3 at all
                         raise core.ParseError()
 
         try:
-            if id3 and id3.tag:
+            if id3:
                 self.tags = core.Tags()
-                log.debug(id3.tag.frames)
+                log.debug(id3.frames())
 
                 # Grip unicode bug workaround: Grip stores text data as UTF-8
                 # and flags it as latin-1.  This workaround tries to decode
                 # these strings as utf-8 instead.
                 # http://sourceforge.net/tracker/index.php?func=detail&aid=1196919&group_id=3714&atid=103714
-                for frame in id3.tag.frames['COMM']:
-                    if "created by grip" not in frame.comment.lower():
-                        continue
-                    for frame in id3.tag.frames:
-                        if hasattr(frame, "text") and isinstance(frame.text, unicode):
-                            try:
-                                frame.text = frame.text.encode('latin-1').decode('utf-8')
-                            except UnicodeError:
-                                pass
+                if 'COMM' in id3:
+                    for frame in id3.frames('COMM'):
+                        if "created by grip" not in frame.text.lower():
+                            continue
+                        for frame in id3.frames():
+                            if hasattr(frame, "text") and isinstance(frame.text, str):
+                                try:
+                                    frame.text = [t.encode('latin-1').decode('utf-8') for t in frame.text]
+                                except UnicodeError:
+                                    pass
+                        break
 
-                for k, var in MP3_INFO_TABLE.items():
-                    if id3.tag.frames[k]:
-                        self._set(var,id3.tag.frames[k][0].text)
-                if id3.tag.frames['APIC']:
-                    pic = id3.tag.frames['APIC'][0]
-                    if pic.imageData:
-                        self.thumbnail = pic.imageData
-                if id3.tag.getYear():
-                    self.userdate = id3.tag.getYear()
+                for k, var in list(MP3_INFO_TABLE.items()):
+                    if k in id3:
+                        self._set(var,''.join(id3.frames(k)[0].text))
+                if 'APIC' in id3:
+                    pic = id3.frames('APIC')[0]
+                    if pic.data:
+                        self.thumbnail = pic.data
+                if id3.date:
+                    self.userdate = id3.date
                 tab = {}
-                for f in id3.tag.frames:
+                for f in id3.frames():
                     tag = core.Tag()
-                    if f.__class__ is eyeD3_frames.TextFrame:
-                        tab[f.header.id] = f.text
-                        tag.value = f.text
-                    elif f.__class__ is eyeD3_frames.UserTextFrame:
-                        #userTextFrames : debug: id  starts with _
-                        self._set('_'+f.description,f.text)
-                        tab['_'+f.description] = f.text
-                        tag.value = f.text
-                    elif f.__class__ is eyeD3_frames.DateFrame:
-                        tab[f.header.id] = f.date_str
-                        tag.value = f.date_str
-                    elif f.__class__ is eyeD3_frames.CommentFrame:
-                        tab[f.header.id] = f.comment
-                        self.comment = py3_str(f.comment)
-                        tag.value = f.comment
-                    elif f.__class__ is eyeD3_frames.URLFrame:
-                        tab[f.header.id] = f.url
+                    if isinstance(f, stagger.Frame) and hasattr(f, 'text'):
+                        text = ''.join(f.text)
+                        tab[f.frameid] = text
+                        tag.value = text
+                    elif isinstance(f, stagger.URLFrame):
+                        tab[f.frameid] = f.url
                         tag.value = f.url
-                    elif f.__class__ is eyeD3_frames.UserURLFrame:
-                        tab[f.header.id] = f.url
-                        tag.value = f.url
-                    elif f.__class__ is eyeD3_frames.ImageFrame:
-                        tab[f.header.id] = f
-                        if f.imageData:
+                    elif isinstance(f, stagger.PictureFrame):
+                        tab[f.frameid] = f
+                        if f.data:
                             tag.binary = True
-                            tag.value = f.imageData
+                            tag.value = f.data
                     else:
                         log.debug(f.__class__)
 
-                    if f.header.id in ID3_TAGS_MAP and tag.value:
-                        tagname, filter = ID3_TAGS_MAP[f.header.id]
+                    if f.frameid in ID3_TAGS_MAP and tag.value:
+                        tagname, filter = ID3_TAGS_MAP[f.frameid]
                         try:
                             if filter:
                                 tag.value = filter(tag.value)
-                        except Exception, e:
-                            if f.header.id != 'TRCK':
-                                log.warning('skipping tag %s: %s', tagname, e)
+                        except Exception as e:
+                            log.warning('skipping tag %s: %s', tagname, e)
                         else:
                             self.tags[tagname] = tag
                 self._appendtable('id3v2', tab)
 
-                if id3.tag.frames['TCON']:
+                if id3.frames('TCON'):
                     genre = None
-                    tcon = id3.tag.frames['TCON'][0].text
+                    tcon = ''.join(id3.frames('TCON')[0].text)
                     # TODO: could handle id3v2 genre refinements.
                     try:
                         # Assume integer.
@@ -248,7 +235,7 @@ class MP3(core.Music):
                             genre = int(tcon[1:tcon.find(')')])
                         except ValueError:
                             # Nope.  Treat as a string.
-                            self.genre = py3_str(tcon)
+                            self.genre = tostr(tcon)
 
                     if genre is not None:
                         try:
@@ -256,17 +243,17 @@ class MP3(core.Music):
                         except KeyError:
                             # Numeric genre specified but not one of the known genres,
                             # use 'Unknown' as per ID3v1.
-                            self.genre = u'Unknown'
+                            self.genre = 'Unknown'
 
-                    self.tags[u'genre'] = core.Tag(self.genre)
+                    self.tags['genre'] = core.Tag(self.genre)
 
                 # and some tools store it as trackno/trackof in TRCK
                 if not self.trackof and self.trackno and \
                        self.trackno.find('/') > 0:
                     self.trackof = self.trackno[self.trackno.find('/')+1:]
                     self.trackno = self.trackno[:self.trackno.find('/')]
-            if id3:
-                self.length = id3.getPlayTime()
+           #if id3:
+           #     self.length = id3.getPlayTime()
         except Exception:
             if log.level < 30:
                 log.exception('parse error')
@@ -277,10 +264,10 @@ class MP3(core.Music):
 
         self._parse_header(header)
 
-        if id3:
-            # Note: information about variable bitrate or not should
-            # be handled somehow.
-            (vbr, self.bitrate) = id3.getBitRate()
+        #if id3:
+        #    # Note: information about variable bitrate or not should
+        #    # be handled somehow.
+        #    (vbr, self.bitrate) = id3.getBitRate()
 
     def _find_header(self, file):
         file.seek(0, 0)
@@ -301,7 +288,7 @@ class MP3(core.Music):
             amt = 500
 
             # look for the sync byte
-            offset = header.find(chr(255))
+            offset = header.find(bytes([255]))
             if offset == -1:
                 continue
 
@@ -317,7 +304,7 @@ class MP3(core.Music):
 
             # the sync flag is also in the next byte, the first 3 bits
             # must also be set
-            if ord(header[offset+1]) >> 5 != 7:
+            if header[offset+1] >> 5 != 7:
                 continue
 
             # ok, that's it, looks like we have the header

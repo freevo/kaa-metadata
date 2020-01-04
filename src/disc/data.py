@@ -32,7 +32,7 @@
 __all__ = ['Parser']
 
 # kaa.metadata.disc imports
-import core
+from . import core
 
 class DataDisc(core.Disc):
     def __init__(self,device):

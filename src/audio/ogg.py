@@ -41,10 +41,10 @@ import base64
 try:
     from io import BytesIO
 except ImportError:
-    from cStringIO import StringIO as BytesIO
+    from io import StringIO as BytesIO
 
 # import kaa.metadata.audio core
-import core
+from . import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -53,13 +53,13 @@ VORBIS_PACKET_INFO = '\01vorbis'
 VORBIS_PACKET_HEADER = '\03vorbis'
 VORBIS_PACKET_SETUP = '\05vorbis'
 FIELD_MAP = {
-    u'TITLE': 'title',
-    u'ALBUM': 'album',
-    u'ARTIST': 'artist',
-    u'COMMENT': 'comment',
-    u'DATE': 'userdate',
-    u'ENCODER': 'encoder',
-    u'TRACKNUMBER': 'tracknumber'
+    'TITLE': 'title',
+    'ALBUM': 'album',
+    'ARTIST': 'artist',
+    'COMMENT': 'comment',
+    'DATE': 'userdate',
+    'ENCODER': 'encoder',
+    'TRACKNUMBER': 'tracknumber'
 }
 
 class Ogg(core.Music):
@@ -112,7 +112,7 @@ class Ogg(core.Music):
             header[(a[0]).upper()]=a[1]
 
         # Put Header fields into info fields
-        for field, attr in FIELD_MAP.items():
+        for field, attr in list(FIELD_MAP.items()):
             if field in header:
                 setattr(self, attr, header[field])
 

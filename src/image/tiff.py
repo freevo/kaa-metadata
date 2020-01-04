@@ -36,8 +36,8 @@ import struct
 import logging
 
 # import kaa.metadata.image core
-import core
-import IPTC
+from . import core
+from . import IPTC
 
 # get logging object
 log = logging.getLogger('metadata')

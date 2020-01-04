@@ -33,7 +33,7 @@
 import sys
 
 # kaa imports
-from kaa.metadata.core import ParseError, Media, Tags, Tag, MEDIA_AUDIO
+from ..core import ParseError, Media, Tags, Tag, MEDIA_AUDIO
 
 AUDIOCORE = ['channels', 'samplerate', 'length', 'encoder', 'codec', 'format',
              'samplebits', 'bitrate', 'fourcc', 'trackno', 'id', 'userdate',
@@ -65,6 +65,6 @@ class Music(Audio):
             try:
                 # XXX Why is this needed anyway?
                 if int(self.trackno) < 10:
-                    self.trackno = u'0%s' % int(self.trackno)
+                    self.trackno = '0%s' % int(self.trackno)
             except (AttributeError, ValueError):
                 pass

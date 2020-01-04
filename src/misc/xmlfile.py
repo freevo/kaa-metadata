@@ -37,8 +37,7 @@ import sys
 import logging
 import xml.sax
 
-# kaa.metadata imports
-import kaa.metadata.core as core
+from .. import core
 
 # get logging object
 log = logging.getLogger('metadata')

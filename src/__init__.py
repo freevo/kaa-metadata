@@ -30,11 +30,9 @@
 # -----------------------------------------------------------------------------
 
 # import factory code for kaa.metadata access
-from factory import *
-from version import VERSION
-import disc.cdrom as cdrom
+from .factory import *
 
-from core import Media, MEDIA_AUDIO, MEDIA_VIDEO, MEDIA_IMAGE, MEDIA_AV, \
+from .core import Media, MEDIA_AUDIO, MEDIA_VIDEO, MEDIA_IMAGE, MEDIA_AV, \
      MEDIA_SUBTITLE, MEDIA_CHAPTER, MEDIA_DIRECTORY, MEDIA_DISC, MEDIA_GAME, \
      EXTENSION_STREAM, EXTENSION_DEVICE, EXTENSION_DIRECTORY, \
      enable_feature, features

@@ -36,7 +36,7 @@ import logging
 import xml.sax
 
 # kaa.metadata imports
-from kaa.metadata.core import ParseError, Media, MEDIA_IMAGE
+from ..core import ParseError, Media, MEDIA_IMAGE
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -59,11 +59,11 @@ class BinsParser(xml.sax.ContentHandler):
             parser.parse(filename)
         except ParseError:
             pass
-        except Exception, e:
+        except Exception as e:
             log.exception('bins parser')
 
     def items(self):
-        return self.dict.items()
+        return list(self.dict.items())
 
     def startElement(self, name, attr):
         if self.mode == 0:
@@ -115,7 +115,7 @@ class Image(Media):
         binsxml = filename + '.xml'
         if os.path.isfile(binsxml):
             bins = BinsParser(binsxml)
-            for key, value in bins.items():
+            for key, value in list(bins.items()):
                 self._set(key, value)
         # FIXME: this doesn't work anymore
         comment_file = os.path.join(os.path.dirname(filename), '.comments',

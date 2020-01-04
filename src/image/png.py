@@ -36,11 +36,8 @@ import struct
 import zlib
 import logging
 
-# kaa imports
-import kaa
-
-# import kaa.metadata.image core
-import core
+from .. import utils
+from . import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -67,9 +64,9 @@ class PNG(core.Image):
         self.meta = {}
         while self._readChunk(file):
             pass
-        if len(self.meta.keys()):
+        if len(list(self.meta.keys())):
             self._appendtable( 'PNGMETA', self.meta )
-        for key, value in self.meta.items():
+        for key, value in list(self.meta.items()):
             if key.startswith('Thumb:') or key == 'Software':
                 self._set(key, value)
 
@@ -93,7 +90,7 @@ class PNG(core.Image):
             log.debug('latin-1 Text found.')
             (data, crc) = struct.unpack('>%isI' % length,file.read(length+4))
             (key, value) = data.split('\0')
-            self.meta[key] = kaa.str_to_unicode(value)
+            self.meta[key] = utils.tostr(value)
 
         elif type == 'zTXt':
             log.debug('Compressed Text found.')
@@ -109,13 +106,13 @@ class PNG(core.Image):
                           (key,compression,decompressed))
             else:
                 log.debug("%s has unknown Compression %c" % (key,compression))
-            self.meta[key] = kaa.str_to_unicode(value)
+            self.meta[key] = utils.tostr(value)
 
         elif type == 'iTXt':
             log.debug('International Text found.')
             (data,crc) = struct.unpack('>%isI' % length,file.read(length+4))
             (key, value) = data.split('\0')
-            self.meta[key] = kaa.str_to_unicode(value)
+            self.meta[key] = utils.tostr(value)
 
         else:
             file.seek(length+4,1)

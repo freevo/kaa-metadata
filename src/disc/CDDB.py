@@ -11,12 +11,12 @@
 # Fixes for kaa.metadata: unicode support, marked in the source code
 # with the kaa.metadata keyword
 
-import urllib, string, socket, os, re
+import urllib.request, urllib.parse, urllib.error, string, socket, os, re
 
 name = 'CDDB.py'
 version = 1.3
 
-if os.environ.has_key('EMAIL'):
+if 'EMAIL' in os.environ:
     (default_user, hostname) = string.split(os.environ['EMAIL'], '@')
 else:
     default_user = os.geteuid() or os.environ['USER'] or 'user'
@@ -38,17 +38,17 @@ def query(track_info, server_url=default_server,
     for i in track_info[2:]:
 	query_str = query_str + ('%d ' % i)
 	
-    query_str = urllib.quote_plus(string.rstrip(query_str))
+    query_str = urllib.parse.quote_plus(string.rstrip(query_str))
 
     url = "%s?cmd=cddb+query+%s&hello=%s+%s+%s+%s&proto=%i" % \
 	  (server_url, query_str, user, host, client_name,
            client_version, proto)
 
-    response = urllib.urlopen(url)
+    response = urllib.request.urlopen(url)
 
     # kaa.metadata unicode fix
     encoding = ''
-    if response.headers.has_key('content-type'):
+    if 'content-type' in response.headers:
         for value in response.headers['content-type'].split(';'):
             if value.strip().lower().startswith('charset='):
                 encoding = value[value.find('=')+1:].strip().lower()
@@ -61,9 +61,9 @@ def query(track_info, server_url=default_server,
     if header[0] == 200:		# OK
         # kaa.metadata unicode fix
         try:
-            title = unicode(header[3], encoding)
+            title = str(header[3], encoding)
         except UnicodeDecodeError:
-            title = unicode(header[3], errors='replace')
+            title = str(header[3], errors='replace')
 	result = { 'category': header[1], 'disc_id': header[2], 'title': title }
 
 	return [ header[0], result ]
@@ -82,11 +82,11 @@ def query(track_info, server_url=default_server,
 	    match = string.split(line, ' ', 2)
 
             try:
-                title = unicode(match[2], encoding)
+                title = str(match[2], encoding)
             except UnicodeDecodeError:
-                title = unicode(match[2], errors='replace')
+                title = str(match[2], errors='replace')
             # kaa.metadata unicode fix
-	    result.append({ 'category': unicode(match[0]), 'disc_id': match[1], 'title':
+	    result.append({ 'category': str(match[0]), 'disc_id': match[1], 'title':
 			    title })
 
 	return [ header[0], result ]
@@ -102,11 +102,11 @@ def read(category, disc_id, server_url=default_server,
 	  (server_url, category, disc_id, user, host, client_name,
            client_version, proto)
 
-    response = urllib.urlopen(url)
+    response = urllib.request.urlopen(url)
     
     # kaa.metadata unicode fix
     encoding = ''
-    if response.headers.has_key('content-type'):
+    if 'content-type' in response.headers:
         for value in response.headers['content-type'].split(';'):
             if value.strip().lower().startswith('charset='):
                 encoding = value[value.find('=')+1:].strip().lower()
@@ -132,12 +132,12 @@ def read(category, disc_id, server_url=default_server,
 	if header[0] == 210:		# success, parse the reply
             # kaa.metadata unicode fix
             reply = parse_read_reply(reply)
-            for key, value in reply.items():
+            for key, value in list(reply.items()):
                 if isinstance(value, str):
                     try:
-                        reply[key] = unicode(reply[key], encoding)
+                        reply[key] = str(reply[key], encoding)
                     except UnicodeDecodeError:
-                        reply[key] = unicode(reply[key], errors='replace')
+                        reply[key] = str(reply[key], errors='replace')
 	    return [ header[0], reply ]
 	else:				# access denied. :(
 	    return [ header[0], reply ]
@@ -158,7 +158,7 @@ def parse_read_reply(comments):
 	if keyword_match:
 	    (keyword, data) = keyword_match.groups()
 
-	    if result.has_key(keyword):
+	    if keyword in result:
 		result[keyword] = result[keyword] + data
 	    else:
 		result[keyword] = data

@@ -39,9 +39,9 @@ import kaa.metadata
 from kaa.metadata.audio.core import Music as AudioTrack
 
 # kaa.metadata.disc imports
-import core
-import cdrom
-import CDDB
+from . import core
+from . import cdrom
+from . import CDDB
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -73,7 +73,7 @@ class AudioDisc(core.Disc):
         if kaa.metadata.USE_NETWORK:
             try:
                 (query_stat, query_info) = CDDB.query(disc_id)
-            except Exception, e:
+            except Exception as e:
                 # Oops no connection
                 query_stat = 404
         else:
@@ -112,7 +112,7 @@ class AudioDisc(core.Disc):
 
                 for i in range(0, disc_id[1]):
                     mi = AudioTrack()
-                    mi.title = read_info['TTITLE' + `i`]
+                    mi.title = read_info['TTITLE' + repr(i)]
                     mi.album = self.title
                     mi.artist = self.artist
                     mi.genre = query_info['category']

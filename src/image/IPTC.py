@@ -35,8 +35,7 @@
 # python imports
 from struct import unpack
 
-# kaa imports
-import kaa
+from .. import utils
 
 mapping = {
     'by-line title': 'title',
@@ -126,13 +125,13 @@ c_datasets = {
 
 def flatten(list):
     try:
-        for i, val in list.items()[:]:
+        for i, val in list(list.items())[:]:
             if len(val) == 0:
                 del list[i]
             elif i == 'keywords':
                 list[i] = [ x.strip(' \t\0\n\r') for x in val ]
             else:
-                list[i] = u' '.join(val).strip()
+                list[i] = ' '.join(val).strip()
         return list
     except (ValueError, AttributeError, IndexError, KeyError):
         return []
@@ -180,12 +179,12 @@ def parseiptc(app):
         if intro != 0x1c:
             return flatten(iptc)
         (tag, record, dataset, length) = unpack("!BBBH", data[offset:offset+5])
-        val = kaa.str_to_unicode(data[offset+5:offset+length+5])
+        val = utils.tostr(data[offset+5:offset+length+5])
         offset += length + 5
         name = c_datasets.get(dataset)
         if not name:
             continue
-        if iptc.has_key(name):
+        if name in iptc:
             iptc[name].append(val)
         else:
             iptc[name] = [val]

@@ -38,14 +38,14 @@ __all__ = ['Parser']
 import logging
 
 # import kaa.metadata.audio core
-import core
+from . import core
 
 # get logging object
 log = logging.getLogger('metadata')
 
 import struct
 
-FLAGS= CONTAINER, SKIPPER, TAGITEM, IGNORE= [2**_ for _ in xrange(4)]
+FLAGS= CONTAINER, SKIPPER, TAGITEM, IGNORE= [2**_ for _ in range(4)]
 
 # CONTAINER: datum contains other boxes
 # SKIPPER: ignore first 4 bytes of datum

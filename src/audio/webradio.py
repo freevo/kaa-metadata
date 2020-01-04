@@ -32,12 +32,12 @@
 __all__ = ['Parser']
 
 # python imports
-import urlparse
+import urllib.parse
 import string
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 # import kaa.metadata.audio core
-import core
+from . import core
 
 
 # http://205.188.209.193:80/stream/1006
@@ -54,13 +54,13 @@ class WebRadio(core.Music):
 
     def __init__(self, url):
         core.Music.__init__(self)
-        tup = urlparse.urlsplit(url)
+        tup = urllib.parse.urlsplit(url)
         scheme, location, path, query, fragment = tup
         if scheme != 'http':
             raise core.ParseError()
 
         # Open an URL Connection
-        fi = urllib.urlopen(url)
+        fi = urllib.request.urlopen(url)
 
         # grab the statusline
         self.statusline = fi.readline()

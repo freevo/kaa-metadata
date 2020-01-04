@@ -38,7 +38,7 @@ from struct import unpack
 from re import match
 
 # kaa.metadata.games core import
-import core
+from . import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -68,7 +68,7 @@ class SNES(core.Game):
                 (romName, romHL, rom_type, romROM, romSRAM, romCountry,
                  romLic, romVer, romICHK, romCHK) = \
                  unpack('21sBBcccccHH', romHeader)
-            except Exception, e:
+            except Exception as e:
                 continue
 
             if not rom_type in (0, 1, 2, 3, 4, 5, 19, 227, 246):

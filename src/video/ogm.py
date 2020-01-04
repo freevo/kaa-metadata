@@ -39,7 +39,7 @@ import os
 import logging
 
 # import kaa.metadata.video core
-import core
+from . import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -100,7 +100,7 @@ class Ogm(core.AVContainer):
 
         # find last OggS to get length info
         if len(h) > 200:
-            idx = h.find('OggS')
+            idx = h.find(b'OggS')
             pos = -49000 + idx
             if idx:
                 file.seek(os.stat(file.name)[stat.ST_SIZE] + pos)
@@ -114,22 +114,22 @@ class Ogm(core.AVContainer):
             for i in range(len(self.all_header)):
 
                 # get meta info
-                for key in self.all_streams[i].keys():
-                    if self.all_header[i].has_key(key):
+                for key in list(self.all_streams[i].keys()):
+                    if key in self.all_header[i]:
                         self.all_streams[i][key] = self.all_header[i][key]
                         del self.all_header[i][key]
-                    if self.all_header[i].has_key(key.upper()):
+                    if key.upper() in self.all_header[i]:
                         asi = self.all_header[i][key.upper()]
                         self.all_streams[i][key] = asi
                         del self.all_header[i][key.upper()]
 
                 # Chapter parser
-                if self.all_header[i].has_key('CHAPTER01') and \
+                if 'CHAPTER01' in self.all_header[i] and \
                        not self.chapters:
                     while 1:
                         s = 'CHAPTER%02d' % (len(self.chapters) + 1)
-                        if self.all_header[i].has_key(s) and \
-                               self.all_header[i].has_key(s + 'NAME'):
+                        if s in self.all_header[i] and \
+                               s + 'NAME' in self.all_header[i]:
                             pos = self.all_header[i][s]
                             try:
                                 pos = int(pos)
@@ -304,7 +304,7 @@ class Ogm(core.AVContainer):
     def _extractHeaderString(self,header):
         len = struct.unpack( '<I', header[:4] )[0]
         try:
-            return (len+4,unicode(header[4:4+len], 'utf-8'))
+            return (len+4,str(header[4:4+len], 'utf-8'))
         except (KeyError, IndexError, UnicodeDecodeError):
             return (len+4,None)
 

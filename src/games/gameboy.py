@@ -35,7 +35,7 @@ __all__ = ['Parser']
 import logging
 
 # kaa.metadata.games core import
-import core
+from . import core
 
 # get logging object
 log = logging.getLogger('metadata')

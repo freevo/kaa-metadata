@@ -33,11 +33,11 @@
 import logging
 
 # kaa imports
-from kaa.metadata.core import ParseError, Collection, MEDIA_DISC
-from kaa.metadata.video.core import VideoStream
+from ..core import ParseError, Collection, MEDIA_DISC
+from ..video.core import VideoStream
 
 # extra cdrom parser
-import cdrom
+from . import cdrom
 
 # get logging object
 log = logging.getLogger('metadata')

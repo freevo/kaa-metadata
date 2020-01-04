@@ -33,18 +33,16 @@ __all__ = [ 'Factory', 'register', 'gettype', 'parse' ]
 
 # python imports
 import stat
+import io
 import os
 import sys
 import struct
-import urlparse
-import urllib
+import urllib.parse
+import urllib.request, urllib.parse, urllib.error
 import logging
 
-# kaa imports
-import kaa.utils
-
 # kaa.metadata imports
-import core
+from . import core
 
 # get logging object
 log = logging.getLogger('metadata')
@@ -87,8 +85,8 @@ class NullParser(object):
     def __init__(self, file):
         raise core.ParseError
 
-class File(file):
 
+class File(io.FileIO):
     def read(self, bytes=-1):
         """
         If the size argument is negative or omitted, read until EOF is
@@ -98,7 +96,7 @@ class File(file):
         if bytes > 5000000 or (bytes < 0 and os.stat(self.name)[stat.ST_SIZE] - self.tell() > 1000000):
             # reading more than 1MB looks like a bug
             raise IOError('trying to read %s bytes' % bytes)
-        return super(File, self).read(bytes)
+        return super().read(bytes)
 
 class _Factory:
     """
@@ -120,12 +118,14 @@ class _Factory:
         if name not in self.classmap:
             # Import the parser class for the given name.
             try:
-                exec('from %s import Parser' % name)
-                self.classmap[name] = Parser
-            except Exception:
+                scope = {}
+                exec('from .%s import Parser' % name, globals(), scope)
+                self.classmap[name] = scope['Parser']
+            except BaseException:
                 # Something failed while trying to import this parser.  Rather
                 # than bail altogher, just log the error and use NullParser.
                 log.exception('Error importing parser %s' % name)
+                raise
                 self.classmap[name] = NullParser
 
         return self.classmap[name]
@@ -155,8 +155,6 @@ class _Factory:
                     return parser(file)
                 except core.ParseError:
                     pass
-                except Exception:
-                    log.exception('parse error')
 
         # Try to find a parser based on the first bytes of the
         # file (magic header). If a magic header is found but the
@@ -165,7 +163,7 @@ class _Factory:
         # only be set if the parser is very sure
         file.seek(0,0)
         magic = file.read(10)
-        for length, magicmap in self.magicmap.items():
+        for length, magicmap in list(self.magicmap.items()):
             if magic[:length] in magicmap:
                 for p in magicmap[magic[:length]]:
                     log.info('Trying %s by magic header', p[R_CLASS])
@@ -175,8 +173,6 @@ class _Factory:
                         return parser(file)
                     except core.ParseError:
                         pass
-                    except Exception:
-                        log.exception('parse error')
                 log.info('Magic header found but parser failed')
                 return None
 
@@ -196,8 +192,6 @@ class _Factory:
                 return self.get_class(e[R_CLASS])(file)
             except core.ParseError:
                 pass
-            except Exception:
-                log.exception('parser error')
         return None
 
 
@@ -205,7 +199,7 @@ class _Factory:
         """
         Create information for urls. This includes file:// and cd://
         """
-        split  = urlparse.urlsplit(url)
+        split  = urllib.parse.urlsplit(url)
         scheme = split[0]
 
         if scheme == 'file':
@@ -241,13 +235,13 @@ class _Factory:
         else:
             (scheme, location, path, query, fragment) = split
             try:
-                uhandle = urllib.urlopen(url)
+                uhandle = urllib.request.urlopen(url)
             except IOError:
                 # Unsupported URL scheme
                 return
             mime = uhandle.info().gettype()
             log.debug("Trying %s" % mime)
-            if self.mimemap.has_key(mime):
+            if mime in self.mimemap:
                 try:
                     return self.get_class(self.mimemap[mime][R_CLASS])(file)
                 except core.ParseError:
@@ -264,7 +258,7 @@ class _Factory:
         if os.path.isfile(filename):
             try:
                 f = File(filename,'rb')
-            except (IOError, OSError), e:
+            except (IOError, OSError) as e:
                 log.info('error reading %s: %s' % (filename, e))
                 return None
             result = self.create_from_file(f, force)
@@ -330,7 +324,7 @@ class _Factory:
                 return self.create_from_url(name)
             if not os.path.exists(name):
                 return None
-            if (os.uname()[0] == 'FreeBSD' and \
+            if (sys.platform.startswith('freebsd') and \
                 stat.S_ISCHR(os.stat(name)[stat.ST_MODE])) \
                 or stat.S_ISBLK(os.stat(name)[stat.ST_MODE]):
                 return self.create_from_device(name)
@@ -392,4 +386,32 @@ class _Factory:
                 return self.get_class(info[R_CLASS])
         return None
 
-Factory = kaa.utils.Singleton(_Factory)
+class Singleton(object):
+    """
+    Create Singleton object from classref on demand.
+    """
+
+    class MemberFunction(object):
+        def __init__(self, singleton, name):
+            self._singleton = singleton
+            self._name = name
+
+        def __call__(self, *args, **kwargs):
+            return getattr(self._singleton(), self._name)(*args, **kwargs)
+
+
+    def __init__(self, classref):
+        self._singleton = None
+        self._class = classref
+
+    def __call__(self):
+        if self._singleton is None:
+            self._singleton = self._class()
+        return self._singleton
+
+    def __getattr__(self, attr):
+        if self._singleton is None:
+            return Singleton.MemberFunction(self, attr)
+        return getattr(self._singleton, attr)
+
+Factory = Singleton(_Factory)

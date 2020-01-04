@@ -32,8 +32,8 @@
 __all__ = ['Parser']
 
 # kaa.metadata.disc imports
-import core
-import cdrom
+from . import core
+from . import cdrom
 
 class VCD(core.Disc):
     def __init__(self,device):
