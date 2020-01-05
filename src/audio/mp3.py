@@ -70,6 +70,13 @@ MP3_INFO_TABLE = { "LINK": "link",
                    "TPOS": "discs",
                    "TPUB": "publisher"}
 
+def _int(v):
+    # handle integer values. Some parser do not set the value x and x
+    # of y (x/y) instead. Try to detect this.
+    if isinstance(v, str) and v.find('/') > 0:
+        v = v.split('/')[0]
+    return int(v)
+
 # This maps ID3 frames to tag names (as per the Matroska Tags specification)
 # to support the new core Tags API.  tag name -> attr, filter
 ID3_TAGS_MAP = {
@@ -89,8 +96,8 @@ ID3_TAGS_MAP = {
     'TPE1': ('lead_performer', tostr),
     'TPE2': ('accompaniment', tostr),
     'TPE3': ('conductor', tostr),
-    'TRCK': ('part_number', int),
-    'TPOS': ('total_parts', int),
+    'TRCK': ('part_number', _int),
+    'TPOS': ('total_parts', _int),
     'TCOP': ('copyright', tostr),
     'TPUB': ('publisher', tostr),
     # Treated specially
