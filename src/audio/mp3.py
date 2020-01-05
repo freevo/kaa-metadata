@@ -167,7 +167,6 @@ class MP3(core.Music):
             if id3:
                 self.tags = core.Tags()
                 log.debug(id3.frames())
-
                 # Grip unicode bug workaround: Grip stores text data as UTF-8
                 # and flags it as latin-1.  This workaround tries to decode
                 # these strings as utf-8 instead.
@@ -208,6 +207,11 @@ class MP3(core.Music):
                         if f.data:
                             tag.binary = True
                             tag.value = f.data
+                    elif getattr(f, 'frameid', None) == 'TXXX':
+                        tab[f.description] = f.value
+                        tag.value = f.value
+                        self.tags['_' + f.description.replace(' ', '_')] = tag
+                        continue
                     else:
                         log.debug(f.__class__)
 
