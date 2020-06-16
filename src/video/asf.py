@@ -302,7 +302,7 @@ class Asf(core.AVContainer):
             pos = 34
             strings = []
             for i in val:
-                ss = s[pos:pos+i].replace('\0', '').lstrip().rstrip()
+                ss = s[pos:pos+i].replace(b'\0', b'').lstrip().rstrip()
                 strings.append(ss)
                 pos+=i
 
