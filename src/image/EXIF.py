@@ -992,7 +992,7 @@ MAKERNOTE_CANON_TAG_0x004 = {
 def s2n_motorola(str):
     x = 0
     for c in str:
-        x = (x << 8) | ord(c)
+        x = (x << 8) | c
     return x
 
 # extract multibyte integer in Intel format (big endian)
@@ -1000,7 +1000,7 @@ def s2n_intel(str):
     x = 0
     y = 0
     for c in str:
-        x = x | (ord(c) << y)
+        x = x | (c << y)
         y = y + 8
     return x
 
@@ -1047,6 +1047,8 @@ class IFD_Tag:
         self.values = values
 
     def __str__(self):
+        if isinstance(self.printable, bytes):
+            return self.printable.encode('utf-8')
         return self.printable
 
     def __repr__(self):
@@ -1072,7 +1074,7 @@ class EXIF_header:
     def s2n(self, offset, length, signed=0):
         self.file.seek(self.offset+offset)
         slice=self.file.read(length)
-        if self.endian == 'I':
+        if self.endian == b'I':
             val=s2n_intel(slice)
         else:
             val=s2n_motorola(slice)
@@ -1087,7 +1089,7 @@ class EXIF_header:
     def n2s(self, offset, length):
         s = ''
         for dummy in range(length):
-            if self.endian == 'I':
+            if self.endian == b'I':
                 s = s + chr(offset & 0xFF)
             else:
                 s = chr(offset & 0xFF) + s
@@ -1168,7 +1170,7 @@ class EXIF_header:
                     if count != 0:
                         self.file.seek(self.offset + offset)
                         values = self.file.read(count)
-                        values = values.strip().replace('\x00', '')
+                        values = values.strip().replace(b'\x00', b'')
                     else:
                         values = ''
                 else:
@@ -1185,9 +1187,15 @@ class EXIF_header:
                         offset = offset + typelen
                 # now "values" is either a string or an array
                 if count == 1 and field_type != 2:
-                    printable=str(values[0])
+                    if isinstance(values[0], bytes):
+                        printable=values[0].decode('utf-8')
+                    else:
+                        printable=str(values[0])
                 else:
-                    printable=str(values)
+                    if isinstance(values, bytes):
+                        printable=values.decode('utf-8')
+                    else:
+                        printable=str(values)
                 # compute printable version of values
                 if tag_entry:
                     if len(tag_entry) != 1:
@@ -1303,7 +1311,7 @@ class EXIF_header:
         # type of the makernote (1 or 2, as a short).  If the word Nikon is
         # not at the start of the makernote, it's probably type 2, since some
         # cameras work that way.
-        if make in ('NIKON', 'NIKON CORPORATION'):
+        if make in (b'NIKON', b'NIKON CORPORATION'):
             if note.values[0:7] == [78, 105, 107, 111, 110, 0, 1]:
                 if self.debug:
                     print("Looks like a type 1 Nikon MakerNote.")
@@ -1326,7 +1334,7 @@ class EXIF_header:
             return
 
         # Olympus
-        if make.startswith('OLYMPUS'):
+        if make.startswith(b'OLYMPUS'):
             self.dump_IFD(note.field_offset+8, 'MakerNote',
                           dict=MAKERNOTE_OLYMPUS_TAGS)
             # TODO
@@ -1335,13 +1343,13 @@ class EXIF_header:
             #return
 
         # Casio
-        if make == 'Casio':
+        if make == b'Casio':
             self.dump_IFD(note.field_offset, 'MakerNote',
                           dict=MAKERNOTE_CASIO_TAGS)
             return
 
         # Fujifilm
-        if make == 'FUJIFILM':
+        if make == b'FUJIFILM':
             # bug: everything else is "Motorola" endian, but the MakerNote
             # is "Intel" endian
             endian = self.endian
@@ -1358,7 +1366,7 @@ class EXIF_header:
             return
 
         # Canon
-        if make == 'Canon':
+        if make == b'Canon':
             self.dump_IFD(note.field_offset, 'MakerNote',
                           dict=MAKERNOTE_CANON_TAGS)
             for i in (('MakerNote Tag 0x0001', MAKERNOTE_CANON_TAG_0x001),
@@ -1400,21 +1408,21 @@ def process_file(f, stop_tag='UNDEF', details=True, debug=False):
 
     # determine whether it's a JPEG or TIFF
     data = f.read(12)
-    if data[0:4] in ['II*\x00', 'MM\x00*']:
+    if data[0:4] in [b'II*\x00', b'MM\x00*']:
         # it's a TIFF file
         f.seek(0)
         endian = f.read(1)
         f.read(1)
         offset = 0
-    elif data[0:2] == '\xFF\xD8':
+    elif data[0:2] == b'\xFF\xD8':
         # it's a JPEG file
-        while data[2] == '\xFF' and data[6:10] in ('JFIF', 'JFXX', 'OLYM', 'Phot'):
-            length = ord(data[4])*256+ord(data[5])
+        while data[2] in (b'\xFF', 255) and data[6:10] in (b'JFIF', b'JFXX', b'OLYM', b'Phot'):
+            length = data[4]*256+data[5]
             f.read(length-8)
             # fake an EXIF beginning of file
-            data = '\xFF\x00'+f.read(10)
+            data = b'\xFF\x00'+f.read(10)
             fake_exif = 1
-        if data[2] == '\xFF' and data[6:10] == 'Exif':
+        if data[2] in (b'\xFF', 255) and data[6:10] == b'Exif':
             # detected EXIF header
             offset = f.tell()
             endian = f.read(1)
@@ -1424,10 +1432,9 @@ def process_file(f, stop_tag='UNDEF', details=True, debug=False):
     else:
         # file format not recognized
         return {}
-
     # deal with the EXIF info we found
     if debug:
-        print({'I': 'Intel', 'M': 'Motorola'}[endian], 'format')
+        print({b'I': 'Intel', b'M': 'Motorola'}[endian], 'format')
     hdr = EXIF_header(f, endian, offset, fake_exif, debug)
     ifd_list = hdr.list_IFDs()
     ctr = 0

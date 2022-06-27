@@ -83,11 +83,11 @@ class JPG(core.Image):
         self.mime = 'image/jpeg'
         self.type = 'jpeg image'
 
-        if file.read(2) != '\xff\xd8':
+        if file.read(2) != b'\xff\xd8':
             raise core.ParseError()
 
         file.seek(-2,2)
-        if file.read(2) != '\xff\xd9':
+        if file.read(2) != b'\xff\xd9':
             # Normally an JPEG should end in ffd9. This does not however
             # we assume it's an jpeg for now
             log.info("Wrong encode found for jpeg")
@@ -109,12 +109,12 @@ class JPG(core.Image):
 
             elif segtype == 0xe1:
                 data = file.read(seglen-2)
-                type = data[:data.find('\0')]
-                if type == 'Exif':
+                type = data[:data.find(b'\0')]
+                if type == b'Exif':
                     # create a fake file from the data we have to
                     # pass it to the EXIF parser
-                    fakefile = io.StringIO()
-                    fakefile.write('\xFF\xD8')
+                    fakefile = io.BytesIO()
+                    fakefile.write(b'\xFF\xD8')
                     fakefile.write(app)
                     fakefile.write(data)
                     fakefile.seek(0)

@@ -462,7 +462,7 @@ class MPEG(core.AVContainer):
         offset -= 2
 
         # test for mpeg header 0x00 0x00 0x01
-        header = '\x00\x00\x01%s' % chr(PACK_PKT)
+        header = b'\x00\x00\x01%s' % bytes(PACK_PKT)
         if offset < 0 or not buffer[offset:offset+4] == header:
             if not force:
                 return 0
