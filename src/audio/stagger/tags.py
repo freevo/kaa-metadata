@@ -34,6 +34,7 @@ import abc
 import struct
 import re
 import collections
+import collections.abc
 import io
 import imghdr
 import zlib
@@ -219,7 +220,7 @@ class FrameOrder:
         return "<FrameOrder: {0}>".format(", ".join(pair[0] for pair in order))
         
 
-class Tag(collections.MutableMapping, metaclass=abc.ABCMeta):
+class Tag(collections.abc.MutableMapping, metaclass=abc.ABCMeta):
     known_frames = { }        # Maps known frameids to Frame class objects
 
     frame_order = None        # Initialized by stagger.id3

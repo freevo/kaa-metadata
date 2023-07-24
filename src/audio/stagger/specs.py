@@ -31,7 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import abc
-import collections
+import collections.abc
 
 from abc import abstractmethod
 from warnings import warn
@@ -228,7 +228,7 @@ class BinaryDataSpec(Spec):
     def validate(self, frame, value):
         if value is None:
             return bytes()
-        if not isinstance(value, collections.ByteString):
+        if not isinstance(value, collections.abc.ByteString):
             raise TypeError("Not a byte sequence")
         return value
     def to_str(self, value):
@@ -423,7 +423,7 @@ class MultiSpec(Spec):
             return []
         res = []
         for v in values:
-            if not isinstance(v, collections.Sequence) or isinstance(v, str):
+            if not isinstance(v, collections.abc.Sequence) or isinstance(v, str):
                 raise TypeError("Records must be sequences")
             if len(v) != len(self.specs):
                 raise ValueError("Invalid record length")
@@ -453,7 +453,7 @@ class ASPISpec(Spec):
     def validate(self, frame, values):
         if values is None:
             return []
-        if not isinstance(values, collections.Sequence) or isinstance(values, str):
+        if not isinstance(values, collections.abc.Sequence) or isinstance(values, str):
             raise TypeError("ASPISpec needs a sequence of integers")
         if len(values) != frame.N:
             raise ValueError("ASPISpec needs {0} integers".format(frame.N))
